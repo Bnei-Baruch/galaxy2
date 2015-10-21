@@ -1,11 +1,4 @@
-module frontend {
-  'use strict';
-
-  export class RunBlock {
-    /** @ngInject */
-    constructor($log: ng.ILogService) {
-      $log.debug('runBlock end');
-    }
-
-  }
+/** @ngInject */
+export function runBlock($log: ng.ILogService) {
+  $log.debug('runBlock end');
 }
