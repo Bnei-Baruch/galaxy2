@@ -9,9 +9,9 @@ Rails.application.routes.draw do
   # You can have the root of your site routed with "root"
   root 'home#index'
 
-  # namespace :api do
-  #
-  # end
+  namespace :api do
+    resources :users, only: [:show, :index]
+  end
 
   get 'cache/clear', to: 'cache#clear'
   # Example of regular route:
