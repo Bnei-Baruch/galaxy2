@@ -1,14 +1,19 @@
 Rails.application.routes.draw do
-  mount RailsAdmin::Engine => '/admin', as: 'rails_admin'
-  devise_for :users
+  mount RailsAdmin::Engine => '/api/admin', as: 'rails_admin'
+  devise_for :admins, path: '/api/'
+  # devise_for :users
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
   # You can have the root of your site routed with "root"
-  devise_scope :user do
-    root to: 'devise/sessions#new'
-  end
+  root 'home#index'
 
+  # namespace :api do
+  #
+  # end
+
+  get 'cache/clear', to: 'cache#clear'
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
 
