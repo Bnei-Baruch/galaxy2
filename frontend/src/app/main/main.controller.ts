@@ -1,39 +1,24 @@
-import { WebDevTecService, ITecThing } from '../components/webDevTec/webDevTec.service';
+import { IUsersBreakdown, ShidurService } from './main/main.service';
 
-export class MainController {
-  public awesomeThings: ITecThing[];
-  public webDevTec: WebDevTecService;
-  public classAnimation: string;
-  public creationDate: number;
-  public toastr: any;
+module frontend {
 
-  /* @ngInject */
-  constructor ($timeout: ng.ITimeoutService, webDevTec: WebDevTecService, toastr: any) {
-    this.awesomeThings = new Array();
-    this.webDevTec = webDevTec;
-    this.classAnimation = '';
-    this.creationDate = 1445420987069;
-    this.toastr = toastr;
-    this.activate($timeout);
-  }
+  angular
+    .module('frontend.shidur')
+    .controller('MainController', MainController)
 
-  /** @ngInject */
-  activate($timeout: ng.ITimeoutService) {
-    this.getWebDevTec();
+  export class MainController {
+    public toastr: any;
+    public breakdown: IUsersBreakdown;
 
-    var self = this;
+    /* @ngInject */
+    constructor (shidur: ShidurService, toastr: any) {
+      this.toastr = toastr;
+      this.breakdown = shidur.getChannelsBreakdown();
+      this.activate();
+    }
 
-    $timeout(function() {
-      self.classAnimation = 'rubberBand';
-    }, 4000);
-  }
-
-  showToastr() {
-    this.toastr.info('Fork <a href="https://github.com/Swiip/generator-gulp-angular" target="_blank"><b>generator-gulp-angular</b></a>');
-    this.classAnimation = '';
-  }
-
-  getWebDevTec() {
-    this.awesomeThings = this.webDevTec.tec;
+    /** @ngInject */
+    activate() {
+    }
   }
 }

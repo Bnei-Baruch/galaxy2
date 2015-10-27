@@ -8,16 +8,14 @@ import { NavbarController } from './navbar.directive';
 describe('directive navbar', function() {
   let element: ng.IAugmentedJQuery;
   let navbarController: NavbarController;
-  let timeInMs: number;
 
   beforeEach(angular.mock.module('frontend'));
 
   beforeEach(inject(($compile: ng.ICompileService, $rootScope: ng.IRootScopeService) => {
     const currentDate: Date = new Date();
-    timeInMs = currentDate.setHours(currentDate.getHours() - 24);
 
     element = angular.element(`
-      <acme-navbar creation-date="${timeInMs}"></acme-navbar>
+      <galaxy-navbar></galaxy-navbar>
     `);
 
     $compile(element)($rootScope.$new());
@@ -31,7 +29,5 @@ describe('directive navbar', function() {
 
   it('should have isolate scope object with instanciate members', function() {
     expect(navbarController).not.toBeNull();
-    expect(navbarController.creationDate).toEqual(timeInMs);
-    expect(navbarController.relativeDate).toEqual('a day ago');
   });
 });
