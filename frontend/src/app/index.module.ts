@@ -8,16 +8,33 @@ import { ShidurController } from './shidur/shidur.controller';
 import { ShidurService } from './shidur/shidur.service';
 import { UserController } from './user/user.controller';
 import { channelWidget } from '../app/components/channel/channel.directive';
+import { ChannelService } from '../app/components/channel/channel.service';
+
+declare var Janus: any;
 
 module frontend {
   'use strict';
 
-  angular.module('frontend', ['ngAnimate', 'ngCookies', 'ngTouch', 'ngSanitize', 'ngMessages', 'ngAria', 'ui.router', 'ngMaterial', 'toastr'])
+  var dependencies = [
+    'ngAnimate',
+    'ngCookies',
+    'ngTouch',
+    'ngSanitize',
+    'ngMessages',
+    'ngAria',
+    'ui.router',
+    'ngMaterial',
+    'toastr'
+  ];
+
+  angular.module('frontend', dependencies)
     .constant('moment', moment)
+    .constant('Janus', Janus)
     .config(config)
     .config(routerConfig)
     .run(runBlock)
     .service('shidur', ShidurService)
+    .service('channel', ChannelService)
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
     .directive('galaxyNavbar', galaxyNavbar)

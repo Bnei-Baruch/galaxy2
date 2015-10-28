@@ -1,3 +1,5 @@
+import { ChannelService } from './channel.service';
+
 /** @ngInject */
 export function channelWidget(): ng.IDirective {
 
@@ -17,4 +19,10 @@ export function channelWidget(): ng.IDirective {
 /** @ngInject */
 export class ChannelController {
   users: any;
+
+  constructor(channel: ChannelService) {
+    if (this.users.length) {
+      var programStream = channel.getStream(this.users[0].login);
+    }
+  }
 }
