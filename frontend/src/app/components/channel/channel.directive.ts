@@ -17,7 +17,4 @@ export function channelWidget(): ng.IDirective {
 /** @ngInject */
 export class ChannelController {
   users: any;
-
-  constructor () {
-  }
 }

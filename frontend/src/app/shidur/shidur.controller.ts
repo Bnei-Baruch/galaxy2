@@ -1,6 +1,6 @@
-import { IUsersBreakdown, ShidurService } from './main.service';
+import { IUsersBreakdown, ShidurService } from './shidur.service';
 
-export class MainController {
+export class ShidurController {
   public toastr: any;
   public breakdown: IUsersBreakdown;
 
@@ -13,5 +13,6 @@ export class MainController {
 
   /** @ngInject */
   activate() {
+    console.log('activate()');
   }
 }

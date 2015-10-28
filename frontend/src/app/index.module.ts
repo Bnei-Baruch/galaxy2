@@ -3,9 +3,10 @@
 import { config } from './index.config';
 import { routerConfig } from './index.route';
 import { runBlock } from './index.run';
-import { MainController } from './main/main.controller';
-import { ShidurService } from './main/main.service';
 import { galaxyNavbar } from '../app/components/navbar/navbar.directive';
+import { ShidurController } from './shidur/shidur.controller';
+import { ShidurService } from './shidur/shidur.service';
+import { UserController } from './user/user.controller';
 import { channelWidget } from '../app/components/channel/channel.directive';
 
 module frontend {
@@ -17,7 +18,8 @@ module frontend {
     .config(routerConfig)
     .run(runBlock)
     .service('shidur', ShidurService)
-    .controller('MainController', MainController)
+    .controller('ShidurController', ShidurController)
+    .controller('UserController', UserController)
     .directive('galaxyNavbar', galaxyNavbar)
     .directive('channelWidget', channelWidget);
 }
