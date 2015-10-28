@@ -113,6 +113,7 @@ Janus.init = function(options) {
 
 		// addJs('adapter.js');
 		// addJs('jquery.min.js');
+    options.callback();
 	}
 };
 

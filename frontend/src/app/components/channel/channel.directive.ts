@@ -20,9 +20,10 @@ export function channelWidget(): ng.IDirective {
 export class ChannelController {
   users: any;
 
-  constructor(channel: ChannelService) {
+  constructor($scope: ng.IScope, channel: ChannelService) {
     if (this.users.length) {
       var programStream = channel.getStream(this.users[0].login);
+      $scope.$on('janusInitialized', () => { alert(2); });
     }
   }
 }
