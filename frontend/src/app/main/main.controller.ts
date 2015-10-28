@@ -7,7 +7,7 @@ export class MainController {
   /* @ngInject */
   constructor (shidur: ShidurService, toastr: any) {
     this.toastr = toastr;
-    this.breakdown = shidur.getChannelsBreakdown();
+    this.breakdown = shidur.getUsersBreakdown();
     this.activate();
   }
 

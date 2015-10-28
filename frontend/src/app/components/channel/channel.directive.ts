@@ -3,7 +3,9 @@ export function channelWidget(): ng.IDirective {
 
   return {
     restrict: 'E',
-    scope: {},
+    scope: {
+      users: '='
+    },
     templateUrl: 'app/components/channel/channel.html',
     controller: ChannelController,
     controllerAs: 'vm',
@@ -14,4 +16,8 @@ export function channelWidget(): ng.IDirective {
 
 /** @ngInject */
 export class ChannelController {
+  users: any;
+
+  constructor () {
+  }
 }

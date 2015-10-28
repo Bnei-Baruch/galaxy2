@@ -1,8 +1,7 @@
-interface IUser {
+export interface IUser {
   login: string,
   title: string
 }
-
 
 export interface IUsersBreakdown {
   large1: IUser[],
@@ -18,7 +17,7 @@ export class ShidurService {
   constructor () {
   }
 
-  public getChannelsBreakdown(): IUsersBreakdown {
+  public getUsersBreakdown(): IUsersBreakdown {
     return {
       large1: [
         {login: "afula", title: "Afula"},
@@ -43,5 +42,11 @@ export class ShidurService {
         {login: "eilat", title: "Eilat"},
       ]
     }
+  }
+
+  public getStream(login: string) {
+    return {
+      id: 1
+    };
   }
 }
