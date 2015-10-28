@@ -1,24 +1,17 @@
-import { IUsersBreakdown, ShidurService } from './main/main.service';
+import { IUsersBreakdown, ShidurService } from './main.service';
 
-module frontend {
+export class MainController {
+  public toastr: any;
+  public breakdown: IUsersBreakdown;
 
-  angular
-    .module('frontend.shidur')
-    .controller('MainController', MainController)
+  /* @ngInject */
+  constructor (shidur: ShidurService, toastr: any) {
+    this.toastr = toastr;
+    this.breakdown = shidur.getChannelsBreakdown();
+    this.activate();
+  }
 
-  export class MainController {
-    public toastr: any;
-    public breakdown: IUsersBreakdown;
-
-    /* @ngInject */
-    constructor (shidur: ShidurService, toastr: any) {
-      this.toastr = toastr;
-      this.breakdown = shidur.getChannelsBreakdown();
-      this.activate();
-    }
-
-    /** @ngInject */
-    activate() {
-    }
+  /** @ngInject */
+  activate() {
   }
 }

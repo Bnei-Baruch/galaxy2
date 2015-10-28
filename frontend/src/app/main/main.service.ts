@@ -1,25 +1,21 @@
-angular
-  .module('frontend.shidur')
-  .factory('shidurService', ShidurService);
-
 interface IUser {
   login: string,
   title: string
 }
 
+
 export interface IUsersBreakdown {
   large1: IUser[],
-    large2: IUser[],
-    small1: IUser[],
-    small2: IUser[],
-    control: IUser[],
+  large2: IUser[],
+  small1: IUser[],
+  small2: IUser[],
+  control: IUser[],
 }
 
 export class ShidurService {
   private $http: ng.IHttpService;
 
-  constructor ($http: ng.IHttpService) {
-    this.$http = $http;
+  constructor () {
   }
 
   public getChannelsBreakdown(): IUsersBreakdown {
@@ -45,7 +41,7 @@ export class ShidurService {
         {login: "arad", title: "Arad"},
         {login: "beer-sheva", title: "Beer Sheva"},
         {login: "eilat", title: "Eilat"},
-      ],
+      ]
     }
   }
 }
