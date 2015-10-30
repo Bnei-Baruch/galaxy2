@@ -10,7 +10,11 @@ Rails.application.routes.draw do
   root 'home#index'
 
   namespace :api do
-    resources :users, only: [:show, :index]
+    resources :users, only: [:show, :index] do
+      collection do
+        get 'breakdown'
+      end
+    end
   end
 
   get 'cache/clear', to: 'cache#clear'
