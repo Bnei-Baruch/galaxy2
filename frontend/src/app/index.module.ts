@@ -3,27 +3,40 @@
 import { config } from './index.config';
 import { routerConfig } from './index.route';
 import { runBlock } from './index.run';
-import { MainController } from './main/main.controller';
-import { GithubContributor } from '../app/components/githubContributor/githubContributor.service';
-import { WebDevTecService } from '../app/components/webDevTec/webDevTec.service';
-import { acmeNavbar } from '../app/components/navbar/navbar.directive';
-import { acmeMalarkey } from '../app/components/malarkey/malarkey.directive';
+import { galaxyNavbar } from '../app/components/navbar/navbar.directive';
+import { ShidurController } from './shidur/shidur.controller';
+import { ShidurService } from './shidur/shidur.service';
+import { UserController } from './user/user.controller';
+import { channelWidget } from '../app/components/channel/channel.directive';
+import { ChannelService } from '../app/components/channel/channel.service';
 
-declare var malarkey: any;
-declare var moment: moment.MomentStatic;
+declare var Janus: any;
 
 module frontend {
   'use strict';
 
-  angular.module('frontend', ['ngAnimate', 'ngCookies', 'ngTouch', 'ngSanitize', 'ngMessages', 'ngAria', 'ui.router', 'ngMaterial', 'toastr'])
-    .constant('malarkey', malarkey)
+  var dependencies = [
+    'ngAnimate',
+    'ngCookies',
+    'ngTouch',
+    'ngSanitize',
+    'ngMessages',
+    'ngAria',
+    'ui.router',
+    'ngMaterial',
+    'toastr'
+  ];
+
+  angular.module('frontend', dependencies)
     .constant('moment', moment)
+    .constant('Janus', Janus)
     .config(config)
     .config(routerConfig)
     .run(runBlock)
-    .service('githubContributor', GithubContributor)
-    .service('webDevTec', WebDevTecService)
-    .controller('MainController', MainController)
-    .directive('acmeNavbar', acmeNavbar)
-    .directive('acmeMalarkey', acmeMalarkey);
+    .service('shidur', ShidurService)
+    .service('channel', ChannelService)
+    .controller('ShidurController', ShidurController)
+    .controller('UserController', UserController)
+    .directive('galaxyNavbar', galaxyNavbar)
+    .directive('channelWidget', channelWidget);
 }

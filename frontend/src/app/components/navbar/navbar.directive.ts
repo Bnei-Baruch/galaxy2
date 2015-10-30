@@ -1,11 +1,9 @@
 /** @ngInject */
-export function acmeNavbar(): ng.IDirective {
+export function galaxyNavbar(): ng.IDirective {
 
   return {
     restrict: 'E',
-    scope: {
-      creationDate: '='
-    },
+    scope: {},
     templateUrl: 'app/components/navbar/navbar.html',
     controller: NavbarController,
     controllerAs: 'vm',
@@ -16,10 +14,4 @@ export function acmeNavbar(): ng.IDirective {
 
 /** @ngInject */
 export class NavbarController {
-  public relativeDate: string;
-  public creationDate: number;
-
-  constructor(moment: moment.MomentStatic) {
-    this.relativeDate = moment(this.creationDate).fromNow();
-  }
 }
