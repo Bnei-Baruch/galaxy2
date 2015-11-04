@@ -12,6 +12,12 @@ export class ShidurController {
   }
 
   breakdownUsersByChannel(users) {
+    var breakdown = { [key:string]:IUser[] };
+
+
+    users.forEach((u) => {
+
+    });
     debugger;
   }
 

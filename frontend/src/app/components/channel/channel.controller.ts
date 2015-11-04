@@ -1,13 +1,23 @@
 import { JanusVideoRoomService } from '../janusVideoRoom/janusVideoRoom.service';
+import { IUser, IUsers } from '../../shidur/shidur.service';
+import { ChannelService } from './channel.service';
+
+interface IChannelScope extends ng.IScope
+{
+  users: IUsers;
+  name: string;
+}
 
 /** @ngInject */
 export class ChannelController {
   users: IUsers;
-  previewUser: User;
+  previewUser: IUser;
   toastr: any;
   channel: ChannelService;
 
-  constructor($scope: ng.IScope, janus: JanusVideoRoomService, toastr: any, config: any) {
+  constructor($scope: IChannelScope,
+              janus: JanusVideoRoomService,
+              toastr: any, config: any) {
     this.users = $scope.users;
 
     janus.registerChannel({
@@ -25,10 +35,12 @@ export class ChannelController {
     // Now we decide to get his video/audio here or not.
     // If program or preview ==> get stream + show on video element
     if (!this.previewUser) {
+      var element = ...;
+      janus.attachRemoteHandle(login, element);
     }
   }
 
-  userLeft() {
+  userLeft(login) {
     this.users[login].joined = null;
   }
 
