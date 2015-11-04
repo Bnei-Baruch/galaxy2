@@ -70,12 +70,25 @@ export class JanusVideoRoomService {
 
     var e = message.videoroom;
 
-    if(e) {
-      if(e === "joined") {
-        if (message.publishers) {
-        }
-      }
+    switch (e) {
+      case "joined":
+        console.debug("Successfully joined room ${message.room} with ID ${message.id}");
 
+        if (message.publishers) {
+          ////
+        }
+        break;
+      case "destroyed":
+        this.toastr.error("The room has been destroyed");
+        debugger;
+        break;
+      case "event":
+        if (message.publishers) {
+          message.publishers.forEach(publisher) {
+            this.attachRemoteHandle(publisher.id, publisher.display);
+          }
+        }
+        break;
     }
   }
 

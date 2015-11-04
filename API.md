@@ -4,50 +4,38 @@ This doc describes API between frontend (Angular) and backend (Rails).
 
 # /users
 
-GET /users/breakdown
+GET /users
 
 ```
 {
-  large1: [
-    {login: "afula", title: "Afula"},
-    {login: "arad", title: "Arad"},
-  ],
-  large2: [
-    {login: "beer-sheva", title: "Beer Sheva"},
-    {login: "eilat", title: "Eilat"},
-  ],
-  small1: [
-    {login: "naharia", title: "Naharia"},
-    {login: "nazareth", title: "Nazareth Illit"},
-  ],
-  small2: [
-    {login: "raanana", title: "Raanana"},
-    {login: "rehovot", title: "Rehovot"},
-  ],
-  control: [
-    {login: "afula", title: "Afula"},
-    {login: "arad", title: "Arad"},
-    {login: "beer-sheva", title: "Beer Sheva"},
-    {login: "eilat", title: "Eilat"},
-  ]
+    [
+    ]
+    users: {
+  afula: { title: "Afula", channel: "large1" },
+  arad: { title: "Arad", channel: "large1" },
+  beer-sheva: { title: "Beer Sheva" channel: "large2" },
+  eilat: { title: "Eilat" channel: "large2" },
+  naharia: { title: "Naharia", channel: "small1" },
+  nazareth: { title: "Nazareth Illit", channel: "small1"},
+  raanana: { title: "Raanana", channel: "small2" },
+  rehovot: { title: "Rehovot", channel: "small2" },
+    }
 }
 ```
 
 # /janus
 
-GET /janus/streams/afula/video
-GET /janus/streams/afula/audio
+PUT /janus/switch
 
-```
 {
-  id: "Uh74Gts89"
+  channel: "large1",
+  user: "afula@kbb1.com"
 }
-```
-
-PUT /janus/switch/large1/program/afula
-PUT /janus/switch/large1/preview/afula
 
 ```
+Move preview to program
+Move afula to preview
+
 {}
 ```
 

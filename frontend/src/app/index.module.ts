@@ -11,8 +11,6 @@ import { channelWidget } from '../app/components/channel/channel.directive';
 import { ChannelService } from '../app/components/channel/channel.service';
 import { appConfig } from './app.config';
 
-declare var Janus: any;
-
 module frontend {
   'use strict';
 
@@ -30,7 +28,6 @@ module frontend {
 
   angular.module('frontend', dependencies)
     .constant('moment', moment)
-    .constant('Janus', Janus)
     .constant('config', appConfig)
     .config(config)
     .config(routerConfig)

@@ -7,8 +7,12 @@ export class ShidurController {
   /* @ngInject */
   constructor (shidur: ShidurService, toastr: any) {
     this.toastr = toastr;
-    this.breakdown = shidur.getUsersBreakdown();
+    this.breakdown = this.breakdownUsersByChannel(shidur.getUsers());
     this.activate();
+  }
+
+  breakdownUsersByChannel(users) {
+    debugger;
   }
 
   /** @ngInject */
