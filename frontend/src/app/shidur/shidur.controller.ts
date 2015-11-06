@@ -1,8 +1,8 @@
-import { IUsersBreakdown, ShidurService } from './shidur.service';
+import { ShidurService } from './shidur.service';
 
 export class ShidurController {
   public toastr: any;
-  public breakdown: IUsersBreakdown;
+  public breakdown: { [key:string]: IUser[] };
 
   /* @ngInject */
   constructor (shidur: ShidurService, toastr: any) {
@@ -12,7 +12,7 @@ export class ShidurController {
   }
 
   breakdownUsersByChannel(users) {
-    var breakdown = { [key:string]:IUser[] };
+    var breakdown = { [key:string]: IUser[] };
 
 
     users.forEach((u) => {

@@ -3,9 +3,9 @@ declare var Janus: any;
 
 interface IChannel {
   name: string,
-  users: IUsers,
+  users: string[],
   joinedCallback: (login: string) => void,
-  leftCallback: (login: string) => void)
+  leftCallback: (login: string) => void
 }
 
 export class JanusVideoRoomService {
@@ -17,6 +17,9 @@ export class JanusVideoRoomService {
   channels: { (key: string): IChannel };
   // Reverse map of logins to channels names.
   userChannels: { (login: string): string[] };
+
+  // Mapping between login and inner Janus data;
+  publishers: { (login: string): any };
 
   constructor(toastr: any, config: any) {
     this.config = config;
@@ -42,16 +45,20 @@ export class JanusVideoRoomService {
 
   registerChannel(options: IChannel) {
     this.channels[options.name] = options;
-    options.name.users.forEach((user) => {
-      if (this.userChannels.indexOf(user.login) == -1) {
-        this.userChannels[user.login] = [];
+    options.users.forEach((login) => {
+      // Store users lookup table by login.
+      if (login in this.userChannels) {
+        this.userChannels[login] = [];
       }
-      var channels = this.userChannels[user.login];
-
+      // Add channel to user channels list.
+      var channels = this.userChannels[login];
       if (channels.indexOf(options.name) == -1) {
         channels.push(options.name);
       }
     });
+
+    // TODO: User publishers list and call userJoined method
+    // for relevant channels
   }
 
   initCallback() {
@@ -65,6 +72,29 @@ export class JanusVideoRoomService {
       }
     });
   }
+
+  updatePublishersAndSendJoined(publishers) {
+    // TODO: Check that when overriding publisher it's id stays the same
+    publishers.forEach((p) => {
+      // TODO: When we have joined timestamp check the timestamp
+      // together with the login. Timestamp better be central.
+      if (!(p.display in this.publishers)) {
+        this.publishers[p.display] = p;
+        this.userChannels[p.display].forEach((c) => {
+          c.userJoined(p);
+        });
+      }
+    });
+  }
+
+  hangupHandles() {
+    this.pluginHandles.forEach((handle) => {
+      var body = { "request": "stop" };
+      handle.send({"message": body});
+      handle.hangup();
+    });
+  }
+  // Local Handle Methods
 
   attachLocalHandle() {
     var streaming;
@@ -80,7 +110,7 @@ export class JanusVideoRoomService {
         self.toastr.error("Error attaching plugin: " + error);
       },
       onmessage: (msg, jsep) => {
-        self.onVideoRoomMessage(streaming, msg, jsep);
+        self.onLocalVideoRoomMessage(streaming, msg, jsep);
       },
       onlocalstream: () => {
         // The subscriber stream is recvonly, we don't expect anything here
@@ -96,6 +126,38 @@ export class JanusVideoRoomService {
       }
     });
   }
+
+  onLocalVideoRoomMessage(handle, message, jsep) {
+    console.debug("Got a message", message);
+
+    var e = message.videoroom;
+
+    switch (e) {
+      case "joined":
+        console.debug("Successfully joined room ${message.room} with ID ${message.id}");
+
+        if (message.publishers) {
+          debugger;
+          this.updatePublishersAndSendJoined(message.publishers);
+        }
+        break;
+      case "destroyed":
+        this.toastr.error("The room has been destroyed");
+        debugger;
+        break;
+      case "event":
+        if (message.publishers) {
+          debugger;
+          this.updatePublishersAndSendJoined(message.publishers);
+        } else if (message.leaving) {
+          // Update leaving user.
+        }
+        break;
+    }
+  }
+
+
+  // Remote Handle Methods
 
   attachRemoteHandle(login, mediaElement) {
     var streaming;
@@ -113,7 +175,7 @@ export class JanusVideoRoomService {
         self.toastr.error("Error attaching plugin: " + error);
       },
       onmessage: (msg, jsep) => {
-        self.onVideoRoomMessage(streaming, msg, jsep);
+        self.onRemoteVideoRoomMessage(streaming, msg, jsep);
       },
       onlocalstream: () => {
         // The subscriber stream is recvonly, we don't expect anything here
@@ -134,39 +196,18 @@ export class JanusVideoRoomService {
     });
   }
 
-  onVideoRoomMessage(handle, message, jsep) {
+  onRemoteVideoRoomMessage(handle, message, jsep) {
     console.debug("Got a message", message);
 
     var e = message.videoroom;
 
     switch (e) {
       case "joined":
-        console.debug("Successfully joined room ${message.room} with ID ${message.id}");
-
-        if (message.publishers) {
-          ////
-        }
         break;
       case "destroyed":
-        this.toastr.error("The room has been destroyed");
-        debugger;
         break;
       case "event":
-        if (message.publishers) {
-          message.publishers.forEach(publisher) {
-
-            this.attachRemoteHandle(publisher.id, publisher.display);
-          }
-        }
         break;
     }
-  }
-
-  hangupHandles() {
-    this.pluginHandles.forEach((handle) => {
-      var body = { "request": "stop" };
-      handle.send({"message": body});
-      handle.hangup();
-    });
   }
 }
