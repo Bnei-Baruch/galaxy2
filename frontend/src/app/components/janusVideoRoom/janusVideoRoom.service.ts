@@ -8,6 +8,7 @@ interface IChannel {
   leftCallback: (login: string) => void
 }
 
+/* @ngInject */
 export class JanusVideoRoomService {
   pluginHandles: any[];
   session: any;
@@ -24,6 +25,9 @@ export class JanusVideoRoomService {
   constructor(toastr: any, config: any) {
     this.config = config;
     this.toastr = toastr;
+    this.channels = {};
+    this.userChannels = {};
+    this.pluginHandles = [];
 
     if(!Janus.isWebrtcSupported()) {
       toastr.error("No WebRTC support... ");
@@ -44,14 +48,18 @@ export class JanusVideoRoomService {
   }
 
   registerChannel(options: IChannel) {
+    var self = this;
+
     this.channels[options.name] = options;
-    options.users.forEach((login) => {
-      // Store users lookup table by login.
-      if (login in this.userChannels) {
-        this.userChannels[login] = [];
+
+    options.users.forEach((login: string) => {
+      // Store users lookup table by login
+      if (!(login in self.userChannels)) {
+        self.userChannels[login] = [];
       }
-      // Add channel to user channels list.
-      var channels = this.userChannels[login];
+
+      // Add channel to user channels list
+      var channels = self.userChannels[login];
       if (channels.indexOf(options.name) == -1) {
         channels.push(options.name);
       }

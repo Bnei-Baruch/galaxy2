@@ -22,12 +22,12 @@ export class ChannelController {
               janus: JanusVideoRoomService,
               toastr: any, config: any) {
     this.selfElement = $scope.selfElement;
-    this.users = $scope.users;
+    // this.users = $scope.users;
     this.janus = janus;
 
     this.janus.registerChannel({
       name: $scope.name,
-      users: Object.keys(this.users),
+      users: this.users.map((u) => { return u.login; }),
       joinedCallback: this.userJoined,
       leftCallback: this.userLeft
     });
@@ -42,6 +42,7 @@ export class ChannelController {
     // Now we decide to get his video/audio here or not.
     // If program or preview ==> get stream + show on video element
     if (!this.previewUser) {
+      debugger;
       var element = this.selfElement.find('.preview');
       this.janus.attachRemoteHandle(login, element);
     }
