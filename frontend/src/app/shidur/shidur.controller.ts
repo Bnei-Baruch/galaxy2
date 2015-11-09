@@ -10,7 +10,6 @@ export class ShidurController {
     this.breakdown = {};
 
     this.initBreakdown(shidur.getUsers().users);
-    this.activate();
   }
 
   initBreakdown(users) {
@@ -20,10 +19,5 @@ export class ShidurController {
       }
       this.breakdown[u.channel].push(u);
     });
-  }
-
-  /** @ngInject */
-  activate() {
-    console.log('activate()');
   }
 }

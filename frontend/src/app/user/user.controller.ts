@@ -1,15 +1,16 @@
+import { JanusVideoRoomService } from '../components/janusVideoRoom/janusVideoRoom.service';
+
+
 export class UserController {
   public toastr: any;
+  janus: JanusVideoRoomService;
 
   /* @ngInject */
-  constructor (toastr: any) {
+  constructor (janus: JanusVideoRoomService, toastr: any) {
     this.toastr = toastr;
-    this.activate();
-  }
+    this.janus = janus;
 
-  /** @ngInject */
-  activate() {
-    console.log('activate()');
+    this.janus.registerUser('haifa', document.querySelector('#localVideo'));
   }
 }
 

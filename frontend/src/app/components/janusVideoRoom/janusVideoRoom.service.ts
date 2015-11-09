@@ -22,12 +22,17 @@ export class JanusVideoRoomService {
   // Mapping between login and inner Janus data;
   publishers: { (login: string): any };
 
+  userLogin: string;
+  userElement: Element;
+  joined: boolean;
+
   constructor(toastr: any, config: any) {
     this.config = config;
     this.toastr = toastr;
-    this.channels = {};
-    this.userChannels = {};
+    this.channels = <any> {};
+    this.userChannels = <any> {};
     this.pluginHandles = [];
+    this.joined = false;
 
     if(!Janus.isWebrtcSupported()) {
       toastr.error("No WebRTC support... ");
@@ -45,6 +50,11 @@ export class JanusVideoRoomService {
       this.hangupHandles();
       this.session.destroy();
     });
+  }
+
+  registerUser(login: string, element: Element) {
+    this.userLogin = login;
+    this.userElement = element;
   }
 
   registerChannel(options: IChannel) {
@@ -113,6 +123,15 @@ export class JanusVideoRoomService {
       success: (pluginHandle) => {
         self.localHandle = pluginHandle;
         self.pluginHandles.push(self.localHandle);
+
+        // Try joining
+        var register = {
+          request: "join",
+          room: 1,
+          ptype: "publisher",
+          display: self.userLogin
+        };
+        self.localHandle.send({"message": register});
       },
       error: (error) => {
         self.toastr.error("Error attaching plugin: " + error);
@@ -120,9 +139,9 @@ export class JanusVideoRoomService {
       onmessage: (msg, jsep) => {
         self.onLocalVideoRoomMessage(streaming, msg, jsep);
       },
-      onlocalstream: () => {
-        // The subscriber stream is recvonly, we don't expect anything here
+      onlocalstream: (stream) => {
         debugger;
+        attachMediaStream(self.userElement, stream);
       },
       onremotestream: (stream) => {
         console.debug("Got a remote stream!", stream);
@@ -142,7 +161,13 @@ export class JanusVideoRoomService {
 
     switch (e) {
       case "joined":
+        this.joined = true;
         console.debug("Successfully joined room ${message.room} with ID ${message.id}");
+
+        //this.userElements.forEach((login, element) => {
+        if (this.userElement) {
+          this.publishLocalFeed();
+        };
 
         if (message.publishers) {
           debugger;
@@ -150,6 +175,7 @@ export class JanusVideoRoomService {
         }
         break;
       case "destroyed":
+        this.joined = false;
         this.toastr.error("The room has been destroyed");
         debugger;
         break;
@@ -163,6 +189,25 @@ export class JanusVideoRoomService {
         break;
     }
   }
+
+  publishLocalFeed() {
+    var self = this;
+
+    this.localHandle.createOffer({
+      media: { audioRecv: false, videoRecv: false, audioSend: true, videoSend: true},	// Publishers are sendonly
+      success: function(jsep) {
+        console.debug("Got publisher SDP!");
+        console.debug(jsep);
+        var publish = { "request": "configure", "audio": true, "video": true };
+        self.localHandle.send({"message": publish, "jsep": jsep});
+      },
+      error: (error) =>{
+        self.toastr.error("WebRTC error:", error.message);
+        console.error("WebRTC error... " + JSON.stringify(error));
+      }
+    });
+  }
+
 
 
   // Remote Handle Methods

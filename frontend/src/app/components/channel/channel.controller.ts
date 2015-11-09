@@ -4,14 +4,14 @@ import { ChannelService } from './channel.service';
 
 export interface IChannelScope extends ng.IScope
 {
-  users: IUsers;
+  users: IUser[];
   name: string;
   selfElement: ng.IAugmentedJQuery;
 }
 
 /** @ngInject */
 export class ChannelController {
-  users: IUsers;
+  users: IUser[];
   previewUser: IUser;
   toastr: any;
   channel: ChannelService;
