@@ -15,6 +15,7 @@ export class ShidurService {
       users: [
         { login: 'afula', title: 'Afula', channel: 'large1' },
         { login: 'arad', title: 'Arad', channel: 'large1' },
+        { login: 'haifa', title: 'Haifa', channel: 'large1' },
         { login: 'beer-sheva', title: 'Beer Sheva', channel: 'large2' },
         { login: 'eilat', title: 'Eilat', channel: 'large2' },
         { login: 'naharia', title: 'Naharia', channel: 'small1' },

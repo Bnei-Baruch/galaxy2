@@ -31,6 +31,7 @@ export class JanusVideoRoomService {
     this.toastr = toastr;
     this.channels = <any> {};
     this.userChannels = <any> {};
+    this.publishers = <any> {};
     this.pluginHandles = [];
     this.joined = false;
 
@@ -92,15 +93,24 @@ export class JanusVideoRoomService {
   }
 
   updatePublishersAndSendJoined(publishers) {
+    console.log('Publishers', publishers);
     // TODO: Check that when overriding publisher it's id stays the same
     publishers.forEach((p) => {
       // TODO: When we have joined timestamp check the timestamp
       // together with the login. Timestamp better be central.
       if (!(p.display in this.publishers)) {
         this.publishers[p.display] = p;
-        this.userChannels[p.display].forEach((c) => {
-          c.userJoined(p);
-        });
+        // TODO: Probably we don't need loal user handle here:
+        // Handle local user
+        // if (p.display == this.userLogin) {
+        //   this.attachRemoteHandle(this.userLogin, this.userElement);
+        // }
+        // Handle channels
+        if (p.display in this.userChannels) {
+          this.userChannels[p.display].forEach((c) => {
+            c.userJoined(p);
+          });
+        }
       }
     });
   }
@@ -138,9 +148,17 @@ export class JanusVideoRoomService {
       },
       onmessage: (msg, jsep) => {
         self.onLocalVideoRoomMessage(streaming, msg, jsep);
+        if (jsep) {
+          console.debug("Handling SDP as well...");
+          console.debug(jsep);
+          self.localHandle.handleRemoteJsep({jsep: jsep});
+        }
+      },
+      consentDialog: (on) => {
+        console.debug("Consent dialog should be " + (on ? "on" : "off") + " now.");
       },
       onlocalstream: (stream) => {
-        debugger;
+        console.debug('Got local stream', stream);
         attachMediaStream(self.userElement, stream);
       },
       onremotestream: (stream) => {
@@ -162,6 +180,7 @@ export class JanusVideoRoomService {
     switch (e) {
       case "joined":
         this.joined = true;
+        // TODO: Fix following variable formatting (does not work!)
         console.debug("Successfully joined room ${message.room} with ID ${message.id}");
 
         //this.userElements.forEach((login, element) => {
@@ -170,7 +189,6 @@ export class JanusVideoRoomService {
         };
 
         if (message.publishers) {
-          debugger;
           this.updatePublishersAndSendJoined(message.publishers);
         }
         break;
@@ -223,6 +241,10 @@ export class JanusVideoRoomService {
         remoteHandle = pluginHandle;
 				console.debug("Remote handle attached ${remoteHandle.getPlugin()}, id=${remoteHandle.getId()}");
         self.pluginHandles.push(remoteHandle);
+
+        var id = this.publishers[login].id
+				var listen = { "request": "join", "room": 1, "ptype": "listener", "feed": id };
+				remoteHandle.send({"message": listen});
       },
       error: (error) => {
         self.toastr.error("Error attaching plugin: " + error);
