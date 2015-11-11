@@ -2,7 +2,6 @@
 *.swo
 *.swn
 *~
-backend/Gemfile.lock
 backend/coverage
 frontend/.tmp
 frontend/dist

@@ -15,6 +15,6 @@
 .ruby-version
 
 # Ignore app settings files
- mongoid.yml
- secrets.yml
- thin.yml
+mongoid.yml
+secrets.yml
+thin.yml
