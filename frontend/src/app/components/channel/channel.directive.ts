@@ -6,7 +6,7 @@ export function channelWidget(): ng.IDirective {
   return {
     restrict: 'E',
     scope: {
-      name: '=',
+      name: '@',
       users: '='
     },
     link: ($scope: IChannelScope, el, attrs, ctrl) => {

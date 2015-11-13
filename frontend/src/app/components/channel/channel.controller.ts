@@ -13,37 +13,36 @@ export interface IChannelScope extends ng.IScope
 export class ChannelController {
   users: IUser[];
   previewUser: IUser;
+  scope: IChannelScope;
   toastr: any;
   channel: ChannelService;
-  selfElement: ng.IAugmentedJQuery;
   janus: JanusVideoRoomService;
 
   constructor($scope: IChannelScope,
               janus: JanusVideoRoomService,
               toastr: any, config: any) {
-    this.selfElement = $scope.selfElement;
+    this.scope = $scope;
     // this.users = $scope.users;
     this.janus = janus;
 
     this.janus.registerChannel({
-      name: $scope.name,
+      name: this.name,
       users: this.users.map((u) => { return u.login; }),
-      joinedCallback: this.userJoined,
-      leftCallback: this.userLeft
+      joinedCallback: (login) { this.userJoined(login); },
+      leftCallback: (login) { this.userLeft(login); }
     });
   }
 
   userJoined(login) {
     // TODO: Moment actually better to register while user logges in
     // from user point of view, not from shidur point of view
-    this.users[login].joined = moment();
+    //this.users[login].joined = moment();
 
     // Means he sends video/audio to janus
     // Now we decide to get his video/audio here or not.
     // If program or preview ==> get stream + show on video element
     if (!this.previewUser) {
-      debugger;
-      var element = this.selfElement.find('.preview');
+      var element = this.scope.selfElement.find('.preview').get(0);
       this.janus.attachRemoteHandle(login, element);
     }
   }

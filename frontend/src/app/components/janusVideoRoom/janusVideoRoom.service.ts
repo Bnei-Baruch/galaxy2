@@ -10,11 +10,11 @@ interface IChannel {
 
 /* @ngInject */
 export class JanusVideoRoomService {
-  pluginHandles: any[];
+  remoteHandles: any[];
+  localHandle: any;
   session: any;
   config: any;
   toastr: any;
-  localHandle: any;
   channels: { (key: string): IChannel };
   // Reverse map of logins to channels names.
   userChannels: { (login: string): string[] };
@@ -23,7 +23,7 @@ export class JanusVideoRoomService {
   publishers: { (login: string): any };
 
   userLogin: string;
-  userElement: Element;
+  userMediaElement: Element;
   joined: boolean;
 
   constructor(toastr: any, config: any) {
@@ -32,7 +32,7 @@ export class JanusVideoRoomService {
     this.channels = <any> {};
     this.userChannels = <any> {};
     this.publishers = <any> {};
-    this.pluginHandles = [];
+    this.remoteHandles = [];
     this.joined = false;
 
     if(!Janus.isWebrtcSupported()) {
@@ -55,7 +55,7 @@ export class JanusVideoRoomService {
 
   registerUser(login: string, element: Element) {
     this.userLogin = login;
-    this.userElement = element;
+    this.userMediaElement = element;
   }
 
   registerChannel(options: IChannel) {
@@ -92,23 +92,29 @@ export class JanusVideoRoomService {
     });
   }
 
-  updatePublishersAndSendJoined(publishers) {
+  updatePublishersAndTriggerJoined(publishers) {
+    var self = this;
+
     console.log('Publishers', publishers);
+
     // TODO: Check that when overriding publisher it's id stays the same
     publishers.forEach((p) => {
+
       // TODO: When we have joined timestamp check the timestamp
       // together with the login. Timestamp better be central.
-      if (!(p.display in this.publishers)) {
-        this.publishers[p.display] = p;
+      if (!(p.display in self.publishers)) {
+        self.publishers[p.display] = p;
+
         // TODO: Probably we don't need loal user handle here:
         // Handle local user
-        // if (p.display == this.userLogin) {
-        //   this.attachRemoteHandle(this.userLogin, this.userElement);
+        // if (p.display == self.userLogin) {
+        //   self.attachRemoteHandle(self.userLogin, self.userMediaElement);
         // }
+
         // Handle channels
-        if (p.display in this.userChannels) {
-          this.userChannels[p.display].forEach((c) => {
-            c.userJoined(p);
+        if (p.display in self.userChannels) {
+          self.userChannels[p.display].forEach((c) => {
+            self.channels[c].joinedCallback(p.display);
           });
         }
       }
@@ -116,11 +122,13 @@ export class JanusVideoRoomService {
   }
 
   hangupHandles() {
-    this.pluginHandles.forEach((handle) => {
+    var hangup = (handle) => {
       var body = { "request": "stop" };
       handle.send({"message": body});
       handle.hangup();
-    });
+    };
+    this.remoteHandles.forEach(hangup);
+    hangup(this.localHandle);
   }
   // Local Handle Methods
 
@@ -132,7 +140,6 @@ export class JanusVideoRoomService {
       plugin: "janus.plugin.videoroom",
       success: (pluginHandle) => {
         self.localHandle = pluginHandle;
-        self.pluginHandles.push(self.localHandle);
 
         // Try joining
         var register = {
@@ -159,7 +166,7 @@ export class JanusVideoRoomService {
       },
       onlocalstream: (stream) => {
         console.debug('Got local stream', stream);
-        attachMediaStream(self.userElement, stream);
+        attachMediaStream(self.userMediaElement, stream);
       },
       onremotestream: (stream) => {
         console.debug("Got a remote stream!", stream);
@@ -183,13 +190,12 @@ export class JanusVideoRoomService {
         // TODO: Fix following variable formatting (does not work!)
         console.debug("Successfully joined room ${message.room} with ID ${message.id}");
 
-        //this.userElements.forEach((login, element) => {
-        if (this.userElement) {
+        if (this.userMediaElement) {
           this.publishLocalFeed();
         };
 
         if (message.publishers) {
-          this.updatePublishersAndSendJoined(message.publishers);
+          this.updatePublishersAndTriggerJoined(message.publishers);
         }
         break;
       case "destroyed":
@@ -199,8 +205,7 @@ export class JanusVideoRoomService {
         break;
       case "event":
         if (message.publishers) {
-          debugger;
-          this.updatePublishersAndSendJoined(message.publishers);
+          this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
           // Update leaving user.
         }
@@ -240,17 +245,17 @@ export class JanusVideoRoomService {
       success: (pluginHandle) => {
         remoteHandle = pluginHandle;
 				console.debug("Remote handle attached ${remoteHandle.getPlugin()}, id=${remoteHandle.getId()}");
-        self.pluginHandles.push(remoteHandle);
+        self.remoteHandles.push(remoteHandle);
 
-        var id = this.publishers[login].id
-				var listen = { "request": "join", "room": 1, "ptype": "listener", "feed": id };
-				remoteHandle.send({"message": listen});
+        var id = self.publishers[login].id;
+        var listen = { "request": "join", "room": 1, "ptype": "listener", "feed": id };
+        remoteHandle.send({"message": listen});
       },
       error: (error) => {
         self.toastr.error("Error attaching plugin: " + error);
       },
       onmessage: (msg, jsep) => {
-        self.onRemoteVideoRoomMessage(streaming, msg, jsep);
+        self.onRemoteVideoRoomMessage(remoteHandle, msg, jsep);
       },
       onlocalstream: () => {
         // The subscriber stream is recvonly, we don't expect anything here
@@ -258,12 +263,8 @@ export class JanusVideoRoomService {
       },
       onremotestream: (stream) => {
         console.debug("Got a remote stream!", stream);
-
-				console.debug("Remote feed #${remoteHandle.rfindex}");
-
-        if (stream.login == login) {
-          attachMediaStream(mediaElement, stream);
-        }
+				console.debug("Remote feed #${remoteHandle}");
+        attachMediaStream(mediaElement, stream);
       },
       oncleanup: () => {
         console.debug("Got a cleanup notification");
@@ -274,15 +275,30 @@ export class JanusVideoRoomService {
   onRemoteVideoRoomMessage(handle, message, jsep) {
     console.debug("Got a message", message);
 
-    var e = message.videoroom;
+    if (message.videoroom === "attached") {
+      // TODO: Run spinner for currently attached remoteHandle.
+      console.debug("Attaching remote handle");
+    }
 
-    switch (e) {
-      case "joined":
-        break;
-      case "destroyed":
-        break;
-      case "event":
-        break;
+    if(jsep) {
+      console.debug("Handling SDP as well...");
+      console.debug(jsep);
+
+      // Answer and attach
+      handle.createAnswer({
+        jsep: jsep,
+        media: { audioSend: false, videoSend: false },	// We want recvonly audio/video
+        success: (jsep) => {
+          console.debug("Got SDP!");
+          console.debug(jsep);
+          var body = { "request": "start", "room": 1 };
+          handle.send({"message": body, "jsep": jsep});
+        },
+        error: (error) => {
+          console.error("WebRTC error:", error);
+          this.toastr.error("WebRTC error... " + JSON.stringify(error));
+        }
+      });
     }
   }
 }
