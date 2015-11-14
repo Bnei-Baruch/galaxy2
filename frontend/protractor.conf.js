@@ -10,7 +10,13 @@ exports.config = {
 
   // Capabilities to be passed to the webdriver instance.
   capabilities: {
-    'browserName': 'chrome'
+    'browserName': 'chrome',
+    'chromeOptions': {
+      'args': [
+        'use-fake-device-for-media-stream',
+        'use-fake-ui-for-media-stream'
+      ]
+    }
   },
 
   baseUrl: 'http://localhost:3000',

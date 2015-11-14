@@ -98,18 +98,14 @@ export class JanusVideoRoomService {
     console.log('Publishers', publishers);
 
     // TODO: Check that when overriding publisher it's id stays the same
+    // Basically if it is not the same, meaning same user logged in for
+    // example twice and we need to override the old publisher with new.
     publishers.forEach((p) => {
 
       // TODO: When we have joined timestamp check the timestamp
       // together with the login. Timestamp better be central.
       if (!(p.display in self.publishers)) {
         self.publishers[p.display] = p;
-
-        // TODO: Probably we don't need loal user handle here:
-        // Handle local user
-        // if (p.display == self.userLogin) {
-        //   self.attachRemoteHandle(self.userLogin, self.userMediaElement);
-        // }
 
         // Handle channels
         if (p.display in self.userChannels) {
@@ -188,7 +184,7 @@ export class JanusVideoRoomService {
       case "joined":
         this.joined = true;
         // TODO: Fix following variable formatting (does not work!)
-        console.debug("Successfully joined room ${message.room} with ID ${message.id}");
+        console.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
 
         if (this.userMediaElement) {
           this.publishLocalFeed();

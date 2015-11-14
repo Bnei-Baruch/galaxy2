@@ -17,6 +17,7 @@ export class ChannelController {
   toastr: any;
   channel: ChannelService;
   janus: JanusVideoRoomService;
+  name: string;
 
   constructor($scope: IChannelScope,
               janus: JanusVideoRoomService,
@@ -28,8 +29,8 @@ export class ChannelController {
     this.janus.registerChannel({
       name: this.name,
       users: this.users.map((u) => { return u.login; }),
-      joinedCallback: (login) { this.userJoined(login); },
-      leftCallback: (login) { this.userLeft(login); }
+      joinedCallback: (login) => { this.userJoined(login); },
+      leftCallback: (login) => { this.userLeft(login); }
     });
   }
 
