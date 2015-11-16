@@ -12,7 +12,7 @@ class User
   field :encrypted_password, type: String, default: ''
   field :username, type: String, default: ''
   validates_uniqueness_of :username
-  validates_format_of :username, with: /\A[a-zA-Z0-9_\.]*\z/
+  validates_format_of :username, with: /\A[a-zA-Z0-9_\-\.]*\z/
 
   ## Recoverable
   field :reset_password_token, type: String
