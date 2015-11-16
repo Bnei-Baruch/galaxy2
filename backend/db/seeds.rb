@@ -19,8 +19,8 @@ karmiel kfar-saba kiriat-gat mizpe moscow naharia nazareth negus netania nizana 
 rishon shidur tel-aviv tveria yokneam zichron).each do |e|
   User.find_or_create_by(username: e) do |u|
     password = "#{e}ARVUT2014"
-    u.password = e[:password]
-    u.password_confirmation = e[:password]
+    u.password = password
+    u.password_confirmation = password
     u.save!
   end
 end
