@@ -21,6 +21,7 @@ rishon shidur tel-aviv tveria yokneam zichron).each do |e|
     password = "#{e}ARVUT2014"
     u.password = password
     u.password_confirmation = password
+    u.email = "#{e}@kbb1.com"
     u.save!
   end
 end
