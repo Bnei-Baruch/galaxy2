@@ -259,7 +259,7 @@ export class JanusVideoRoomService {
       },
       onremotestream: (stream) => {
         console.debug("Got a remote stream!", stream);
-				console.debug("Remote feed #${remoteHandle}");
+				console.debug(`Remote feed ${remoteHandle}`);
         attachMediaStream(mediaElement, stream);
       },
       oncleanup: () => {
