@@ -13,3 +13,8 @@
 /tmp
 .idea/
 .ruby-version
+
+# Ignore app settings files
+mongoid.yml
+secrets.yml
+thin.yml

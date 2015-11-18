@@ -1,0 +1,15 @@
+user: deploy
+group: deploy
+timeout: 30
+wait: 30
+log: /sites/galaxy2/rails/logs/thin.log
+max_conns: 1024
+environment: production
+max_persistent_conns: 100
+port: 3000
+threaded: true
+no-epoll: true
+daemonize: true
+pid: /sites/galaxy2/rails/tmp/pids/thin.pid
+chdir: /sites/galaxy2/rails/current
+tag: galaxy2
