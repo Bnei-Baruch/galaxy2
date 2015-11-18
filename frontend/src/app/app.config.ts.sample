@@ -1,5 +1,6 @@
 export var appConfig = {
   janus: {
-    serverUri: "https://v4g.kbb1.com:8889/janus"
+    serverUri: "https://v4g.kbb1.com:8889/janus",
+    roomId: 1
   }
 };
