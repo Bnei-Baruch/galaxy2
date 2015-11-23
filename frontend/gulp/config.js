@@ -3,6 +3,7 @@
 var gulp = require('gulp');
 var jeditor = require('gulp-json-editor');
 var _ = require('lodash');
+var rename = require('gulp-rename');
 
 /*
  * These tasks read JSON config files from the project root and convert it into an AngularJS module that specifies a
@@ -15,7 +16,7 @@ var _ = require('lodash');
 function configPipe(fileName, extendObject) {
   var gulpNgConfig = require('gulp-ng-config');
 
-  gulp.src('config.json')
+  gulp.src(fileName)
     .pipe(jeditor(function (json) {
       var conf = {
         config: _.assign(json, extendObject || {})
@@ -23,6 +24,7 @@ function configPipe(fileName, extendObject) {
       return conf;
     }))
     .pipe(gulpNgConfig('frontend.config'))
+    .pipe(rename('config.js'))
     .pipe(gulp.dest('src/assets/scripts'));
 }
 
