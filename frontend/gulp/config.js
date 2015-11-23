@@ -18,9 +18,6 @@ function configPipe(fileName, extendObject) {
     .pipe(gulp.dest('src/assets/scripts'));
 }
 
-function foo() {
-}
-
 // Generate config from template
 gulp.task('config', function () {
   configPipe('config.json');
