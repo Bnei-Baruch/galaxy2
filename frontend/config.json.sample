@@ -1,0 +1,6 @@
+{
+  "janus": {
+    "serverUri": "http://galaxy-dev.kbb1.com:8088/janus",
+    "roomId": 1
+  }
+}

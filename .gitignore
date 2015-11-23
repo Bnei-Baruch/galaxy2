@@ -3,8 +3,3 @@
 *.swn
 *~
 backend/coverage
-frontend/.tmp
-frontend/dist
-frontend/node_modules
-frontend/bower_components/
-frontend/config.json

@@ -1,10 +1,12 @@
-node_modules/
-bower_components/
-coverage/
 .sass-cache/
 .idea/
 .tmp/
-dist/
-src/assets/scripts/config.js
 
+node_modules/
+bower_components/
+coverage/
+dist/
 typings/
+
+src/assets/scripts/config.js
+config.json
