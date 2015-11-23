@@ -104,17 +104,42 @@ export class JanusVideoRoomService {
 
       // TODO: When we have joined timestamp check the timestamp
       // together with the login. Timestamp better be central.
-      if (!(p.display in self.publishers)) {
-        self.publishers[p.display] = p;
 
-        // Handle channels
-        if (p.display in self.userChannels) {
-          self.userChannels[p.display].forEach((c) => {
-            self.channels[c].joinedCallback(p.display);
-          });
-        }
+      // The system has to make sure to remove publishers on time.
+      if (p.display in self.publishers) {
+        console.error('This should not happen, we have not handled leave user well!')
+      }
+
+      // Set or override publisher
+      self.publishers[p.display] = p;
+
+      // Handle channels
+      if (p.display in self.userChannels) {
+        self.userChannels[p.display].forEach((c) => {
+          self.channels[c].joinedCallback(p.display);
+        });
       }
     });
+  }
+
+  deletePublisherByJanusId(janus_id) {
+    var login = null;
+    for (var key in this.publishers) {
+      var publisher = this.publishers[key];
+      if (publisher.id == janus_id) {
+        login = publisher.display;
+        break;
+      }
+    };
+    if (login) {
+      delete this.publishers[login];
+      // Update channels on leaving user.
+      if (login in this.userChannels) {
+        this.userChannels[login].forEach((c) => {
+          this.channels[c].leftCallback(login);
+        });
+      }
+    }
   }
 
   hangupHandles() {
@@ -162,7 +187,11 @@ export class JanusVideoRoomService {
       },
       onlocalstream: (stream) => {
         console.debug('Got local stream', stream);
-        attachMediaStream(self.userMediaElement, stream);
+        if (self.userMediaElement) {
+          attachMediaStream(self.userMediaElement, stream);
+        } else {
+          console.error('No local media element set.');
+        }
       },
       onremotestream: (stream) => {
         console.debug("Got a remote stream!", stream);
@@ -176,7 +205,7 @@ export class JanusVideoRoomService {
   }
 
   onLocalVideoRoomMessage(handle, message, jsep) {
-    console.debug("Got a message", message);
+    console.debug("Got a local message", message);
 
     var e = message.videoroom;
 
@@ -188,6 +217,8 @@ export class JanusVideoRoomService {
 
         if (this.userMediaElement) {
           this.publishLocalFeed();
+        } else {
+          console.debug('No local media element. Not publishing local feed.');
         };
 
         if (message.publishers) {
@@ -204,6 +235,8 @@ export class JanusVideoRoomService {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
           // Update leaving user.
+          console.debug('Local handle leaving room.');
+          this.deletePublisherByJanusId(message.leaving);
         }
         break;
     }
@@ -240,9 +273,11 @@ export class JanusVideoRoomService {
       plugin: "janus.plugin.videoroom",
       success: (pluginHandle) => {
         remoteHandle = pluginHandle;
-				console.debug("Remote handle attached ${remoteHandle.getPlugin()}, id=${remoteHandle.getId()}");
+				console.debug(`Remote handle attached ${remoteHandle.getPlugin()}, id=${remoteHandle.getId()}`);
         self.remoteHandles.push(remoteHandle);
 
+        // TODO: This publisher id is of old video stream, it should be overriden when
+        // same group enters again.
         var id = self.publishers[login].id;
         var listen = { "request": "join", "room": 1, "ptype": "listener", "feed": id };
         remoteHandle.send({"message": listen});
@@ -259,7 +294,9 @@ export class JanusVideoRoomService {
       },
       onremotestream: (stream) => {
         console.debug("Got a remote stream!", stream);
-				console.debug(`Remote feed ${remoteHandle}`);
+				console.debug(`Remote feed:`);
+        console.debug(remoteHandle)
+        console.debug(stream)
         attachMediaStream(mediaElement, stream);
       },
       oncleanup: () => {
@@ -269,7 +306,7 @@ export class JanusVideoRoomService {
   }
 
   onRemoteVideoRoomMessage(handle, message, jsep) {
-    console.debug("Got a message", message);
+    console.debug("Got a remote message", message);
 
     if (message.videoroom === "attached") {
       // TODO: Run spinner for currently attached remoteHandle.

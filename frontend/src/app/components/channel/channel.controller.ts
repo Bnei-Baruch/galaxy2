@@ -43,13 +43,18 @@ export class ChannelController {
     // Now we decide to get his video/audio here or not.
     // If program or preview ==> get stream + show on video element
     if (!this.previewUser) {
+      this.previewUser = login;
       var element = this.scope.selfElement.find('.preview').get(0);
       this.janus.attachRemoteHandle(login, element);
     }
   }
 
   userLeft(login) {
-    this.users[login].joined = null;
+    //this.users[login].joined = null;
+    console.debug('User left', login);
+    if (login == this.previewUser) {
+      this.previewUser = null;
+    }
   }
 
 }
