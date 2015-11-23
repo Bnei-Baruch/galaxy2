@@ -20,52 +20,45 @@ describe('The main view', function () {
     // Open user
     // Check vido color is changing
     // Reload shidur => checks reload works fine.
-    // Check vido color is changing
+    // Check video color is changing
   });
 
-  xit('should verify that user is visible in the channel when user logged in before shidur page open', function() {
+  xit('should display user video when the user logged in before shidur page loaded', function() {
     browser.get('/#/user').then(function () {
-
-      // TODO: This test is bad. Seems we don't really know when the user fully loaded
-      // and connected to janus. Only then we should open shidur window and
-      // test video.
-      //browser.driver.sleep(3000);
-
       openNewWindow("/index.html").then(function() {
         switchToWindow(1).then(function () {
-          browser.wait(function () {
-            var deferred = protractor.promise.defer();
-
-            browser.driver.executeScript("return getAverageVideoColor('.preview');").then(function (color) {
-              console.log("Color:", color);
-              deferred.fulfill(color);
-            });
-
-            return deferred.promise;
-          }, 5000);
+          waitForVideo('.preview');
         });
       });
     });
   });
 
-  it('should verify that user is visible in the channel when user logged in after shidur page open', function() {
+  it('should display user video when the user logged in after shidur page loaded', function() {
     browser.get('/index.html').then(function() {
       openNewWindow("/#/user").then(function() {
         switchToWindow(0).then(function () {
-          browser.wait(function () {
-            var deferred = protractor.promise.defer();
-
-            browser.driver.executeScript("return getAverageVideoColor('.preview');").then(function (color) {
-              console.log("Color:", color);
-              deferred.fulfill(color);
-            });
-
-            return deferred.promise;
-          }, 5000);
+          waitForVideo('.preview');
         });
       });
     });
   });
+
+  function waitForVideo(cssSelector) {
+    browser.wait(function () {
+      var deferred = protractor.promise.defer();
+
+      var script = "return getAverageVideoColor('" + cssSelector + "');";
+      var scriptPromise = browser.driver.executeScript(script);
+
+      scriptPromise.then(function (color) {
+        // Check avg color green component is big enough
+        // deferred.fulfill(color && color[1] > 100);
+        deferred.fulfill(color);
+      });
+
+      return deferred.promise;
+    }, 5000);
+  }
 
   function openNewWindow(url) {
     return browser.driver.executeScript("$(window.open('" + url + "'))");

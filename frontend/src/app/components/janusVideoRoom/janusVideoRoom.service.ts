@@ -165,7 +165,7 @@ export class JanusVideoRoomService {
         // Try joining
         var register = {
           request: "join",
-          room: 1,
+          room: self.config.janus.roomId,
           ptype: "publisher",
           display: self.userLogin
         };
@@ -279,7 +279,7 @@ export class JanusVideoRoomService {
         // TODO: This publisher id is of old video stream, it should be overriden when
         // same group enters again.
         var id = self.publishers[login].id;
-        var listen = { "request": "join", "room": 1, "ptype": "listener", "feed": id };
+        var listen = { "request": "join", "room": self.config.janus.roomId, "ptype": "listener", "feed": id };
         remoteHandle.send({"message": listen});
       },
       error: (error) => {
@@ -290,7 +290,6 @@ export class JanusVideoRoomService {
       },
       onlocalstream: () => {
         // The subscriber stream is recvonly, we don't expect anything here
-        debugger;
       },
       onremotestream: (stream) => {
         console.debug("Got a remote stream!", stream);
