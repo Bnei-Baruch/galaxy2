@@ -244,7 +244,14 @@ export class JanusVideoRoomService {
     var self = this;
 
     this.localHandle.createOffer({
-      media: { audioRecv: false, videoRecv: false, audioSend: true, videoSend: true},	// Publishers are sendonly
+      media: {
+        // Publishers are sendonly
+        audioRecv: false,
+        videoRecv: false,
+        audioSend: true,
+        videoSend: true,
+        video: 'stdres-16:9'
+      },
       success: function(jsep) {
         console.debug('Got publisher SDP!');
         console.debug(jsep);
