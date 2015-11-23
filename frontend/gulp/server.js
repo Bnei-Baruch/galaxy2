@@ -2,7 +2,7 @@
 
 var path = require('path');
 var gulp = require('gulp');
-var conf = require('./conf');
+var conf = require('./common');
 
 var browserSync = require('browser-sync');
 var browserSyncSpa = require('browser-sync-spa');
@@ -46,7 +46,7 @@ browserSync.use(browserSyncSpa({
   selector: '[ng-app]'// Only needed for angular apps
 }));
 
-gulp.task('serve', ['watch'], function () {
+gulp.task('serve', ['config', 'watch'], function () {
   browserSyncInit([path.join(conf.paths.tmp, '/serve'), conf.paths.src]);
 });
 
@@ -54,7 +54,7 @@ gulp.task('serve:dist', ['build'], function () {
   browserSyncInit(conf.paths.dist);
 });
 
-gulp.task('serve:e2e', ['inject'], function () {
+gulp.task('serve:e2e', ['config', 'inject'], function () {
   browserSyncInit([conf.paths.tmp + '/serve', conf.paths.src], []);
 });
 
