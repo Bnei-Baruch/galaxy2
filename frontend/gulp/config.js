@@ -4,6 +4,14 @@ var gulp = require('gulp');
 var jeditor = require('gulp-json-editor');
 var _ = require('lodash');
 
+/*
+ * These tasks read JSON config files from the project root and convert it into an AngularJS module that specifies a
+ * 'config' constant so that the configuration can be injected anywhere.
+ *
+ * Create config.json for dev or prod use and config.testing.json for E2E tests.
+ *
+ **/
+
 function configPipe(fileName, extendObject) {
   var gulpNgConfig = require('gulp-ng-config');
 
