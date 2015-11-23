@@ -7,6 +7,22 @@ describe('The main view', function () {
     closeOtherWindows();
   });
 
+  xit('should verify that when user reloads the page, shidur will resume getting dynamic video.', function() {
+    // Open shidur
+    // Open user
+    // Check vido color is changing
+    // Reload user => checks reload works fine.
+    // Check vido color is changing
+  });
+
+  xit('should verify that when shiduf reloads the page, shidur will resume getting user video.', function() {
+    // Open shidur
+    // Open user
+    // Check vido color is changing
+    // Reload shidur => checks reload works fine.
+    // Check vido color is changing
+  });
+
   xit('should verify that user is visible in the channel when user logged in before shidur page open', function() {
     browser.get('/#/user').then(function () {
 
