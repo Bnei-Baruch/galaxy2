@@ -24,7 +24,16 @@
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
 
-    <div ui-view></div>
+    <div layout="vertical">
+      <section flex="100">
+        <header>
+          <galaxy-navbar></galaxy-navbar>
+        </header>
+
+        <md-content ui-view layout-padding>
+        </md-content>
+      </section>
+    </div>
 
     <!-- build:js(src) scripts/vendor.js -->
     <!-- bower:js -->

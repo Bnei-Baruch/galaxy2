@@ -1,5 +1,11 @@
 {
   "env": {
     "node": true
+  },
+  "globals": {
+    "require": true
+  },
+  "rules": {
+    "strict": [2, "global"]
   }
 }
