@@ -267,8 +267,7 @@ export class JanusVideoRoomService {
   }
 
 
-
-  // Remote Handle Methods
+  /* Remote Handle Methods */
 
   attachRemoteHandle(login, mediaElement) {
     var streaming;
@@ -340,5 +339,10 @@ export class JanusVideoRoomService {
         }
       });
     }
+  }
+
+  releaseRemoteHandle(login: string) {
+    // TODO: Perform actual release only in case if the handle has been attached once,
+    // otherwise decrement attachments counter for the specific login
   }
 }
