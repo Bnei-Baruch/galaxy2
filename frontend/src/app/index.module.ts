@@ -8,6 +8,7 @@ import { JanusVideoRoomService } from '../app/components/janusVideoRoom/janusVid
 import { ShidurController } from './shidur/shidur.controller';
 import { ShidurService } from './shidur/shidur.service';
 import { UserController } from './user/user.controller';
+import { FakeUserController } from './user/fake.controller';
 import { channelWidget } from '../app/components/channel/channel.directive';
 import { ChannelService } from '../app/components/channel/channel.service';
 
@@ -37,6 +38,7 @@ module frontend {
     .service('channel', ChannelService)
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
+    .controller('FakeUserController', FakeUserController)
     .directive('galaxyNavbar', galaxyNavbar)
     .directive('channelWidget', channelWidget);
 }
