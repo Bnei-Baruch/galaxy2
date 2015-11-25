@@ -36,7 +36,7 @@ export class JanusVideoRoomService {
     this.joined = false;
 
     if(!Janus.isWebrtcSupported()) {
-      toastr.error("No WebRTC support... ");
+      toastr.error('No WebRTC support... ');
       return;
     }
 
@@ -71,7 +71,7 @@ export class JanusVideoRoomService {
 
       // Add channel to user channels list
       var channels = self.userChannels[login];
-      if (channels.indexOf(options.name) == -1) {
+      if (channels.indexOf(options.name) === -1) {
         channels.push(options.name);
       }
     });
@@ -104,23 +104,48 @@ export class JanusVideoRoomService {
 
       // TODO: When we have joined timestamp check the timestamp
       // together with the login. Timestamp better be central.
-      if (!(p.display in self.publishers)) {
-        self.publishers[p.display] = p;
 
-        // Handle channels
-        if (p.display in self.userChannels) {
-          self.userChannels[p.display].forEach((c) => {
-            self.channels[c].joinedCallback(p.display);
-          });
-        }
+      // The system has to make sure to remove publishers on time.
+      if (p.display in self.publishers) {
+        console.error('This should not happen, we have not handled leave user well!')
+      }
+
+      // Set or override publisher
+      self.publishers[p.display] = p;
+
+      // Handle channels
+      if (p.display in self.userChannels) {
+        self.userChannels[p.display].forEach((c) => {
+          self.channels[c].joinedCallback(p.display);
+        });
       }
     });
   }
 
+  deletePublisherByJanusId(janusId) {
+    var login = null;
+    for (var key in this.publishers) {
+      var publisher = this.publishers[key];
+      if (publisher.id === janusId) {
+        login = publisher.display;
+        break;
+      }
+    };
+    if (login) {
+      delete this.publishers[login];
+      // Update channels on leaving user.
+      if (login in this.userChannels) {
+        this.userChannels[login].forEach((c) => {
+          this.channels[c].leftCallback(login);
+        });
+      }
+    }
+  }
+
   hangupHandles() {
     var hangup = (handle) => {
-      var body = { "request": "stop" };
-      handle.send({"message": body});
+      var body = { 'request': 'stop' };
+      handle.send({'message': body});
       handle.hangup();
     };
     this.remoteHandles.forEach(hangup);
@@ -133,77 +158,83 @@ export class JanusVideoRoomService {
     var self = this;
 
     this.session.attach({
-      plugin: "janus.plugin.videoroom",
+      plugin: 'janus.plugin.videoroom',
       success: (pluginHandle) => {
         self.localHandle = pluginHandle;
 
         // Try joining
         var register = {
-          request: "join",
-          room: 1,
-          ptype: "publisher",
+          request: 'join',
+          room: self.config.janus.roomId,
+          ptype: 'publisher',
           display: self.userLogin
         };
-        self.localHandle.send({"message": register});
+        self.localHandle.send({'message': register});
       },
       error: (error) => {
-        self.toastr.error("Error attaching plugin: " + error);
+        self.toastr.error('Error attaching plugin: ' + error);
       },
       onmessage: (msg, jsep) => {
         self.onLocalVideoRoomMessage(streaming, msg, jsep);
         if (jsep) {
-          console.debug("Handling SDP as well...");
+          console.debug('Handling SDP as well...');
           console.debug(jsep);
           self.localHandle.handleRemoteJsep({jsep: jsep});
         }
       },
       consentDialog: (on) => {
-        console.debug("Consent dialog should be " + (on ? "on" : "off") + " now.");
+        console.debug('Consent dialog should be ' + (on ? 'on' : 'off') + ' now.');
       },
       onlocalstream: (stream) => {
         console.debug('Got local stream', stream);
-        attachMediaStream(self.userMediaElement, stream);
+        if (self.userMediaElement) {
+          attachMediaStream(self.userMediaElement, stream);
+        } else {
+          console.error('No local media element set.');
+        }
       },
       onremotestream: (stream) => {
-        console.debug("Got a remote stream!", stream);
+        console.debug('Got a remote stream!', stream);
         // This should not happen. This is local handle.
-        debugger;
       },
       oncleanup: () => {
-        console.debug("Got a cleanup notification");
+        console.debug('Got a cleanup notification');
       }
     });
   }
 
   onLocalVideoRoomMessage(handle, message, jsep) {
-    console.debug("Got a message", message);
+    console.debug('Got a local message', message);
 
     var e = message.videoroom;
 
     switch (e) {
-      case "joined":
+      case 'joined':
         this.joined = true;
         // TODO: Fix following variable formatting (does not work!)
         console.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
 
         if (this.userMediaElement) {
           this.publishLocalFeed();
+        } else {
+          console.debug('No local media element. Not publishing local feed.');
         };
 
         if (message.publishers) {
           this.updatePublishersAndTriggerJoined(message.publishers);
         }
         break;
-      case "destroyed":
+      case 'destroyed':
         this.joined = false;
-        this.toastr.error("The room has been destroyed");
-        debugger;
+        this.toastr.error('The room has been destroyed');
         break;
-      case "event":
+      case 'event':
         if (message.publishers) {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
           // Update leaving user.
+          console.debug('Local handle leaving room.');
+          this.deletePublisherByJanusId(message.leaving);
         }
         break;
     }
@@ -213,16 +244,24 @@ export class JanusVideoRoomService {
     var self = this;
 
     this.localHandle.createOffer({
-      media: { audioRecv: false, videoRecv: false, audioSend: true, videoSend: true},	// Publishers are sendonly
+      media: {
+        // Publishers are sendonly
+        audioRecv: false,
+        videoRecv: false,
+        audioSend: true,
+        videoSend: true,
+        video: 'stdres-16:9'
+      },
       success: function(jsep) {
-        console.debug("Got publisher SDP!");
+        console.debug('Got publisher SDP!');
         console.debug(jsep);
-        var publish = { "request": "configure", "audio": true, "video": true };
-        self.localHandle.send({"message": publish, "jsep": jsep});
+
+        var publish = { 'request': 'configure', 'audio': true, 'video': true };
+        self.localHandle.send({'message': publish, 'jsep': jsep});
       },
       error: (error) =>{
-        self.toastr.error("WebRTC error:", error.message);
-        console.error("WebRTC error... " + JSON.stringify(error));
+        self.toastr.error('WebRTC error:', error.message);
+        console.error('WebRTC error... ' + JSON.stringify(error));
       }
     });
   }
@@ -237,47 +276,52 @@ export class JanusVideoRoomService {
     var remoteHandle = null;
 
     this.session.attach({
-      plugin: "janus.plugin.videoroom",
+      plugin: 'janus.plugin.videoroom',
       success: (pluginHandle) => {
         remoteHandle = pluginHandle;
-				console.debug("Remote handle attached ${remoteHandle.getPlugin()}, id=${remoteHandle.getId()}");
+				console.debug(`Remote handle attached ${remoteHandle.getPlugin()}, id=${remoteHandle.getId()}`);
         self.remoteHandles.push(remoteHandle);
 
+        // TODO: This publisher id is of old video stream, it should be overriden when
+        // same group enters again.
         var id = self.publishers[login].id;
-        var listen = { "request": "join", "room": 1, "ptype": "listener", "feed": id };
-        remoteHandle.send({"message": listen});
+        var listen = { 'request': 'join', 'room': self.config.janus.roomId, 'ptype': 'listener', 'feed': id };
+        remoteHandle.send({'message': listen});
       },
       error: (error) => {
-        self.toastr.error("Error attaching plugin: " + error);
+        self.toastr.error('Error attaching plugin: ' + error);
       },
       onmessage: (msg, jsep) => {
         self.onRemoteVideoRoomMessage(remoteHandle, msg, jsep);
       },
       onlocalstream: () => {
         // The subscriber stream is recvonly, we don't expect anything here
-        debugger;
       },
       onremotestream: (stream) => {
-        console.debug("Got a remote stream!", stream);
-				console.debug(`Remote feed ${remoteHandle}`);
+        console.debug('Got a remote stream!', stream);
+				console.debug(`Remote feed:`);
+        console.debug(remoteHandle)
+        console.debug(stream)
         attachMediaStream(mediaElement, stream);
       },
       oncleanup: () => {
-        console.debug("Got a cleanup notification");
+        console.debug('Got a cleanup notification');
       }
     });
   }
 
   onRemoteVideoRoomMessage(handle, message, jsep) {
-    console.debug("Got a message", message);
+    var self = this;
 
-    if (message.videoroom === "attached") {
+    console.debug('Got a remote message', message);
+
+    if (message.videoroom === 'attached') {
       // TODO: Run spinner for currently attached remoteHandle.
-      console.debug("Attaching remote handle");
+      console.debug('Attaching remote handle');
     }
 
     if(jsep) {
-      console.debug("Handling SDP as well...");
+      console.debug('Handling SDP as well...');
       console.debug(jsep);
 
       // Answer and attach
@@ -285,14 +329,14 @@ export class JanusVideoRoomService {
         jsep: jsep,
         media: { audioSend: false, videoSend: false },	// We want recvonly audio/video
         success: (jsep) => {
-          console.debug("Got SDP!");
+          console.debug('Got SDP!');
           console.debug(jsep);
-          var body = { "request": "start", "room": 1 };
-          handle.send({"message": body, "jsep": jsep});
+          var body = { 'request': 'start', 'room': self.config.janus.roomId };
+          handle.send({'message': body, 'jsep': jsep});
         },
         error: (error) => {
-          console.error("WebRTC error:", error);
-          this.toastr.error("WebRTC error... " + JSON.stringify(error));
+          console.error('WebRTC error:', error);
+          self.toastr.error('WebRTC error... ' + JSON.stringify(error));
         }
       });
     }

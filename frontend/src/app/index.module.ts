@@ -10,12 +10,12 @@ import { ShidurService } from './shidur/shidur.service';
 import { UserController } from './user/user.controller';
 import { channelWidget } from '../app/components/channel/channel.directive';
 import { ChannelService } from '../app/components/channel/channel.service';
-import { appConfig } from './app.config';
 
 module frontend {
   'use strict';
 
   var dependencies = [
+    'frontend.config',
     'ngAnimate',
     'ngCookies',
     'ngTouch',
@@ -29,7 +29,6 @@ module frontend {
 
   angular.module('frontend', dependencies)
     .constant('moment', moment)
-    .constant('config', appConfig)
     .config(config)
     .config(routerConfig)
     .run(runBlock)
