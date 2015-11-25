@@ -2,7 +2,7 @@ export interface IUser {
   login: string;
   title: string;
   channel: string;
-  joined: any; // should be Moment (will not compile)
+  joined?: moment.Moment;
 }
 
 export interface IUsers {

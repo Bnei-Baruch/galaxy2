@@ -16,14 +16,16 @@ export class JanusVideoRoomService {
   config: any;
   toastr: any;
   channels: { (key: string): IChannel };
-  // Reverse map of logins to channels names.
+
+  // Reverse map of logins to channels names
   userChannels: { (login: string): string[] };
 
-  // Mapping between login and inner Janus data;
+  // Mapping between login and inner Janus data
   publishers: { (login: string): any };
 
   userLogin: string;
-  userMediaElement: Element;
+  userVideoElement: HTMLVideoElement;
+  localStream: MediaStream;
   joined: boolean;
 
   constructor(toastr: any, config: any) {
@@ -53,9 +55,9 @@ export class JanusVideoRoomService {
     });
   }
 
-  registerUser(login: string, element: Element) {
+  registerUser(login: string, element: HTMLVideoElement) {
     this.userLogin = login;
-    this.userMediaElement = element;
+    this.userVideoElement = element;
     this.attachLocalMediaStream();
   }
 
@@ -207,8 +209,8 @@ export class JanusVideoRoomService {
         // Local stream was not published, publish it.
         this.publishLocalFeed();
       } else {
-        if (this.userMediaElement) {
-          attachMediaStream(this.userMediaElement, this.localStream);
+        if (this.userVideoElement) {
+          attachMediaStream(this.userVideoElement, this.localStream);
         } else {
           console.error('No local media element set.');
         }
@@ -227,7 +229,7 @@ export class JanusVideoRoomService {
         // TODO: Fix following variable formatting (does not work!)
         console.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
 
-        if (this.userMediaElement) {
+        if (this.userVideoElement) {
           this.publishLocalFeed();
         } else {
           console.debug('No local media element. Not publishing local feed.');

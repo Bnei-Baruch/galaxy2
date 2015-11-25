@@ -10,9 +10,9 @@ export class FakeUserController {
 
     $timeout(() => {
       this.fakeUsers.forEach((login: string) => {
-        var mediaElement = document.querySelector(`video[data-login="${login}"]`);
+        var videoElement = <HTMLVideoElement>document.querySelector(`video[data-login="${login}"]`);
         var janusService = new JanusVideoRoomService(toastr, config);
-        janusService.registerUser(login, mediaElement);
+        janusService.registerUser(login, videoElement);
       });
     });
   }
