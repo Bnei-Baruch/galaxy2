@@ -6,8 +6,8 @@ export interface IChannelScope extends ng.IScope {
   users: IUser[];
   name: string;
   selfElement: ng.IAugmentedJQuery;
-  programElement: ng.IAugmentedJQuery;
-  previewElement: ng.IAugmentedJQuery;
+  programElement: HTMLMediaElement;
+  previewElement: HTMLMediaElement;
 }
 
 /** @ngInject */

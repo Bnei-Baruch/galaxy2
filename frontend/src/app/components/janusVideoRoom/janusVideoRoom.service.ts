@@ -56,6 +56,7 @@ export class JanusVideoRoomService {
   registerUser(login: string, element: Element) {
     this.userLogin = login;
     this.userMediaElement = element;
+    this.attachLocalMediaStream();
   }
 
   registerChannel(options: IChannel) {
@@ -187,11 +188,8 @@ export class JanusVideoRoomService {
       },
       onlocalstream: (stream) => {
         console.debug('Got local stream', stream);
-        if (self.userMediaElement) {
-          attachMediaStream(self.userMediaElement, stream);
-        } else {
-          console.error('No local media element set.');
-        }
+        this.localStream = stream;
+        this.attachLocalMediaStream();
       },
       onremotestream: (stream) => {
         console.debug('Got a remote stream!', stream);
@@ -201,6 +199,21 @@ export class JanusVideoRoomService {
         console.debug('Got a cleanup notification');
       }
     });
+  }
+
+  attachLocalMediaStream() {
+    if (this.joined) {
+      if (!this.localStream) {
+        // Local stream was not published, publish it.
+        this.publishLocalFeed();
+      } else {
+        if (this.userMediaElement) {
+          attachMediaStream(this.userMediaElement, this.localStream);
+        } else {
+          console.error('No local media element set.');
+        }
+      }
+    } // If not joined, try to join here?
   }
 
   onLocalVideoRoomMessage(handle, message, jsep) {
