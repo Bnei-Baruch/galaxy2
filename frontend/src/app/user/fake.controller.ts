@@ -2,21 +2,17 @@ import { JanusVideoRoomService } from '../components/janusVideoRoom/janusVideoRo
 
 
 export class FakeUserController {
-  public toastr: any;
   fakeUsers: string[];
-  janus: JanusVideoRoomService;
 
   /* @ngInject */
-  constructor ($timeout: any, janus: JanusVideoRoomService, toastr: any) {
-    this.toastr = toastr;
-    this.janus = janus;
-
+  constructor ($timeout: any, toastr: any, config: any) {
     this.fakeUsers = ['afula', 'haifa', 'eilat', 'naharia', 'raanana', 'rehovot'];
 
     $timeout(() => {
       this.fakeUsers.forEach((login: string) => {
         var mediaElement = document.querySelector(`video[data-login="${login}"]`);
-        this.janus.registerUser(login, mediaElement);
+        var janusService = new JanusVideoRoomService(toastr, config);
+        janusService.registerUser(login, mediaElement);
       });
     });
   }
