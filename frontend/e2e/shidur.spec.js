@@ -1,93 +1,33 @@
-describe('The main view', function () {
+var utils = require('./utils');
+
+describe('The Shidur view', function () {
   'use strict';
   var page;
 
   beforeEach(function () {
     page = require('./shidur.po');
-    closeOtherWindows();
+    // utils.closeOtherWindows();
   });
 
-  xit('should verify that when user reloads the page, shidur will resume getting dynamic video.', function() {
+  it('should display online users with preview video and mark them offline on disconnect', function() {
+    utils.openNewWindow("/index.html");
+    // Check that all users are displayed offline
+    // Open fake users page
+    // Check online users displayed
+    // Check previews present for every channel
+    // Close fake users page
+    // Check that all users are displayed offline
+    // Check that preview and program is empty
+  });
+
+  it('should display program and show next user on preview when next user is triggered', function () {
+    // Open fake users page
     // Open shidur
-    // Open user
-    // Check vido color is changing
-    // Reload user => checks reload works fine.
-    // Check vido color is changing
+    // Trigger next user
+    // Verify program video updated
+    // Verify preview updated
+    // Verify users list updated
+    // Verify rotation
   });
-
-  xit('should verify that when shiduf reloads the page, shidur will resume getting user video.', function() {
-    // Open shidur
-    // Open user
-    // Check vido color is changing
-    // Reload shidur => checks reload works fine.
-    // Check video color is changing
-  });
-
-  xit('should display user video when the user logged in before shidur page loaded', function() {
-    browser.get('/#/user').then(function () {
-      openNewWindow("/index.html").then(function() {
-        switchToWindow(1).then(function () {
-          waitForVideo('.preview');
-        });
-      });
-    });
-  });
-
-  it('should display user video when the user logged in after shidur page loaded', function() {
-    browser.get('/index.html').then(function() {
-      openNewWindow("/#/user").then(function() {
-        switchToWindow(0).then(function () {
-          waitForVideo('.preview');
-        });
-      });
-    });
-  });
-
-  function waitForVideo(cssSelector) {
-    browser.wait(function () {
-      var deferred = protractor.promise.defer();
-
-      var script = "return getAverageVideoColor('" + cssSelector + "');";
-      var scriptPromise = browser.driver.executeScript(script);
-
-      scriptPromise.then(function (color) {
-        // Check avg color green component is big enough
-        // deferred.fulfill(color && color[1] > 100);
-        deferred.fulfill(color);
-      });
-
-      return deferred.promise;
-    }, 5000);
-  }
-
-  function openNewWindow(url) {
-    return browser.driver.executeScript("$(window.open('" + url + "'))");
-  }
-
-  function switchToWindow(number) {
-    var deferred = protractor.promise.defer();
-
-    browser.getAllWindowHandles().then(function(handles) {
-      console.log("All window handles:", handles);
-
-      browser.switchTo().window(handles[number]).then(function () {
-        console.log("Switched to window:", handles[number]);
-        deferred.fulfill();
-      });
-    });
-
-    return deferred.promise;
-  }
-
-  function closeOtherWindows() {
-    browser.getAllWindowHandles().then(function (handles) {
-      handles.forEach(function (handle, index) {
-        // Don't delete one window.
-        if (index) {
-          browser.driver.close();
-        }
-      });
-    });
-  }
 
 });
