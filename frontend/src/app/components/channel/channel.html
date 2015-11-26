@@ -32,13 +32,13 @@
 
   <md-list class="users">
     <!-- Online users -->
-    <md-list-item ng-repeat="user in vm.users | filter : {joined: ''} | orderBy:'joined'">
+    <md-list-item ng-repeat="user in vm.onlineUsers">
       <!-- #9E9E9E -->
 
       <md-icon layout="column" aria-label="" ng-style="{color: '#4CAF50'}" class="material-icons">lens</md-icon>
       <div class="md-list-item-text" layout="column" flex="100">
-        <p class="{{user.login === vm.previewLogin ? 'preview' : ''}}
-          {{user.login === vm.programLogin ? 'program' : ''}}">
+        <p class="{{user.login === vm.programLogin ? 'program' :
+          (user.login === vm.previewLogin ? 'preview' : '')}}">
           {{ user.title }}
         </p>
       </div>

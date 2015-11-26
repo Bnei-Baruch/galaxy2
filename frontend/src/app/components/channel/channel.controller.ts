@@ -12,34 +12,32 @@ export interface IChannelScope extends ng.IScope {
 
 /** @ngInject */
 export class ChannelController {
-  users: IUser[];
-  usersByLogin: { [login: string]: IUser } = {};
-  previewLogin: string = null;
-  programLogin: string = null;
-  scope: IChannelScope;
-  toastr: any;
   channel: ChannelService;
-  janus: JanusVideoRoomService;
+
   name: string;
+  users: IUser[];
   hotkey: string;
 
-  constructor($scope: IChannelScope,
-              public $timeout: any,
+  usersByLogin: { [login: string]: IUser } = {};
+  onlineUsers: IUser[] = [];
+  previewLogin: string = null;
+  programLogin: string = null;
+
+  constructor(public $scope: IChannelScope,
+              public $timeout: ng.ITimeoutService,
               public $document: any,
-              janus: JanusVideoRoomService,
-              toastr: any, config: any) {
-    this.scope = $scope;
-    this.janus = janus;
+              public janus: JanusVideoRoomService) {
 
-    this.bindHotkey();
-
-    this.users.forEach((user) => {
+    // Mapping users by login for conveniency
+    this.users.forEach((user: IUser) => {
       this.usersByLogin[user.login] = user;
     });
 
+    this.bindHotkey();
+
     this.janus.registerChannel({
       name: this.name,
-      users: this.users.map((u) => { return u.login; }),
+      users: this.users.map((user: IUser) => { return user.login; }),
       // Wrapping into $timeout for syncing the UI
       joinedCallback: (login: string) => {
         $timeout(() => {
@@ -68,20 +66,24 @@ export class ChannelController {
 
   userJoined(login: string) {
     // TODO: The timestamp should be better taken from Janus point of view
-    this.usersByLogin[login].joined = moment();
+    var user = this.usersByLogin[login];
+    user.joined = moment();
+    this.onlineUsers.push(user);
 
-    // Means he sends video/audio to janus
-    // Now we decide to get his video/audio here or not.
-    // If program or preview ==> get stream + show on video element
+    console.log(this.onlineUsers);
+
+    // Put user video on preview if first user
     if (!this.previewLogin) {
-      var element = this.scope.selfElement.find('.preview').get(0);
-      this.janus.attachRemoteHandle(login, element);
       this.previewLogin = login;
+      this.janus.attachRemoteHandle(login, this.$scope.previewElement);
     }
   }
 
   userLeft(login: string) {
-    this.usersByLogin[login].joined = null;
+    var user = this.usersByLogin[login];
+    user.joined = null;
+
+    this.onlineUsers.splice(this.onlineUsers.indexOf(user), 1);
     console.debug('User left', login);
 
     this.janus.releaseRemoteHandle(login);
@@ -89,12 +91,12 @@ export class ChannelController {
   }
 
   next() {
-    if (!this.previewLogin) {
+    if (!this.onlineUsers.length) {
       return;
     }
 
     // Clone the video to program
-    this.scope.programElement.src = this.scope.previewElement.src;
+    this.$scope.programElement.src = this.$scope.previewElement.src;
 
     // TODO: trigger switch from Janus here
     // this.janus.switch(...)
@@ -106,28 +108,12 @@ export class ChannelController {
     this.programLogin = this.previewLogin;
 
     // Pick next user for preview
-    var nextUser = this.getNextUser();
-
-    if (nextUser !== null) {
-      this.previewLogin = nextUser.login;
-    } else {
-      this.programLogin = this.previewLogin = null;
-    }
+    this.previewLogin = this.getNextUser().login;
   }
 
   getNextUser() {
-    var currentUser = this.usersByLogin[this.previewLogin];
-    var userOffset = this.users.indexOf(currentUser);
-    var userIndex = userOffset + 1;
-
-    while (userIndex - userOffset <= this.users.length) {
-      currentUser = this.users[userIndex % this.users.length];
-      if (currentUser.joined) {
-        return currentUser;
-      }
-      userIndex++;
-    }
-
-    return null;
+    var userIndex = this.onlineUsers.indexOf(this.usersByLogin[this.previewLogin]);
+    var nextUser = this.onlineUsers[(userIndex + 1) % this.onlineUsers.length]
+    return nextUser;
   }
 }
