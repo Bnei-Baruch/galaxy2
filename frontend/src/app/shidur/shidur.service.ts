@@ -19,6 +19,8 @@ export class ShidurService {
         { login: 'moscow', title: 'Moscow', channel: 'large1' },
         { login: 'beer-sheva', title: 'Beer Sheva', channel: 'large2' },
         { login: 'eilat', title: 'Eilat', channel: 'large2' },
+        { login: 'toronto', title: 'Toronto', channel: 'large2' },
+        { login: 'new-york', title: 'New York', channel: 'large2' },
         { login: 'naharia', title: 'Naharia', channel: 'small1' },
         { login: 'nazareth', title: 'Nazareth Illit', channel: 'small1'},
         { login: 'raanana', title: 'Raanana', channel: 'small2' },
