@@ -14,7 +14,7 @@ exports.waitForVideo = function(cssSelector) {
     });
 
     return deferred.promise;
-  }, 5000);
+  }, 15000);
 };
 
 exports.openNewWindow = function(url) {

@@ -6,11 +6,20 @@ describe('The Shidur view', function () {
 
   beforeEach(function () {
     page = require('./shidur.po');
-    // utils.closeOtherWindows();
+    utils.closeOtherWindows();
   });
 
-  it('should display online users with preview video and mark them offline on disconnect', function() {
-    utils.openNewWindow("/index.html");
+  xit('should display online users with preview video and mark them offline on disconnect', function() {
+    browser.get('/');
+    expect(page.onlineUserEls.count()).toBe(0);
+    expect(page.offlineUserEls.count()).toBeGreaterThan(1);
+
+    utils.openNewWindow("/#/fake");
+    utils.switchToWindow(0);
+
+    utils.waitForVideo('.preview');
+    utils.waitForVideo('.program');
+
     // Check that all users are displayed offline
     // Open fake users page
     // Check online users displayed
@@ -20,7 +29,8 @@ describe('The Shidur view', function () {
     // Check that preview and program is empty
   });
 
-  it('should display program and show next user on preview when next user is triggered', function () {
+  xit('should display program and show next user on preview when next user is triggered', function () {
+    utils.openNewWindow("/index.html");
     // Open fake users page
     // Open shidur
     // Trigger next user
