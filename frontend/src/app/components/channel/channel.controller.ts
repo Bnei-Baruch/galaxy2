@@ -20,8 +20,8 @@ export class ChannelController {
 
   usersByLogin: { [login: string]: IUser } = {};
   onlineUsers: IUser[] = [];
-  previewLogin: string = null;
-  programLogin: string = null;
+  previewUser: IUser = null;
+  programUser: IUser = null;
 
   constructor(public $scope: IChannelScope,
               public $timeout: ng.ITimeoutService,
@@ -73,8 +73,8 @@ export class ChannelController {
     console.log(this.onlineUsers);
 
     // Put user video on preview if first user
-    if (!this.previewLogin) {
-      this.previewLogin = login;
+    if (!this.previewUser) {
+      this.previewUser = this.usersByLogin[login];
       this.janus.attachRemoteHandle(login, this.$scope.previewElement);
     }
   }
@@ -87,11 +87,13 @@ export class ChannelController {
     console.debug('User left', login);
 
     this.janus.releaseRemoteHandle(login);
+
     this.next();
   }
 
   next() {
     if (!this.onlineUsers.length) {
+      this.programUser = this.previewUser = null;
       return;
     }
 
@@ -101,18 +103,20 @@ export class ChannelController {
     // TODO: trigger switch from Janus here
     // this.janus.switch(...)
 
-    if (this.programLogin) {
-      this.janus.releaseRemoteHandle(this.programLogin, this.$scope.previewElement);
+    if (this.programUser) {
+      this.janus.releaseRemoteHandle(this.programUser.login, this.$scope.programElement);
     }
 
-    this.programLogin = this.previewLogin;
+    this.programUser = this.previewUser;
 
     // Pick next user for preview
-    this.previewLogin = this.getNextUser().login;
+    this.previewUser = this.getNextUser();
+
+    this.janus.attachRemoteHandle(this.previewUser.login, this.$scope.previewElement);
   }
 
   getNextUser() {
-    var userIndex = this.onlineUsers.indexOf(this.usersByLogin[this.previewLogin]);
+    var userIndex = this.onlineUsers.indexOf(this.usersByLogin[this.previewUser.login]);
     var nextUser = this.onlineUsers[(userIndex + 1) % this.onlineUsers.length]
     return nextUser;
   }

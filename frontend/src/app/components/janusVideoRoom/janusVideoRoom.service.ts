@@ -51,9 +51,10 @@ export class JanusVideoRoomService {
       }
     });
 
-    $(window).unload(() => {
-      this.hangupHandles();
+    $(window).on('beforeunload', () => {
       this.session.destroy();
+      this.unpublishOwnFeed();
+      // return "Are you sure want to leave this page?";
     });
   }
 
@@ -147,20 +148,13 @@ export class JanusVideoRoomService {
     }
   }
 
-  hangupHandle(handle: any) {
-    var body = { 'request': 'stop' };
-    handle.send({'message': body});
-    handle.hangup();
+  unpublishOwnFeed() {
+    var body = { 'request': 'unpublish' };
+    this.localHandle.send({'message': body});
+    console.debug(`Own feed unpublished for handle ${this.localHandle}`);
   }
 
-  hangupHandles() {
-    this.hangupHandle(this.localHandle);
-    for (var login in this.remoteHandles) {
-      var handleInst = this.remoteHandles[login].handle;
-      this.hangupHandle(handleInst);
-    }
-  }
-  // Local Handle Methods
+  /* Local Handle Methods */
 
   attachLocalHandle() {
     var streaming;
@@ -253,7 +247,7 @@ export class JanusVideoRoomService {
         if (message.publishers) {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
-          // Update leaving user.
+          // Update leaving user
           console.debug('Local handle leaving room.');
           this.deletePublisherByJanusId(message.leaving);
         }
@@ -304,7 +298,6 @@ export class JanusVideoRoomService {
       success: (pluginHandle) => {
         handleInst = pluginHandle;
 				console.debug(`Remote handle attached ${handleInst.getPlugin()}, id=${handleInst.getId()}`);
-        debugger;
         var handleContainer: IRemoteHandle = {
           mediaElements: [mediaElement],
           handle: handleInst,
@@ -346,6 +339,7 @@ export class JanusVideoRoomService {
     var handleContainer = this.remoteHandles[login];
     handleContainer.mediaElements.push(mediaElement);
     attachMediaStream(mediaElement, handleContainer.stream);
+    console.debug(`Attached existing remote handle for ${login}`);
   }
 
   onRemoteVideoRoomMessage(handle, message, jsep) {
@@ -398,11 +392,10 @@ export class JanusVideoRoomService {
       // Detaching only one media element
       var elementIndex = handleContainer.mediaElements.indexOf(mediaElement);
       handleContainer.mediaElements.splice(elementIndex, 1);
-      mediaElement.src = null;
     }
 
     if (handleContainer.mediaElements.length === 0) {
-      this.hangupHandle(handleContainer.handle);
+      handleContainer.handle.detach();
       delete this.remoteHandles[login];
     }
   }
