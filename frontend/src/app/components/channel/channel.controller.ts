@@ -6,8 +6,8 @@ export interface IChannelScope extends ng.IScope {
   users: IUser[];
   name: string;
   selfElement: ng.IAugmentedJQuery;
-  programElement: HTMLMediaElement;
-  previewElement: HTMLMediaElement;
+  programElement: HTMLVideoElement;
+  previewElement: HTMLVideoElement;
 }
 
 /** @ngInject */
@@ -102,7 +102,7 @@ export class ChannelController {
     // this.janus.switch(...)
 
     if (this.programLogin) {
-      this.janus.releaseRemoteHandle(this.programLogin);
+      this.janus.releaseRemoteHandle(this.programLogin, this.$scope.previewElement);
     }
 
     this.programLogin = this.previewLogin;
