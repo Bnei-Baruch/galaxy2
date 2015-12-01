@@ -40,6 +40,15 @@
     },
     "moment/moment-node.d.ts": {
       "commit": "bb051830df88f5a55dcf06b7fe85bf6b62cc97f2"
+    },
+    "es6-promise/es6-promise.d.ts": {
+      "commit": "36c6ce86fb64bafb28ec95dc78c6b98228b45c8d"
+    },
+    "webrtc/RTCPeerConnection.d.ts": {
+      "commit": "36c6ce86fb64bafb28ec95dc78c6b98228b45c8d"
+    },
+    "webrtc/MediaStream.d.ts": {
+      "commit": "36c6ce86fb64bafb28ec95dc78c6b98228b45c8d"
     }
   }
 }

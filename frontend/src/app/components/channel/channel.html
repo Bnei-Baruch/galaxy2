@@ -1,35 +1,58 @@
-<section class="md-whiteframe-z1" style="margin-right: 4px;">
-  <md-content flex>
-    <md-grid-list
-      md-cols="1"
-      md-row-height="16:9"
-      md-gutter="3px">
-      <md-grid-tile
-        ng-style="{
-        'background': 'red'
-        }"
-        md-colspan="1"
-        md-rowspan="1">
+<section class="channel md-whiteframe-z1">
+  <md-grid-list md-cols="1" md-row-height="16:9" md-gutter="3px">
+    <md-grid-tile
+      ng-style="{
+      'background': 'red'
+      }"
+      md-colspan="1"
+      md-rowspan="1">
 
-        <video class="program" style="width: 100%" autoplay></video>
-      </md-grid-tile>
-      <md-grid-tile
-        ng-style="{
-        'background': 'green'
-        }"
-        md-colspan="1"
-        md-rowspan="1">
+      <video class="program" poster="data:image/gif,AAAA" autoplay></video>
 
-        <video class="preview" style="width: 100%" autoplay></video>
-      </md-grid-tile>
-    </md-grid-list>
+      <md-grid-tile-header>
+        <h3>PROGRAM {{vm.programUser.title}}</h3>
+      </md-grid-tile-header>
+    </md-grid-tile>
 
-    <md-list>
-      <md-list-item ng-repeat="user in vm.users">
-        <div class="md-list-item-text" layout="column">
+    <md-grid-tile
+      ng-style="{
+      'background': 'green'
+      }"
+      md-colspan="1"
+      md-rowspan="1"
+      ng-click="vm.next()">
+
+      <video class="preview" poster="data:image/gif,AAAA" autoplay></video>
+
+      <md-grid-tile-header>
+        <h3>PREVIEW {{vm.previewUser.title}}</h3>
+      </md-grid-tile-header>
+    </md-grid-tile>
+  </md-grid-list>
+
+  <md-list class="users">
+    <!-- Online users -->
+    <md-list-item ng-repeat="user in vm.onlineUsers">
+      <!-- #9E9E9E -->
+
+      <md-icon layout="column" aria-label="" ng-style="{color: '#4CAF50'}" class="material-icons">lens</md-icon>
+      <div class="md-list-item-text" layout="column" flex="100">
+        <p class="{{user === vm.programUser ? 'program' :
+          (user === vm.previewUser ? 'preview' : '')}}">
           {{ user.title }}
-        </div>
-      </md-list-item>
-    </md-list>
-  </md-content>
+        </p>
+      </div>
+    </md-list-item>
+
+    <!-- Offline users -->
+    <md-divider></md-divider>
+
+    <md-list-item ng-repeat="user in vm.users | filter : {joined: '!'} | orderBy:'title'">
+      <md-icon layout="column" aria-label="" ng-style="{color: '#9E9E9E'}" class="material-icons">lens</md-icon>
+      <div class="md-list-item-text" layout="column" flex="100">
+        <p>{{ user.title }}</p>
+      </div>
+    </md-list-item>
+
+  </md-list>
 </section>

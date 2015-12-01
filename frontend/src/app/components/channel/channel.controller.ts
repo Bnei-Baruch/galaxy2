@@ -6,53 +6,118 @@ export interface IChannelScope extends ng.IScope {
   users: IUser[];
   name: string;
   selfElement: ng.IAugmentedJQuery;
+  programElement: HTMLVideoElement;
+  previewElement: HTMLVideoElement;
 }
 
 /** @ngInject */
 export class ChannelController {
-  users: IUser[];
-  previewUserLogin: string;
-  scope: IChannelScope;
-  toastr: any;
   channel: ChannelService;
-  janus: JanusVideoRoomService;
-  name: string;
 
-  constructor($scope: IChannelScope,
-              janus: JanusVideoRoomService,
-              toastr: any, config: any) {
-    this.scope = $scope;
-    this.janus = janus;
+  name: string;
+  users: IUser[];
+  hotkey: string;
+
+  usersByLogin: { [login: string]: IUser } = {};
+  onlineUsers: IUser[] = [];
+  previewUser: IUser = null;
+  programUser: IUser = null;
+
+  constructor(public $scope: IChannelScope,
+              public $timeout: ng.ITimeoutService,
+              public $document: any,
+              public janus: JanusVideoRoomService) {
+
+    // Mapping users by login for conveniency
+    this.users.forEach((user: IUser) => {
+      this.usersByLogin[user.login] = user;
+    });
+
+    this.bindHotkey();
 
     this.janus.registerChannel({
       name: this.name,
-      users: this.users.map((u) => { return u.login; }),
-      joinedCallback: (login: string) => { this.userJoined(login); },
-      leftCallback: (login: string) => { this.userLeft(login); }
+      users: this.users.map((user: IUser) => { return user.login; }),
+      // Wrapping into $timeout for syncing the UI
+      joinedCallback: (login: string) => {
+        $timeout(() => {
+          this.userJoined(login);
+        });
+      },
+      leftCallback: (login: string) => {
+        $timeout(() => {
+          this.userLeft(login);
+        });
+      }
     });
   }
 
-  userJoined(login: string) {
-    // TODO: Moment actually better to register while user logges in
-    // from user point of view, not from shidur point of view
-    // this.users[login].joined = moment();
+  bindHotkey() {
+    if (this.hotkey) {
+      this.$document.bind('keydown', (e: KeyboardEvent) => {
+        if (e.keyCode === this.hotkey.charCodeAt(0)) {
+          this.$timeout(() => {
+            this.next();
+          });
+        }
+      });
+    }
+  }
 
-    // Means he sends video/audio to janus
-    // Now we decide to get his video/audio here or not.
-    // If program or preview ==> get stream + show on video element
-    if (!this.previewUserLogin) {
-      this.previewUserLogin = login;
-      var element = this.scope.selfElement.find('.preview').get(0);
-      this.janus.attachRemoteHandle(login, element);
+  userJoined(login: string) {
+    // TODO: The timestamp should be better taken from Janus point of view
+    var user = this.usersByLogin[login];
+    user.joined = moment();
+    this.onlineUsers.push(user);
+
+    console.log(this.onlineUsers);
+
+    // Put user video on preview if first user
+    if (!this.previewUser) {
+      this.previewUser = this.usersByLogin[login];
+      this.janus.attachRemoteHandle(login, this.$scope.previewElement);
     }
   }
 
   userLeft(login: string) {
-    // this.users[login].joined = null;
+    var user = this.usersByLogin[login];
+    user.joined = null;
+
+    this.onlineUsers.splice(this.onlineUsers.indexOf(user), 1);
     console.debug('User left', login);
-    if (login === this.previewUserLogin) {
-      this.previewUserLogin = null;
-    }
+
+    this.janus.releaseRemoteHandle(login);
+
+    this.next();
   }
 
+  next() {
+    if (!this.onlineUsers.length) {
+      this.programUser = this.previewUser = null;
+      return;
+    }
+
+    // Clone the video to program
+    this.$scope.programElement.src = this.$scope.previewElement.src;
+
+    // TODO: trigger switch from Janus here
+    // this.janus.switch(...)
+
+    if (this.programUser) {
+      this.janus.releaseRemoteHandle(this.programUser.login, this.$scope.programElement);
+    }
+
+    this.programUser = this.previewUser;
+
+    // Pick next user for preview
+    this.previewUser = this.getNextUser();
+
+    this.janus.attachRemoteHandle(this.previewUser.login, this.$scope.previewElement);
+  }
+
+  getNextUser() {
+    var userIndex = this.onlineUsers.indexOf(this.usersByLogin[this.previewUser.login]);
+    var nextUser = this.onlineUsers[(userIndex + 1) % this.onlineUsers.length]
+    return nextUser;
+  }
 }

@@ -9,6 +9,9 @@ var ShidurPage = function() {
   //this.h1El = this.jumbEl.element(by.css('h1'));
   //this.imgEl = this.jumbEl.element(by.css('img'));
   //this.thumbnailEls = element(by.css('body')).all(by.repeater('awesomeThing in main.awesomeThings'));
+
+  this.onlineUserEls = element.all(by.repeater('user in vm.onlineUsers'));
+  this.offlineUserEls = element.all(by.repeater('user in vm.users'));
 };
 
 module.exports = new ShidurPage();

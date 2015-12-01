@@ -10,3 +10,4 @@ typings/
 
 src/assets/scripts/config.js
 config.json
+config.testing.json

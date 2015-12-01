@@ -10,7 +10,8 @@ export class UserController {
     this.toastr = toastr;
     this.janus = janus;
 
-    this.janus.registerUser('haifa', document.querySelector('#localVideo'));
+    var videoElement = <HTMLVideoElement>document.querySelector('#localVideo');
+    this.janus.registerUser('afula', videoElement);
   }
 }
 
