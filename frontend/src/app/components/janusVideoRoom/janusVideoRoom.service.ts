@@ -399,4 +399,37 @@ export class JanusVideoRoomService {
       delete this.remoteHandles[login];
     }
   }
+
+  // Forward stream to janus port
+  switch(login, port) {
+    if (login in this.remoteHandles) {
+      var rmid = handleContainer.handle.rfid;
+      // Forward remote rtp stream
+      if(publisher_id) {
+        console.log("  -- We need to stop rtp forward video ID: " + video_id);
+        console.log("  -- We need to stop rtp forward audio ID: " + audio_id);
+        console.log("  -- We need to stop rtp forward publisher ID: " + publisher_id);
+        //$('#forward'+remoteFeed.rfindex).attr('disabled', true).unbind('click');
+        var stopfw_video = { "request":"stop_rtp_forward","stream_id":video_id,"publisher_id":publisher_id,"room":1234,"secret":"adminpwd" };
+        var stopfw_audio = { "request":"stop_rtp_forward","stream_id":audio_id,"publisher_id":publisher_id,"room":1234,"secret":"adminpwd" };
+        this.localHandle.send({"message": stopfw_video});
+        this.localHandle.send({"message": stopfw_audio});
+      }
+      //var forward = { "request": "rtp_forward","publisher_id":rmid,"room":1234,"secret":"adminpwd","host":ip,"audio_port":aport,"video_port":vport };
+      var forward = { "request": "rtp_forward","publisher_id":rmid,"room":1234,"secret":"adminpwd","host":ip,"video_port":port };
+      this.localHandle.send({"message": forward,
+        success: function(data) {
+          audio_id = data["rtp_stream"]["audio_stream_id"];
+          video_id = data["rtp_stream"]["video_stream_id"];
+          publisher_id = data["publisher_id"];
+          console.log("  -- We got rtp forward video ID: " + video_id);
+          console.log("  -- We got rtp forward audio ID: " + audio_id);
+          console.log("  -- We got rtp forward publisher ID: " + publisher_id);
+          console.log(JSON.stringify(data));
+        },
+      });
+    } else {
+      this.toastr.error('Could not find remote handle for ', login);
+    }
+  }
 }
