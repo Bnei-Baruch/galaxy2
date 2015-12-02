@@ -1,4 +1,5 @@
 declare var attachMediaStream: any;
+declare var escape: any;
 declare var Janus: any;
 
 interface IChannel {
@@ -469,7 +470,7 @@ export class JanusVideoRoomService {
 
   changeRemoteFeedTitle(title: string, port: number) {
     var titleApiUrl = this.config.janus.titleApiUrl
-      .replace('%title%', title)
+      .replace('%title%', escape(title))
       .replace('%port%', port);
 
     this.$http.get(titleApiUrl).error((data, st) => {
