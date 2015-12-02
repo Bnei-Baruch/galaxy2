@@ -5,6 +5,7 @@ interface IChannel {
   name: string,
   users: string[],
   joinedCallback: (login: string) => void,
+  gotStreamCallback?: (login: string) =>,
   leftCallback: (login: string) => void
 }
 
@@ -157,7 +158,6 @@ export class JanusVideoRoomService {
   /* Local Handle Methods */
 
   attachLocalHandle() {
-    var streaming;
     var self = this;
 
     this.session.attach({
@@ -178,7 +178,7 @@ export class JanusVideoRoomService {
         self.toastr.error('Error attaching plugin: ' + error);
       },
       onmessage: (msg, jsep) => {
-        self.onLocalVideoRoomMessage(streaming, msg, jsep);
+        self.onLocalHandleMessage(msg, jsep);
         if (jsep) {
           console.debug('Handling SDP as well...');
           console.debug(jsep);
@@ -218,7 +218,7 @@ export class JanusVideoRoomService {
     } // If not joined, try to join here?
   }
 
-  onLocalVideoRoomMessage(handle, message, jsep) {
+  onLocalHandleMessage(message, jsep) {
     console.debug('Got a local message', message);
 
     var e = message.videoroom;
@@ -286,7 +286,6 @@ export class JanusVideoRoomService {
 
   attachRemoteHandle(login: string, mediaElement: HTMLVideoElement) {
     var self = this;
-    var streaming;
     var handleInst = null;
 
     if (login in this.remoteHandles) {
@@ -314,7 +313,7 @@ export class JanusVideoRoomService {
         self.toastr.error('Error attaching plugin: ' + error);
       },
       onmessage: (msg, jsep) => {
-        self.onRemoteVideoRoomMessage(handleInst, msg, jsep);
+        self.onRemoteHandleMessage(handleInst, msg, jsep);
       },
       onlocalstream: () => {
         // The subscriber stream is recvonly, we don't expect anything here
@@ -342,7 +341,7 @@ export class JanusVideoRoomService {
     console.debug(`Attached existing remote handle for ${login}`);
   }
 
-  onRemoteVideoRoomMessage(handle, message, jsep) {
+  onRemoteHandleMessage(handle, message, jsep) {
     var self = this;
 
     console.debug('Got a remote message', message);
