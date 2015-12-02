@@ -26,7 +26,8 @@ export class ChannelController {
   constructor(public $scope: IChannelScope,
               public $timeout: ng.ITimeoutService,
               public $document: any,
-              public janus: JanusVideoRoomService) {
+              public janus: JanusVideoRoomService,
+              public config: any) {
 
     // Mapping users by login for conveniency
     this.users.forEach((user: IUser) => {
@@ -101,7 +102,7 @@ export class ChannelController {
     this.$scope.programElement.src = this.$scope.previewElement.src;
 
     // TODO: trigger switch from Janus here
-    this.janus.forwardRemoteFeed(this.previewUser.login, 10001);
+    this.janus.forwardRemoteFeed(this.previewUser.login, this.config.janus.sdiPorts[this.name]);
 
     if (this.programUser) {
       this.janus.releaseRemoteHandle(this.programUser.login, this.$scope.programElement);

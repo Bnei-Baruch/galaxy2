@@ -11,7 +11,7 @@ export class UserController {
     this.janus = janus;
 
     var videoElement = <HTMLVideoElement>document.querySelector('#localVideo');
-    this.janus.registerUser('afula', videoElement);
+    this.janus.registerUser('arad', videoElement);
   }
 }
 
