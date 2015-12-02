@@ -22,13 +22,15 @@ interface IFeedForwardInfo {
 
 /* @ngInject */
 export class JanusVideoRoomService {
+  $http: ng.IHttpService
+  config: any;
+  toastr: any;
+
+  session: any;
   remoteHandles: { (login: string): IRemoteHandle } = <any>{};
   localHandle: any;
   channels: { (key: string): IChannel } = <any>{};
   portsFeedForwardInfo: { (key: number): IFeedForwardInfo } = <any> {};
-  session: any;
-  config: any;
-  toastr: any;
 
   // Reverse map of logins to channels names
   userChannels: { (login: string): string[] } = <any>{};
@@ -41,9 +43,10 @@ export class JanusVideoRoomService {
   localStream: MediaStream;
   joined: boolean;
 
-  constructor(toastr: any, config: any) {
+  constructor($http: ng.IHttpService, toastr: any, config: any) {
     this.config = config;
     this.toastr = toastr;
+    this.$http = $http;
     this.joined = false;
 
     if(!Janus.isWebrtcSupported()) {
@@ -100,7 +103,7 @@ export class JanusVideoRoomService {
         this.attachLocalHandle();
       },
       error: (error) => {
-        this.toastr.error('Janus creation error: ' + error);
+        this.toastr.error(`Janus creation error: ${error}`);
       }
     });
   }
@@ -282,7 +285,7 @@ export class JanusVideoRoomService {
         self.localHandle.send({'message': publish, 'jsep': jsep});
       },
       error: (error) =>{
-        self.toastr.error('WebRTC error:', error.message);
+        self.toastr.error(`WebRTC error: ${error.message}`);
         console.error('WebRTC error... ' + JSON.stringify(error));
       }
     });
@@ -412,54 +415,66 @@ export class JanusVideoRoomService {
   forwardRemoteFeed(login, port) {
     var self = this;
 
-    if (login in this.remoteHandles) {
-      var handleContainer = this.remoteHandles[login];
-      var rmid = handleContainer.handle.rfid;
-
-      // Forward remote rtp stream
-      if (port in this.portsFeedForwardInfo) {
-        var forwardInfo = this.portsFeedForwardInfo[port];
-
-        console.log(`  -- We need to stop rtp forward video ID: ${forwardInfo.videoStreamId}`);
-        console.log(`  -- We need to stop rtp forward audio ID: ${forwardInfo.audioStreamId}`);
-        console.log(`  -- We need to stop rtp forward publisher ID: ${forwardInfo.publisherId}`);
-
-        var stopfwVideo = {
-          'request': 'stop_rtp_forward',
-          'stream_id': forwardInfo.videoStreamId,
-          'publisher_id': forwardInfo.publisherId,
-          'room': self.config.janus.roomId,
-          'secret': self.config.janus.secret
-        };
-        this.localHandle.send({"message": stopfwVideo});
-      }
-
-      var forward = {
-        'request': 'rtp_forward',
-        'publisher_id': rmid,
-        'room': self.config.janus.roomId,
-        'secret': self.config.janus.secret,
-        'host': self.config.janus.serverIp,
-        'video_port': port
-      };
-
-      this.localHandle.send({
-        message: forward,
-        success: (data) => {
-          self.portsFeedForwardInfo[port] = <IFeedForwardInfo> {
-            publisherId: data.publisher_id,
-            videoStreamId: data.rtp_stream.video_stream_id,
-            audioStreamId: data.rtp_stream.audio_stream_id
-          };
-
-          console.log(`  -- We got rtp forward video ID: ${data.rtp_stream.video_stream_id}`);
-          console.log(`  -- We got rtp forward audio ID: ${data.rtp_stream.audio_stream_id}`);
-          console.log(`  -- We got rtp forward publisher ID: ${data.publisher_id}`);
-          console.log(JSON.stringify(data));
-        },
-      });
-    } else {
-      this.toastr.error('Could not find remote handle for', login);
+    if (!(login in this.remoteHandles)) {
+      this.toastr.error(`Could not find remote handle for ${login}`);
+      return;
     }
+
+    var handleContainer = this.remoteHandles[login];
+    var rmid = handleContainer.handle.rfid;
+
+    // Forward remote rtp stream
+    if (port in this.portsFeedForwardInfo) {
+      var forwardInfo = this.portsFeedForwardInfo[port];
+
+      console.log(`  -- We need to stop rtp forward video ID: ${forwardInfo.videoStreamId}`);
+      console.log(`  -- We need to stop rtp forward audio ID: ${forwardInfo.audioStreamId}`);
+      console.log(`  -- We need to stop rtp forward publisher ID: ${forwardInfo.publisherId}`);
+
+      var stopfwVideo = {
+        'request': 'stop_rtp_forward',
+        'stream_id': forwardInfo.videoStreamId,
+        'publisher_id': forwardInfo.publisherId,
+        'room': self.config.janus.roomId,
+        'secret': self.config.janus.secret
+      };
+      this.localHandle.send({'message': stopfwVideo});
+    }
+
+    var forward = {
+      'request': 'rtp_forward',
+      'publisher_id': rmid,
+      'room': self.config.janus.roomId,
+      'secret': self.config.janus.secret,
+      'host': self.config.janus.serverIp,
+      'video_port': port
+    };
+
+    this.localHandle.send({
+      message: forward,
+      success: (data) => {
+        self.portsFeedForwardInfo[port] = <IFeedForwardInfo> {
+          publisherId: data.publisher_id,
+          videoStreamId: data.rtp_stream.video_stream_id,
+          audioStreamId: data.rtp_stream.audio_stream_id
+        };
+
+        console.log(`  -- We got rtp forward video ID: ${data.rtp_stream.video_stream_id}`);
+        console.log(`  -- We got rtp forward audio ID: ${data.rtp_stream.audio_stream_id}`);
+        console.log(`  -- We got rtp forward publisher ID: ${data.publisher_id}`);
+        console.log(JSON.stringify(data));
+      },
+    });
+  }
+
+  changeRemoteFeedTitle(title: string, port: number) {
+    var titleApiUrl = this.config.janus.titleApiUrl
+      .replace('%title%', title)
+      .replace('%port%', port);
+
+    this.$http.get(titleApiUrl).error((data, st) => {
+      this.toastr.error(`Unable to change remote feed to ${title}`);
+      console.error('Unable to change remote feed:', data, st);
+    });
   }
 }
