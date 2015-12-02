@@ -49,6 +49,11 @@ export class ChannelController {
         $timeout(() => {
           this.userLeft(login);
         });
+      },
+      gotStreamCallback: (login: string, stream: MediaStream) => {
+        $timeout(() => {
+          this.gotStream(login);
+        });
       }
     });
   }
@@ -92,16 +97,24 @@ export class ChannelController {
     this.next();
   }
 
+  gotStream(login: string) {
+  }
+
   next() {
     if (!this.onlineUsers.length) {
       this.programUser = this.previewUser = null;
       return;
     }
 
+    if (!this.previewUser.hasStream) {
+      console.debug(`Preview user ${this.previewUser.login} has no stream yet`);
+      return;
+    }
+
     // Clone the video to program
     this.$scope.programElement.src = this.$scope.previewElement.src;
 
-    // TODO: trigger switch from Janus here
+    // Forward to SDI and change video title
     var sdiPort = this.config.janus.sdiPorts[this.name];
     this.janus.forwardRemoteFeed(this.previewUser.login, sdiPort);
     this.janus.changeRemoteFeedTitle(this.previewUser.title, sdiPort);
@@ -114,6 +127,7 @@ export class ChannelController {
 
     // Pick next user for preview
     this.previewUser = this.getNextUser();
+    this.previewUser.hasStream = false;
 
     this.janus.attachRemoteHandle(this.previewUser.login, this.$scope.previewElement);
   }

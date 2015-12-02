@@ -6,7 +6,7 @@ interface IChannel {
   name: string,
   users: string[],
   joinedCallback: (login: string) => void,
-  gotStreamCallback?: (login: string) =>,
+  gotStreamCallback?: (login: string, stream: MediaStream) => void,
   leftCallback: (login: string) => void
 }
 
@@ -132,12 +132,18 @@ export class JanusVideoRoomService {
       self.publishers[p.display] = p;
 
       // Handle channels
-      if (p.display in self.userChannels) {
-        self.userChannels[p.display].forEach((c) => {
-          self.channels[c].joinedCallback(p.display);
-        });
-      }
+      this.applyOnUserChannels(p.display, (channel) => {
+        channel.joinedCallback(p.display);
+      });
     });
+  }
+
+  applyOnUserChannels(login: string, func: (channel: IChannel) => void) {
+    if (login in this.userChannels) {
+      this.userChannels[login].forEach((c) => {
+        func(this.channels[c]);
+      });
+    }
   }
 
   deletePublisherByJanusId(janusId) {
@@ -152,11 +158,9 @@ export class JanusVideoRoomService {
     if (login) {
       delete this.publishers[login];
       // Update channels on leaving user.
-      if (login in this.userChannels) {
-        this.userChannels[login].forEach((c) => {
-          this.channels[c].leftCallback(login);
-        });
-      }
+      this.applyOnUserChannels(login, (channel) => {
+        channel.leftCallback(login);
+      });
     }
   }
 
@@ -335,6 +339,11 @@ export class JanusVideoRoomService {
         if (!(login in self.remoteHandles)) {
           console.error(`Remote handle not attached for ${login}`);
         } else {
+          self.applyOnUserChannels(login, (channel) => {
+            if (channel.gotStreamCallback) {
+              channel.gotStreamCallback(login, stream);
+            }
+          });
           self.remoteHandles[login].stream = stream;
           attachMediaStream(mediaElement, stream);
         }
