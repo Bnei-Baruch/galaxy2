@@ -101,7 +101,7 @@ export class ChannelController {
     this.$scope.programElement.src = this.$scope.previewElement.src;
 
     // TODO: trigger switch from Janus here
-    this.janus.switch(login, 10001);
+    this.janus.forwardRemoteFeed(this.previewUser.login, 10001);
 
     if (this.programUser) {
       this.janus.releaseRemoteHandle(this.programUser.login, this.$scope.programElement);
