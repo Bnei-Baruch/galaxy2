@@ -1,0 +1,95 @@
+<html>
+    <head>
+        <title>SDI Out</title>
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+        <script src="js/jquery-1.10.2.js"></script>
+        <script src="js/jquery-ui.js"></script>
+        <script type="text/javascript" src="js/bootstrap.js"></script>
+        <script type="text/javascript" src="js/bootbox.min.js"></script>
+        <script type="text/javascript" src="js/spin.min.js"></script>
+        <link rel="stylesheet" href="css/cerulean/bootstrap.css" type="text/css"/>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css"/>
+        <script src="js/ajax.js"></script>
+        <script src="js/adapter.js"></script>
+        <script src="js/janus.js"></script>
+        <script src="js/client.js"></script>
+        <script type="text/javascript">
+        </script>
+        <style>
+            #remoteVideo1 {width: 320; height: 180;}
+            #remoteVideo2 {width: 320; height: 180;}
+            #remoteVideo3 {width: 320; height: 180;}
+            #remoteVideo4 {width: 320; height: 180;}
+            #remoteAudio {display: none;}
+            .col-sm-5 {
+                float: left;
+                width: 400px;
+                margin-right: 2px;
+            }
+        </style>
+    </head>
+    <body>
+        <H1 style="">SDI Out (galaxy-dev.kbb1.com)</H1>
+        <br>
+        <div id="div1">
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-sm-5">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">SDI 1 (port:10001)
+                            <div id="infocam1" class="label label-danger" style="position: absolute; top: 10px; right: 10px; margin: 10px;">
+                            </div>
+                        </h3>
+                    </div>
+                    <div class="panel-body relative">
+                        <video class="relative" id="remoteVideo1" controls autoplay></video>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-5">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">SDI 2 (port:10002)
+                            <div id="infocam2" class="label label-danger" style="position: absolute; top: 10px; right: 10px; margin: 10px;">
+                            </div>
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <video class="rounded centered" id="remoteVideo2" controls autoplay></video>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">SDI 3 (port:10003)
+                            <div id="infocam3" class="label label-danger" style="position: absolute; top: 10px; right: 10px; margin: 10px;">
+                            </div>
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <video id="remoteVideo3" controls autoplay></video>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-5">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">SDI 4 (port:10004)
+                            <div id="infocam4" class="label label-danger" style="position: absolute; top: 10px; right: 10px; margin: 10px;">
+                            </div>
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <video id="remoteVideo4" controls autoplay></video>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html> 
+
