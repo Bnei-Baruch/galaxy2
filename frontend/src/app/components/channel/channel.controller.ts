@@ -20,8 +20,12 @@ export class ChannelController {
 
   usersByLogin: { [login: string]: IUser } = {};
   onlineUsers: IUser[] = [];
-  previewUser: IUser = null;
-  programUser: IUser = null;
+
+  slotUsers: { [slot: string]: IUser } = {
+    program: null,
+    preview: null,
+    nextPreview: null
+  }
 
   constructor(public $scope: IChannelScope,
               public $timeout: ng.ITimeoutService,
@@ -29,32 +33,25 @@ export class ChannelController {
               public janus: JanusVideoRoomService,
               public config: any) {
 
-    // Mapping users by login for conveniency
-    this.users.forEach((user: IUser) => {
-      this.usersByLogin[user.login] = user;
-    });
-
+    this.usersByLogin = this.mapUsersByLogin();
     this.bindHotkey();
 
     this.janus.registerChannel({
       name: this.name,
       users: this.users.map((user: IUser) => { return user.login; }),
-      // Wrapping into $timeout for syncing the UI
       joinedCallback: (login: string) => {
-        $timeout(() => {
-          this.userJoined(login);
-        });
+        this.userJoined(login);
       },
       leftCallback: (login: string) => {
-        $timeout(() => {
-          this.userLeft(login);
-        });
-      },
-      gotStreamCallback: (login: string, stream: MediaStream) => {
-        $timeout(() => {
-          this.gotStream(login);
-        });
+        this.userLeft(login);
       }
+    });
+  }
+
+  mapUsersByLogin() {
+    // Mapping users by login for conveniency
+    this.users.forEach((user: IUser) => {
+      this.usersByLogin[user.login] = user;
     });
   }
 
@@ -76,12 +73,9 @@ export class ChannelController {
     user.joined = moment();
     this.onlineUsers.push(user);
 
-    console.log(this.onlineUsers);
-
     // Put user video on preview if first user
-    if (!this.previewUser) {
-      this.previewUser = this.usersByLogin[login];
-      this.janus.attachRemoteHandle(login, this.$scope.previewElement);
+    if (this.previewUser === null) {
+      this.next()
     }
   }
 
@@ -92,47 +86,45 @@ export class ChannelController {
     this.onlineUsers.splice(this.onlineUsers.indexOf(user), 1);
     console.debug('User left', login);
 
-    this.janus.releaseRemoteHandle(login);
+    // Unbind slot users
+    for (slot in this.slotUsers) {
+      var slotUser = this.slotUsers[slot];
+      if (slotUser && slotUser.login == login) {
+        this.slotUsers[slot] = null;
+      }
+    }
 
     this.next();
   }
 
-  gotStream(login: string) {
-  }
-
   next() {
-    if (!this.onlineUsers.length) {
-      this.programUser = this.previewUser = null;
-      return;
+    if (this.slotUsers.preview) {
+      this.janus.unsubscribeFromStream(this.slotUsers.program.login);
+
+      this.rotateSlotUsers();
+
+      // Clone the video to program
+      this.$scope.programElement.src = this.$scope.previewElement.src;
+
+      this.forwardProgramToSDI();
     }
 
-    if (!this.previewUser.hasStream) {
-      console.debug(`Preview user ${this.previewUser.login} has no stream yet`);
-      return;
-    }
+      // this.previewUser = this.usersByLogin[login];
+      // this.janus.subscribeForStream(login, (stream) => {
+      //   // TODO: check if users haven't been rotated
+      //   attachMediaStream(this.$scope.previewElement, stream);
+      // });
 
-    // Clone the video to program
-    this.$scope.programElement.src = this.$scope.previewElement.src;
-
-    // Forward to SDI and change video title
-    var sdiPort = this.config.janus.sdiPorts[this.name];
-    this.janus.forwardRemoteFeed(this.previewUser.login, sdiPort);
-    this.janus.changeRemoteFeedTitle(this.previewUser.title, sdiPort);
-
-    if (this.programUser) {
-      this.janus.releaseRemoteHandle(this.programUser.login, this.$scope.programElement);
-    }
-
-    this.programUser = this.previewUser;
-
-    // Pick next user for preview
-    this.previewUser = this.getNextUser();
-    this.previewUser.hasStream = false;
-
-    this.janus.attachRemoteHandle(this.previewUser.login, this.$scope.previewElement);
   }
 
-  getNextUser() {
+  forwardProgramToSDI() {
+    // Forward program to SDI and change video title
+    var sdiPort = this.config.janus.sdiPorts[this.name];
+    this.janus.forwardRemoteFeed(this.programUser.login, sdiPort);
+    this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPort);
+  }
+
+  rotateSlotUsers() {
     var userIndex = this.onlineUsers.indexOf(this.usersByLogin[this.previewUser.login]);
     var nextUser = this.onlineUsers[(userIndex + 1) % this.onlineUsers.length]
     return nextUser;

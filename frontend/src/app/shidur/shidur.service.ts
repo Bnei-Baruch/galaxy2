@@ -3,7 +3,7 @@ export interface IUser {
   title: string;
   channel: string;
   joined?: moment.Moment;
-  hasStream?: boolean;
+  stream?: MediaStream;
 }
 
 export interface IUsers {
