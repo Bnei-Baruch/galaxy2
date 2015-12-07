@@ -8,31 +8,42 @@ interface IChannel {
   leftCallback: (login: string) => void
 }
 
+interface IRemoteHandle {
+  mediaElements: HTMLVideoElement[];
+  handle: any;  // Janus handle instance
+  stream?: MediaStream;
+}
+
+interface IFeedForwardInfo {
+  publisherId: string,
+  videoStreamId: string,
+  audioStreamId: string
+}
+
 /* @ngInject */
 export class JanusVideoRoomService {
-  remoteHandles: any[];
+  remoteHandles: { (login: string): IRemoteHandle } = <any>{};
   localHandle: any;
+  channels: { (key: string): IChannel } = <any>{};
+  portsFeedForwardInfo: { (key: number): IFeedForwardInfo } = <any> {};
   session: any;
   config: any;
   toastr: any;
-  channels: { (key: string): IChannel };
-  // Reverse map of logins to channels names.
-  userChannels: { (login: string): string[] };
 
-  // Mapping between login and inner Janus data;
-  publishers: { (login: string): any };
+  // Reverse map of logins to channels names
+  userChannels: { (login: string): string[] } = <any>{};
+
+  // Mapping between login and inner Janus data
+  publishers: { (login: string): any } = <any>{};
 
   userLogin: string;
-  userMediaElement: Element;
+  userVideoElement: HTMLVideoElement;
+  localStream: MediaStream;
   joined: boolean;
 
   constructor(toastr: any, config: any) {
     this.config = config;
     this.toastr = toastr;
-    this.channels = <any> {};
-    this.userChannels = <any> {};
-    this.publishers = <any> {};
-    this.remoteHandles = [];
     this.joined = false;
 
     if(!Janus.isWebrtcSupported()) {
@@ -47,15 +58,17 @@ export class JanusVideoRoomService {
       }
     });
 
-    $(window).unload(() => {
-      this.hangupHandles();
+    $(window).on('beforeunload', () => {
       this.session.destroy();
+      this.unpublishOwnFeed();
+      // return "Are you sure want to leave this page?";
     });
   }
 
-  registerUser(login: string, element: Element) {
+  registerUser(login: string, element: HTMLVideoElement) {
     this.userLogin = login;
-    this.userMediaElement = element;
+    this.userVideoElement = element;
+    this.attachLocalMediaStream();
   }
 
   registerChannel(options: IChannel) {
@@ -142,16 +155,13 @@ export class JanusVideoRoomService {
     }
   }
 
-  hangupHandles() {
-    var hangup = (handle) => {
-      var body = { 'request': 'stop' };
-      handle.send({'message': body});
-      handle.hangup();
-    };
-    this.remoteHandles.forEach(hangup);
-    hangup(this.localHandle);
+  unpublishOwnFeed() {
+    var body = { 'request': 'unpublish' };
+    this.localHandle.send({'message': body});
+    console.debug(`Own feed unpublished for handle ${this.localHandle}`);
   }
-  // Local Handle Methods
+
+  /* Local Handle Methods */
 
   attachLocalHandle() {
     var streaming;
@@ -187,11 +197,8 @@ export class JanusVideoRoomService {
       },
       onlocalstream: (stream) => {
         console.debug('Got local stream', stream);
-        if (self.userMediaElement) {
-          attachMediaStream(self.userMediaElement, stream);
-        } else {
-          console.error('No local media element set.');
-        }
+        this.localStream = stream;
+        this.attachLocalMediaStream();
       },
       onremotestream: (stream) => {
         console.debug('Got a remote stream!', stream);
@@ -201,6 +208,21 @@ export class JanusVideoRoomService {
         console.debug('Got a cleanup notification');
       }
     });
+  }
+
+  attachLocalMediaStream() {
+    if (this.joined) {
+      if (!this.localStream) {
+        // Local stream was not published, publish it.
+        this.publishLocalFeed();
+      } else {
+        if (this.userVideoElement) {
+          attachMediaStream(this.userVideoElement, this.localStream);
+        } else {
+          console.error('No local media element set.');
+        }
+      }
+    } // If not joined, try to join here?
   }
 
   onLocalVideoRoomMessage(handle, message, jsep) {
@@ -214,7 +236,7 @@ export class JanusVideoRoomService {
         // TODO: Fix following variable formatting (does not work!)
         console.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
 
-        if (this.userMediaElement) {
+        if (this.userVideoElement) {
           this.publishLocalFeed();
         } else {
           console.debug('No local media element. Not publishing local feed.');
@@ -232,7 +254,7 @@ export class JanusVideoRoomService {
         if (message.publishers) {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
-          // Update leaving user.
+          // Update leaving user
           console.debug('Local handle leaving room.');
           this.deletePublisherByJanusId(message.leaving);
         }
@@ -267,47 +289,64 @@ export class JanusVideoRoomService {
   }
 
 
+  /* Remote Handle Methods */
 
-  // Remote Handle Methods
-
-  attachRemoteHandle(login, mediaElement) {
-    var streaming;
+  attachRemoteHandle(login: string, mediaElement: HTMLVideoElement) {
     var self = this;
-    var remoteHandle = null;
+    var streaming;
+    var handleInst = null;
+
+    if (login in this.remoteHandles) {
+      return this.attachExistingRemoteHandle(login, mediaElement);
+    }
 
     this.session.attach({
       plugin: 'janus.plugin.videoroom',
       success: (pluginHandle) => {
-        remoteHandle = pluginHandle;
-				console.debug(`Remote handle attached ${remoteHandle.getPlugin()}, id=${remoteHandle.getId()}`);
-        self.remoteHandles.push(remoteHandle);
+        handleInst = pluginHandle;
+				console.debug(`Remote handle attached ${handleInst.getPlugin()}, id=${handleInst.getId()}`);
+        var handleContainer: IRemoteHandle = {
+          mediaElements: [mediaElement],
+          handle: handleInst,
+        };
+        self.remoteHandles[login] = handleContainer;
 
         // TODO: This publisher id is of old video stream, it should be overriden when
         // same group enters again.
         var id = self.publishers[login].id;
         var listen = { 'request': 'join', 'room': self.config.janus.roomId, 'ptype': 'listener', 'feed': id };
-        remoteHandle.send({'message': listen});
+        handleInst.send({'message': listen});
       },
       error: (error) => {
         self.toastr.error('Error attaching plugin: ' + error);
       },
       onmessage: (msg, jsep) => {
-        self.onRemoteVideoRoomMessage(remoteHandle, msg, jsep);
+        self.onRemoteVideoRoomMessage(handleInst, msg, jsep);
       },
       onlocalstream: () => {
         // The subscriber stream is recvonly, we don't expect anything here
       },
       onremotestream: (stream) => {
         console.debug('Got a remote stream!', stream);
-				console.debug(`Remote feed:`);
-        console.debug(remoteHandle)
-        console.debug(stream)
-        attachMediaStream(mediaElement, stream);
+				console.debug(`Remote feed:`, handleInst);
+        if (!(login in self.remoteHandles)) {
+          console.error(`Remote handle not attached for ${login}`);
+        } else {
+          self.remoteHandles[login].stream = stream;
+          attachMediaStream(mediaElement, stream);
+        }
       },
       oncleanup: () => {
         console.debug('Got a cleanup notification');
       }
     });
+  }
+
+  attachExistingRemoteHandle(login: string, mediaElement: HTMLVideoElement) {
+    var handleContainer = this.remoteHandles[login];
+    handleContainer.mediaElements.push(mediaElement);
+    attachMediaStream(mediaElement, handleContainer.stream);
+    console.debug(`Attached existing remote handle for ${login}`);
   }
 
   onRemoteVideoRoomMessage(handle, message, jsep) {
@@ -318,6 +357,7 @@ export class JanusVideoRoomService {
     if (message.videoroom === 'attached') {
       // TODO: Run spinner for currently attached remoteHandle.
       console.debug('Attaching remote handle');
+      handle.rfid = message.id;
     }
 
     if(jsep) {
@@ -339,6 +379,87 @@ export class JanusVideoRoomService {
           self.toastr.error('WebRTC error... ' + JSON.stringify(error));
         }
       });
+    }
+  }
+
+  releaseRemoteHandle(login: string, mediaElement?: HTMLVideoElement) {
+    if (!(login in this.remoteHandles)) {
+      console.debug(`Remote handle is not attached for ${login}`);
+      return;
+    }
+
+    var handleContainer = this.remoteHandles[login];
+
+    if (mediaElement === undefined) {
+      // No media element provided, detaching all handle elements
+      handleContainer.mediaElements.forEach((element) => {
+        element.src = null;
+      });
+      handleContainer.mediaElements = [];
+    } else {
+      // Detaching only one media element
+      var elementIndex = handleContainer.mediaElements.indexOf(mediaElement);
+      handleContainer.mediaElements.splice(elementIndex, 1);
+    }
+
+    if (handleContainer.mediaElements.length === 0) {
+      handleContainer.handle.detach();
+      delete this.remoteHandles[login];
+    }
+  }
+
+  // Forward stream to janus port
+  forwardRemoteFeed(login, port) {
+    var self = this;
+
+    if (login in this.remoteHandles) {
+      var handleContainer = this.remoteHandles[login];
+      var rmid = handleContainer.handle.rfid;
+
+      // Forward remote rtp stream
+      if (port in this.portsFeedForwardInfo) {
+        var forwardInfo = this.portsFeedForwardInfo[port];
+
+        console.log(`  -- We need to stop rtp forward video ID: ${forwardInfo.videoStreamId}`);
+        console.log(`  -- We need to stop rtp forward audio ID: ${forwardInfo.audioStreamId}`);
+        console.log(`  -- We need to stop rtp forward publisher ID: ${forwardInfo.publisherId}`);
+
+        var stopfwVideo = {
+          'request': 'stop_rtp_forward',
+          'stream_id': forwardInfo.videoStreamId,
+          'publisher_id': forwardInfo.publisherId,
+          'room': self.config.janus.roomId,
+          'secret': self.config.janus.secret
+        };
+        this.localHandle.send({"message": stopfwVideo});
+      }
+
+      var forward = {
+        'request': 'rtp_forward',
+        'publisher_id': rmid,
+        'room': self.config.janus.roomId,
+        'secret': self.config.janus.secret,
+        'host': self.config.janus.serverIp,
+        'video_port': port
+      };
+
+      this.localHandle.send({
+        message: forward,
+        success: (data) => {
+          self.portsFeedForwardInfo[port] = <IFeedForwardInfo> {
+            publisherId: data.publisher_id,
+            videoStreamId: data.rtp_stream.video_stream_id,
+            audioStreamId: data.rtp_stream.audio_stream_id
+          };
+
+          console.log(`  -- We got rtp forward video ID: ${data.rtp_stream.video_stream_id}`);
+          console.log(`  -- We got rtp forward audio ID: ${data.rtp_stream.audio_stream_id}`);
+          console.log(`  -- We got rtp forward publisher ID: ${data.publisher_id}`);
+          console.log(JSON.stringify(data));
+        },
+      });
+    } else {
+      this.toastr.error('Could not find remote handle for', login);
     }
   }
 }

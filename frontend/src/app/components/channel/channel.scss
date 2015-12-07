@@ -1,0 +1,18 @@
+video {
+  background: transparent url('data:image/gif,AAAA') 50% 50% / cover;
+  width: 100%;
+}
+
+.channel {
+  margin-right: 4px;
+}
+
+.channel .users .program {
+  color: #E53935;
+  font-weight: bold;
+}
+
+.channel .users .preview {
+  color: #43A047;
+  font-weight: bold;
+}

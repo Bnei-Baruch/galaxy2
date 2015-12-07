@@ -12,6 +12,12 @@ export function routerConfig($stateProvider: ng.ui.IStateProvider, $urlRouterPro
       templateUrl: 'app/user/user.html',
       controller: 'UserController',
       controllerAs: 'user'
+    })
+    .state('fake', {
+      url: '/fake',
+      templateUrl: 'app/user/fake.html',
+      controller: 'FakeUserController',
+      controllerAs: 'fake'
     });
 
   $urlRouterProvider.otherwise('/shidur');

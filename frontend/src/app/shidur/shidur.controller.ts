@@ -2,7 +2,7 @@ import { IUser, ShidurService } from './shidur.service';
 
 export class ShidurController {
   public toastr: any;
-  public breakdown: { [index:string]: IUser[]; };
+  public breakdown: { [index: string]: IUser[]; };
 
   /* @ngInject */
   constructor (shidur: ShidurService, toastr: any) {
