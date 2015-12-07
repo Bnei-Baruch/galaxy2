@@ -77,7 +77,8 @@ export class ChannelController {
 
     // Put user video on preview if first user
     if (this.slotUsers['preview'] === null) {
-      this.next()
+      this.slotUsers['preview'] = user;
+      this.next();
     }
   }
 
@@ -91,7 +92,7 @@ export class ChannelController {
     // Unbind slot users
     for (var slot in this.slotUsers) {
       var slotUser = this.slotUsers[slot];
-      if (slotUser && slotUser.login == login) {
+      if (slotUser && slotUser.login === login) {
         this.slotUsers[slot] = null;
       }
     }
@@ -100,33 +101,41 @@ export class ChannelController {
   }
 
   next() {
-    if (this.onlineUsers.length >= 1) {
-      if (this.slotUsers['program']) {
-        this.janus.unsubscribeFromStream(this.slotUsers['program'].login);
-      }
-
-      // Clone the video to program
-      this.$scope.programElement.src = this.$scope.previewElement.src;
-      attachMediaStream(this.$scope.previewElement, this.slotUsers['nextPreview'].stream);
-
-      this.rotateSlotUsers();
-
-      if (this.slotUsers['program']) {
-        this.forwardProgramToSDI();
-      }
-
-      ['preview', 'nextPreview'].forEach((slot) => {
-        var slotUser = this.slotUsers[slot];
-        if (slotUser !== null && !slotUser.stream) {
-          this.janus.subscribeForStream(slotUser.login, (stream) => {
-            slotUser.stream = stream;
-            if (slot === 'preview') {
-              attachMediaStream(this.$scope.previewElement, stream);
-            }
-          });
-        }
-      });
+    if (!this.onlineUsers.length) {
+      return;
     }
+
+    ['preview', 'nextPreview'].forEach((slot) => {
+      var slotUser = this.slotUsers[slot];
+      if (slotUser !== null && !slotUser.stream) {
+        this.janus.subscribeForStream(slotUser.login, (stream) => {
+          slotUser.stream = stream;
+          if (slot === 'preview') {
+            attachMediaStream(this.$scope.previewElement, stream);
+          }
+        });
+      }
+    });
+
+    if (this.slotUsers['program']) {
+      this.janus.unsubscribeFromStream(this.slotUsers['program'].login);
+      this.slotUsers['program'].stream = null;
+    }
+
+    if (this.slotUsers['preview'] && this.slotUsers['preview'].stream) {
+      this.$scope.programElement.src = this.$scope.previewElement.src;
+    }
+
+    console.log(this.slotUsers['nextPreview'])
+    if (this.slotUsers['nextPreview'] && this.slotUsers['nextPreview'].stream) {
+      attachMediaStream(this.$scope.previewElement, this.slotUsers['nextPreview'].stream);
+    }
+
+    if (this.slotUsers['program'] && this.slotUsers['program'].stream) {
+      this.forwardProgramToSDI();
+    }
+
+    this.rotateSlotUsers();
   }
 
   forwardProgramToSDI() {

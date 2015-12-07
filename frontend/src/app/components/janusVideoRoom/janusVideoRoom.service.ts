@@ -5,7 +5,6 @@ interface IChannel {
   name: string,
   users: string[],
   joinedCallback: (login: string) => void,
-  gotStreamCallback?: (login: string, stream: MediaStream) => void,
   leftCallback: (login: string) => void
 }
 
@@ -77,7 +76,7 @@ export class JanusVideoRoomService {
 
     if (this.localStream) {
       streamReadyCallback(this.localStream);
-    } else {
+    } else if (this.localHandle) {
       this.publishLocalFeed();
     }
   }

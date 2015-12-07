@@ -10,7 +10,7 @@
       <video class="program" poster="data:image/gif,AAAA" autoplay></video>
 
       <md-grid-tile-header>
-        <h3>PROGRAM {{vm.programUser.title}}</h3>
+        <h3>PROGRAM {{vm.slotUsers.program.title}}</h3>
       </md-grid-tile-header>
     </md-grid-tile>
 
@@ -25,7 +25,7 @@
       <video class="preview" poster="data:image/gif,AAAA" autoplay></video>
 
       <md-grid-tile-header>
-        <h3>PREVIEW {{vm.previewUser.title}}</h3>
+        <h3>PREVIEW {{vm.slotUsers.preview.title}}</h3>
       </md-grid-tile-header>
     </md-grid-tile>
   </md-grid-list>
@@ -37,8 +37,8 @@
 
       <md-icon layout="column" aria-label="" ng-style="{color: '#4CAF50'}" class="material-icons">lens</md-icon>
       <div class="md-list-item-text" layout="column" flex="100">
-        <p class="{{user === vm.programUser ? 'program' :
-          (user === vm.previewUser ? 'preview' : '')}}">
+        <p class="{{user === vm.slotUsers.program ? 'program' :
+          (user === vm.slotUsers.preview ? 'preview' : '')}}">
           {{ user.title }}
         </p>
       </div>
