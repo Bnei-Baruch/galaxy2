@@ -102,7 +102,9 @@ export class ChannelController {
     this.$scope.programElement.src = this.$scope.previewElement.src;
 
     // TODO: trigger switch from Janus here
-    this.janus.forwardRemoteFeed(this.previewUser.login, this.config.janus.sdiPorts[this.name]);
+    var sdiPort = this.config.janus.sdiPorts[this.name];
+    this.janus.forwardRemoteFeed(this.previewUser.login, sdiPort);
+    this.janus.changeRemoteFeedTitle(this.previewUser.title, sdiPort);
 
     if (this.programUser) {
       this.janus.releaseRemoteHandle(this.programUser.login, this.$scope.programElement);
