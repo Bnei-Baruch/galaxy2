@@ -23,11 +23,9 @@ export class ChannelController {
   usersByLogin: { [login: string]: IUser } = {};
   onlineUsers: IUser[] = [];
 
-  slotUsers: { [slot: string]: IUser } = {
-    program: null,
-    preview: null,
-    nextPreview: null
-  }
+  programUser: IUser = null;
+  previewUser: IUser = null;
+  nextPreviewUser: IUser = null;
 
   constructor(public $scope: IChannelScope,
               public $timeout: ng.ITimeoutService,
@@ -76,9 +74,19 @@ export class ChannelController {
     this.onlineUsers.push(user);
 
     // Put user video on preview if first user
-    if (this.slotUsers['preview'] === null) {
-      this.slotUsers['preview'] = user;
-      this.next();
+    if (this.previewUser === null) {
+      this.previewUser = user;
+
+      this.janus.subscribeForStream(user.login, (stream) => {
+        user.stream = stream;
+        attachMediaStream(this.$scope.previewElement, stream);
+      });
+    } else if (this.nextPreviewUser === null) {
+      this.nextPreviewUser = user;
+
+      this.janus.subscribeForStream(user.login, (stream) => {
+        user.stream = stream;
+      });
     }
   }
 
@@ -90,21 +98,39 @@ export class ChannelController {
     console.debug('User left', login);
 
     // Unbind slot users
-    for (var slot in this.slotUsers) {
-      var slotUser = this.slotUsers[slot];
-      if (slotUser && slotUser.login === login) {
-        this.slotUsers[slot] = null;
-      }
-    }
+    // for (var slot in this.slotUsers) {
+    //   var slotUser = this.slotUsers[slot];
+    //   if (slotUser && slotUser.login === login) {
+    //     this.slotUsers[slot] = null;
+    //   }
+    // }
 
     this.next();
   }
 
   next() {
-    if (!this.onlineUsers.length) {
-      return;
+    if (this.onlineUsers.length > 1) {
+      this.$scope.programElement.src = this.$scope.previewElement.src;
+      attachMediaStream(this.$scope.previewElement, this.nextPreviewUser.stream);
+
+      var oldProgramUser = this.programUser;
+
+      this.rotateSlotUsers();
+      this.forwardProgramToSDI();
+
+      if (this.onlineUsers.length > 3 && oldProgramUser) {
+        this.janus.unsubscribeFromStream(oldProgramUser.login);
+        oldProgramUser.stream = null;
+      }
+
+      if (this.onlineUsers.length > 2 && !this.nextPreviewUser.stream) {
+        this.janus.subscribeForStream(this.nextPreviewUser.login, (stream) => {
+          this.nextPreviewUser.stream = stream;
+        });
+      }
     }
 
+    /*
     ['preview', 'nextPreview'].forEach((slot) => {
       var slotUser = this.slotUsers[slot];
       if (slotUser !== null && !slotUser.stream) {
@@ -136,26 +162,21 @@ export class ChannelController {
     }
 
     this.rotateSlotUsers();
+    */
   }
 
   forwardProgramToSDI() {
     // Forward program to SDI and change video title
     var sdiPort = this.config.janus.sdiPorts[this.name];
-    this.janus.forwardRemoteFeed(this.slotUsers['program'].login, sdiPort);
-    this.janus.changeRemoteFeedTitle(this.slotUsers['program'].title, sdiPort);
+    this.janus.forwardRemoteFeed(this.programUser.login, sdiPort);
+    this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPort);
   }
 
   rotateSlotUsers() {
-    var offset;
+    this.programUser = this.previewUser;
+    this.previewUser = this.nextPreviewUser;
 
-    if (this.slotUsers['preview']) {
-      offset = this.onlineUsers.indexOf(this.usersByLogin[this.slotUsers['preview'].login]);
-    } else {
-      offset = 0;
-    }
-
-    ['program', 'preview', 'nextPreview'].forEach((slot, index) => {
-      this.slotUsers[slot] = this.onlineUsers[(offset + index) % this.onlineUsers.length]
-    });
+    var userIndex = this.onlineUsers.indexOf(this.nextPreviewUser);
+    this.nextPreviewUser = this.onlineUsers[(userIndex + 1) % this.onlineUsers.length];
   }
 }
