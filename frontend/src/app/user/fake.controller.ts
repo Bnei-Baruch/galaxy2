@@ -1,5 +1,6 @@
 import { JanusVideoRoomService } from '../components/janusVideoRoom/janusVideoRoom.service';
 
+declare var attachMediaStream: any;
 
 export class FakeUserController {
   fakeUsers: string[];
@@ -10,9 +11,11 @@ export class FakeUserController {
 
     $timeout(() => {
       this.fakeUsers.forEach((login: string) => {
-        var videoElement = <HTMLVideoElement>document.querySelector(`video[data-login="${login}"]`);
+        var mediaElement = <HTMLMediaElement>document.querySelector(`video[data-login="${login}"]`);
         var janusService = new JanusVideoRoomService($timeout, $http, toastr, config);
-        janusService.registerUser(login, videoElement);
+        janusService.registerLocalUser(login, (stream) => {
+          attachMediaStream(mediaElement, stream);
+        });
       });
     });
   }

@@ -1,4 +1,3 @@
-declare var attachMediaStream: any;
 declare var escape: any;
 declare var Janus: any;
 
@@ -41,9 +40,10 @@ export class JanusVideoRoomService {
   // Mapping between login and inner Janus data
   publishers: { (login: string): any } = <any>{};
 
+  joined: boolean;
   localUserLogin: string;
   localStream: MediaStream;
-  joined: boolean;
+  localStreamReadyCallback: (stream: MediaStream) => void;
 
   constructor($timeout: ng.ITimeoutService, $http: ng.IHttpService, toastr: any, config: any) {
     this.config = config;
@@ -74,7 +74,12 @@ export class JanusVideoRoomService {
   registerLocalUser(login: string, streamReadyCallback: (stream: MediaStream) => void) {
     this.localUserLogin = login;
     this.localStreamReadyCallback = streamReadyCallback;
-    this.attachLocalMediaStream();
+
+    if (this.localStream) {
+      streamReadyCallback(this.localStream);
+    } else {
+      this.publishLocalFeed();
+    }
   }
 
   registerChannel(options: IChannel) {
@@ -210,7 +215,7 @@ export class JanusVideoRoomService {
       onlocalstream: (stream) => {
         console.debug('Got local stream', stream);
         this.localStream = stream;
-        this.attachLocalMediaStream();
+        this.localStreamReadyCallback(stream);
       },
       onremotestream: (stream) => {
         console.debug('Got a remote stream!', stream);
@@ -220,21 +225,6 @@ export class JanusVideoRoomService {
         console.debug('Got a cleanup notification');
       }
     });
-  }
-
-  attachLocalMediaStream() {
-    if (this.joined) {
-      if (!this.localStream) {
-        // Local stream was not published, publish it.
-        this.publishLocalFeed();
-      } else {
-        if (this.userVideoElement) {
-          attachMediaStream(this.userVideoElement, this.localStream);
-        } else {
-          console.error('No local media element set.');
-        }
-      }
-    } // If not joined, try to join here?
   }
 
   onLocalHandleMessage(message, jsep) {
@@ -248,10 +238,10 @@ export class JanusVideoRoomService {
         // TODO: Fix following variable formatting (does not work!)
         console.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
 
-        if (this.userVideoElement) {
+        if (this.localUserLogin) {
           this.publishLocalFeed();
         } else {
-          console.debug('No local media element. Not publishing local feed.');
+          console.debug('No local user registered. Not publishing local feed.');
         };
 
         if (message.publishers) {
@@ -303,12 +293,13 @@ export class JanusVideoRoomService {
 
   /* Remote Handle Methods */
 
-  subscribeForStream(login: string) {
+  subscribeForStream(login: string, streamReadyCallback: (stream: MediaStream) => void) {
     var self = this;
     var handleInst = null;
 
     if (login in this.remoteHandles) {
-      return this.attachExistingRemoteHandle(login, mediaElement);
+      this.remoteHandles[login].count++;
+      return;
     }
 
     this.session.attach({
@@ -317,7 +308,7 @@ export class JanusVideoRoomService {
         handleInst = pluginHandle;
 				console.debug(`Remote handle attached ${handleInst.getPlugin()}, id=${handleInst.getId()}`);
         var handleContainer: IRemoteHandle = {
-          mediaElements: [mediaElement],
+          count: 1,
           handle: handleInst,
         };
         self.remoteHandles[login] = handleContainer;
@@ -343,26 +334,14 @@ export class JanusVideoRoomService {
         if (!(login in self.remoteHandles)) {
           console.error(`Remote handle not attached for ${login}`);
         } else {
-          self.applyOnUserChannels(login, (channel) => {
-            if (channel.gotStreamCallback) {
-              channel.gotStreamCallback(login, stream);
-            }
-          });
           self.remoteHandles[login].stream = stream;
-          attachMediaStream(mediaElement, stream);
+          streamReadyCallback(stream);
         }
       },
       oncleanup: () => {
         console.debug('Got a cleanup notification');
       }
     });
-  }
-
-  attachExistingRemoteHandle(login: string) {
-    var handleContainer = this.remoteHandles[login];
-    handleContainer.mediaElements.push(mediaElement);
-    attachMediaStream(mediaElement, handleContainer.stream);
-    console.debug(`Attached existing remote handle for ${login}`);
   }
 
   onRemoteHandleMessage(handle, message, jsep) {
@@ -404,7 +383,7 @@ export class JanusVideoRoomService {
       handleItem.count--;
 
       if (!handleItem.count) {
-        handleContainer.handle.detach();
+        handleItem.handle.detach();
         delete this.remoteHandles[login];
       }
     } else {

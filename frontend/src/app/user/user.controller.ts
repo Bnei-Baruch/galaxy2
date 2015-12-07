@@ -1,5 +1,6 @@
 import { JanusVideoRoomService } from '../components/janusVideoRoom/janusVideoRoom.service';
 
+declare var attachMediaStream: any;
 
 export class UserController {
   public toastr: any;
