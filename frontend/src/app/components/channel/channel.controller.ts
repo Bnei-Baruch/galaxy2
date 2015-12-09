@@ -93,23 +93,45 @@ export class ChannelController {
   userLeft(login: string) {
     var user = this.usersByLogin[login];
     user.joined = null;
+    user.stream = null;
 
     this.onlineUsers.splice(this.onlineUsers.indexOf(user), 1);
     console.debug('User left', login);
 
-    // Unbind slot users
-    // for (var slot in this.slotUsers) {
-    //   var slotUser = this.slotUsers[slot];
-    //   if (slotUser && slotUser.login === login) {
-    //     this.slotUsers[slot] = null;
-    //   }
-    // }
+    if (this.programUser === user) {
+      this.programUser = null;
+      this.$scope.programElement.src = null;
+    } else if (this.previewUser === user) {
+      if (!this.onlineUsers.length) {
+        this.$scope.programElement.src = null;
+      } else {
+        attachMediaStream(this.$scope.previewElement, this.nextPreviewUser.stream);
+        this.previewUser = this.nextPreviewUser;
+        var nextPreviewUser = this.getNextUser(this.previewUser);
 
-    this.next();
+        if (this.onlineUsers.length >= 3) {
+          this.janus.subscribeForStream(nextPreviewUser.login, (stream) => {
+            nextPreviewUser.stream = stream;
+          });
+        }
+        this.nextPreviewUser = nextPreviewUser;
+      }
+    } else if (this.nextPreviewUser === user && this.onlineUsers.length) {
+      var nextPreviewUser = this.getNextUser(this.previewUser);
+
+      if (this.onlineUsers.length >= 3) {
+        this.janus.subscribeForStream(nextPreviewUser.login, (stream) => {
+          nextPreviewUser.stream = stream;
+        });
+      }
+
+      this.nextPreviewUser = nextPreviewUser;
+    }
   }
 
   next() {
-    if (this.onlineUsers.length > 1) {
+    if (this.onlineUsers.length > 1 && this.nextPreviewUser.stream) {
+      // Copy preview to program, attach next preview to preview
       this.$scope.programElement.src = this.$scope.previewElement.src;
       attachMediaStream(this.$scope.previewElement, this.nextPreviewUser.stream);
 
@@ -124,59 +146,31 @@ export class ChannelController {
       }
 
       if (this.onlineUsers.length > 2 && !this.nextPreviewUser.stream) {
-        this.janus.subscribeForStream(this.nextPreviewUser.login, (stream) => {
-          this.nextPreviewUser.stream = stream;
+        var nextPreviewUser = this.nextPreviewUser;
+        this.janus.subscribeForStream(nextPreviewUser.login, (stream) => {
+          nextPreviewUser.stream = stream;
         });
       }
     }
-
-    /*
-    ['preview', 'nextPreview'].forEach((slot) => {
-      var slotUser = this.slotUsers[slot];
-      if (slotUser !== null && !slotUser.stream) {
-        this.janus.subscribeForStream(slotUser.login, (stream) => {
-          slotUser.stream = stream;
-          if (slot === 'preview') {
-            attachMediaStream(this.$scope.previewElement, stream);
-          }
-        });
-      }
-    });
-
-    if (this.slotUsers['program']) {
-      this.janus.unsubscribeFromStream(this.slotUsers['program'].login);
-      this.slotUsers['program'].stream = null;
-    }
-
-    if (this.slotUsers['preview'] && this.slotUsers['preview'].stream) {
-      this.$scope.programElement.src = this.$scope.previewElement.src;
-    }
-
-    console.log(this.slotUsers['nextPreview'])
-    if (this.slotUsers['nextPreview'] && this.slotUsers['nextPreview'].stream) {
-      attachMediaStream(this.$scope.previewElement, this.slotUsers['nextPreview'].stream);
-    }
-
-    if (this.slotUsers['program'] && this.slotUsers['program'].stream) {
-      this.forwardProgramToSDI();
-    }
-
-    this.rotateSlotUsers();
-    */
   }
 
   forwardProgramToSDI() {
     // Forward program to SDI and change video title
     var sdiPort = this.config.janus.sdiPorts[this.name];
     this.janus.forwardRemoteFeed(this.programUser.login, sdiPort);
-    this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPort);
+    // this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPort);
   }
 
   rotateSlotUsers() {
     this.programUser = this.previewUser;
     this.previewUser = this.nextPreviewUser;
 
-    var userIndex = this.onlineUsers.indexOf(this.nextPreviewUser);
-    this.nextPreviewUser = this.onlineUsers[(userIndex + 1) % this.onlineUsers.length];
+    this.nextPreviewUser = this.getNextUser(this.nextPreviewUser);
+  }
+
+  getNextUser(user: IUser) {
+    var userIndex = this.onlineUsers.indexOf(user);
+    var nextUser = this.onlineUsers[(userIndex + 1) % this.onlineUsers.length];
+    return nextUser;
   }
 }

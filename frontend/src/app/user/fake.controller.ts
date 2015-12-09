@@ -7,7 +7,7 @@ export class FakeUserController {
 
   /* @ngInject */
   constructor ($timeout: ng.ITimeoutService, $http: ng.IHttpService, toastr: any, config: any) {
-    this.fakeUsers = ['afula', 'haifa', 'eilat', 'naharia', 'moscow', 'arad'];
+    this.fakeUsers = ['afula', 'haifa', 'eilat', 'naharia', 'moscow'];
 
     $timeout(() => {
       this.fakeUsers.forEach((login: string) => {

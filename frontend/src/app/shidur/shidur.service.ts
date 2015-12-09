@@ -4,7 +4,6 @@ export interface IUser {
   channel: string;
   joined?: moment.Moment;
   stream?: MediaStream;
-  subscribing: boolean;
 }
 
 export interface IUsers {

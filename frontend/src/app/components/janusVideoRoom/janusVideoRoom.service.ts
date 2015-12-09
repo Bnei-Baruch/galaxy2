@@ -165,7 +165,9 @@ export class JanusVideoRoomService {
     };
     if (login) {
       delete this.publishers[login];
-      // Update channels on leaving user.
+      this.unsubscribeFromStream(login);
+
+      // Update channels on leaving user
       this.applyOnUserChannels(login, (channel) => {
         channel.leftCallback(login);
       });
@@ -334,7 +336,10 @@ export class JanusVideoRoomService {
           console.error(`Remote handle not attached for ${login}`);
         } else {
           self.remoteHandles[login].stream = stream;
-          streamReadyCallback(stream);
+
+          self.$timeout(() => {
+            streamReadyCallback(stream);
+          });
         }
       },
       oncleanup: () => {

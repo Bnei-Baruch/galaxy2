@@ -1,7 +1,7 @@
 {
   "janus": {
     "serverUri": "http://galaxy-dev.kbb1.com:8088/janus",
-    "serverIp": "92.222.110.229",
+    "serverIp": "51.254.244.44",
     "secret": "adminpwd",
     "roomId": 4,
     "sdiPorts": {
