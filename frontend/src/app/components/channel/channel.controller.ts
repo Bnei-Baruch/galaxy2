@@ -158,7 +158,7 @@ export class ChannelController {
     // Forward program to SDI and change video title
     var sdiPort = this.config.janus.sdiPorts[this.name];
     this.janus.forwardRemoteFeed(this.programUser.login, sdiPort);
-    // this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPort);
+    this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPort);
   }
 
   rotateSlotUsers() {
