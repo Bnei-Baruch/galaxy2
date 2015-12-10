@@ -26,7 +26,7 @@
 
       <md-grid-tile-header>
         <h3>PREVIEW {{vm.previewUser.title}}
-        <md-icon ng-if="!vm.nextPreviewUser.stream" aria-label="Waiting for preview..." ng-style="{color: 'white'}" class="material-icons">hourglass_empty</md-icon>
+        <md-icon ng-if="!vm.isReadyToRotate()" aria-label="Waiting for preview..." ng-style="{color: 'white'}" class="material-icons">hourglass_empty</md-icon>
         </h3>
       </md-grid-tile-header>
     </md-grid-tile>

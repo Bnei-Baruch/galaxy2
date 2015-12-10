@@ -105,7 +105,8 @@ export class ChannelController {
       this.$scope.programElement.src = null;
     } else if (this.previewUser === user) {
       if (!this.onlineUsers.length) {
-        this.$scope.programElement.src = null;
+        this.previewUser = null;
+        this.$scope.previewElement.src = null;
       } else {
         attachMediaStream(this.$scope.previewElement, this.nextPreviewUser.stream);
         this.previewUser = this.nextPreviewUser;
@@ -174,5 +175,14 @@ export class ChannelController {
     var userIndex = this.onlineUsers.indexOf(user);
     var nextUser = this.onlineUsers[(userIndex + 1) % this.onlineUsers.length];
     return nextUser;
+  }
+
+  isReadyToRotate() {
+    if (!this.onlineUsers.length) {
+      return false;
+    } else if (this.onlineUsers.length === 1) {
+      return Boolean(this.previewUser && this.previewUser.stream);
+    }
+    return Boolean(this.nextPreviewUser && this.nextPreviewUser.stream);
   }
 }
