@@ -67,6 +67,8 @@ export class ChannelController {
     }
   }
 
+  /* TODO: refactor repeating code in userJoined/userLeft/next() */
+
   userJoined(login: string) {
     // TODO: The timestamp should be better taken from Janus point of view
     var user = this.usersByLogin[login];
