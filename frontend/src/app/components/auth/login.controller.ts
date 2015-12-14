@@ -3,22 +3,23 @@ import IDialogService = angular.material.IDialogService;
 
 /** @ngInject */
 export class LoginController {
-  public login: string;
-  public password: string;
-  public $log: ng.ILogService;
-  public $scope: ng.IScope;
-  public $mdDialog: IDialogService;
-  public $auth: any;
+  login: string;
+  password: string;
+  $log: ng.ILogService;
+  $scope: ng.IScope;
+  $mdDialog: IDialogService;
+  $auth: any;
+  toastr: any;
 
-  constructor($log: ng.ILogService, $scope: ng.IScope, $mdDialog: IDialogService, $auth: any) {
-    this.$log = $log;
+  constructor($scope: ng.IScope, $mdDialog: IDialogService, $auth: any, toastr: any) {
     this.$scope = $scope;
     this.$mdDialog = $mdDialog;
     this.$auth = $auth;
+    this.toastr = toastr;
   }
 
   submit(login: string, password: string) {
-    this.$log.debug('Signing in as: ' + this.login);
+    console.debug('Signing in as:', this.login);
 
     this.$auth.submitLogin({
       username: this.login,
@@ -26,7 +27,7 @@ export class LoginController {
     }).then((user) => {
       this.$mdDialog.hide(user);
     }).catch((response) => {
-      debugger;
+      this.toastr.error(response.errors.join(' '));
     });
   }
 

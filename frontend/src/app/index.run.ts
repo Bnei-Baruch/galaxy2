@@ -16,11 +16,7 @@ export function runBlock($log: ng.ILogService,
       authService.login()
         .then(function (user) {
           $rootScope.currentUser = user;
-          toastr.info('Successfully signed in');
           return $state.go(toState.name, toParams);
-        })
-        .catch(function (response) {
-          alert('error');
         });
     }
   });
