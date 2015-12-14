@@ -20,7 +20,7 @@ export class AuthService {
 
   public login() {
     return this.mdDialog.show({
-      clickOutsideToClose: true,
+      clickOutsideToClose: false,
       templateUrl: 'app/components/auth/login.html',
       controller: 'LoginController',
       controllerAs: 'vm'

@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   devise_for :users, skip: :registrations
 
   # REST api routes
-  namespace :rest do
+  namespace :rest, defaults: {format: :json} do
     mount_devise_token_auth_for 'User', at: 'auth', skip: [:registrations, :passwords, :confirmations]
     resources :users, only: [:show, :index]
   end

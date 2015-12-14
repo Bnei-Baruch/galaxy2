@@ -1,5 +1,5 @@
 /** @ngInject */
-export function config($logProvider: ng.ILogProvider, toastrConfig: any, $authProvider: any) {
+export function config($logProvider: ng.ILogProvider, $authProvider: any, toastrConfig: any, config: any) {
   // enable log
   $logProvider.debugEnabled(true);
 
@@ -11,6 +11,6 @@ export function config($logProvider: ng.ILogProvider, toastrConfig: any, $authPr
   toastrConfig.progressBar = true;
 
   $authProvider.configure({
-    apiUrl: '/api/rest'
+    apiUrl: config.backendUri
   });
 }

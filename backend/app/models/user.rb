@@ -3,7 +3,10 @@ class User < ActiveRecord::Base
   # :confirmable, :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable, :recoverable, :rememberable, :trackable, :validatable,
          :authentication_keys => [:login]
+
   include DeviseTokenAuth::Concerns::User
+
+  attr_accessor :login
 
   enum role: [:user, :operator, :admin]
 
@@ -26,10 +29,12 @@ class User < ActiveRecord::Base
   end
 
   def login=(login)
+    binding.pry
     @login = login
   end
 
   def login
+    binding.pry
     @login || self.username || self.email
   end
 
