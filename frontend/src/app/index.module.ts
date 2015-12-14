@@ -39,7 +39,7 @@ module frontend {
     .service('janus', JanusVideoRoomService)
     .service('shidur', ShidurService)
     .service('channel', ChannelService)
-    .factory('authService', AuthService.authFactory)
+    .service('authService', AuthService)
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
     .controller('FakeUserController', FakeUserController)

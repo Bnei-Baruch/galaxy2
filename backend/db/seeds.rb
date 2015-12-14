@@ -1,15 +1,16 @@
 puts '--> Admins'
-[{email: 'iwuvjhdva@gmail.com', password:'galaxy123'},
- {email: 'kolmanv@gmail.com', password:'galaxy123'},
- {email: 'edoshor@gmail.com', password:'galaxy123'},
- {email: 'yosef.yudilevich@gmail.com', password:'galaxy123'},
- {email: 'amnonbb@gmail.com', password:'galaxy123'},
+[{email: 'iwuvjhdva@gmail.com', username: 'negus', password:'galaxy123'},
+ {email: 'kolmanv@gmail.com', username: 'kolmanv', password:'galaxy123'},
+ {email: 'edoshor@gmail.com', username: 'edos', password:'galaxy123'},
+ {email: 'yosef.yudilevich@gmail.com', username: 'yosefy', password:'galaxy123'},
+ {email: 'amnonbb@gmail.com', username: 'amnon', password:'galaxy123'},
 ].each do |e|
   User.find_or_create_by(email: e[:email]) do |u|
     u.email = e[:email]
     u.password = e[:password]
     u.password_confirmation = e[:password]
-    u.role = :admin
+    u.username = e[:username]
+    u.role = :operator
     u.save!
   end
 end

@@ -2,7 +2,7 @@ class User < ActiveRecord::Base
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable, :recoverable, :rememberable, :trackable, :validatable,
-         :authentication_keys => [:login]
+         :authentication_keys => [:username]
 
   include DeviseTokenAuth::Concerns::User
 
@@ -29,12 +29,10 @@ class User < ActiveRecord::Base
   end
 
   def login=(login)
-    binding.pry
     @login = login
   end
 
   def login
-    binding.pry
     @login || self.username || self.email
   end
 

@@ -1,16 +1,12 @@
-import {AuthService} from "./components/auth/auth.service";
-
-export interface IGalaxyScope extends ng.IRootScopeService {
-  currentUser?: any;
-}
+import {AuthService, IGalaxyScope} from "./components/auth/auth.service";
 
 /** @ngInject */
 export function runBlock($log: ng.ILogService,
                          $rootScope: IGalaxyScope,
                          $state: ng.ui.IStateService,
+                         toastr: any,
                          authService: AuthService) {
   $log.debug('runBlock end');
-
   $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
     var requireLogin = toState.data.requireLogin;
 
@@ -18,11 +14,13 @@ export function runBlock($log: ng.ILogService,
       event.preventDefault();
 
       authService.login()
-        .then(function () {
+        .then(function (user) {
+          $rootScope.currentUser = user;
+          toastr.info('Successfully signed in');
           return $state.go(toState.name, toParams);
         })
-        .catch(function () {
-          return $state.go('hell');   // TODO: replace this with a user friendly something...
+        .catch(function (response) {
+          alert('error');
         });
     }
   });

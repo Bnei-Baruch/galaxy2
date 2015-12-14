@@ -14,4 +14,17 @@ export function galaxyNavbar(): ng.IDirective {
 
 /** @ngInject */
 export class NavbarController {
+  toastr: any;
+
+  constructor (toastr: any) {
+    this.toastr = toastr;
+  }
+
+  openMenu($mdOpenMenu, e) {
+    $mdOpenMenu(e);
+  };
+
+  logout() {
+    this.toastr.warning('Logout not implemented yet (;')
+  }
 }

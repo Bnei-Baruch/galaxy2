@@ -21,12 +21,12 @@ export class LoginController {
     this.$log.debug('Signing in as: ' + this.login);
 
     this.$auth.submitLogin({
-      login: this.login,
+      username: this.login,
       password: this.password
-    }).then((resp) => {
-      console.log(resp);
+    }).then((user) => {
+      this.$mdDialog.hide(user);
+    }).catch((response) => {
       debugger;
-      this.$mdDialog.hide({});
     });
   }
 
