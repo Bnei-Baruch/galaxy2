@@ -7,7 +7,8 @@ export function routerConfig($stateProvider: ng.ui.IStateProvider, $urlRouterPro
       controller: 'ShidurController',
       controllerAs: 'shidur',
       data: {
-        requireLogin: true
+        requireLogin: true,
+        allowedRoles: ['operator'],
       }
     })
     .state('user', {
@@ -16,7 +17,8 @@ export function routerConfig($stateProvider: ng.ui.IStateProvider, $urlRouterPro
       controller: 'UserController',
       controllerAs: 'user',
       data: {
-        requireLogin: true
+        requireLogin: true,
+        allowedRoles: ['operator', 'user'],
       }
     })
     .state('fake', {
@@ -25,7 +27,8 @@ export function routerConfig($stateProvider: ng.ui.IStateProvider, $urlRouterPro
       controller: 'FakeUserController',
       controllerAs: 'fake',
       data: {
-        requireLogin: true
+        requireLogin: true,
+        allowedRoles: ['admin'],
       }
     });
 

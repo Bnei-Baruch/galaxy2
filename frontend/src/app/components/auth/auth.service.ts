@@ -9,23 +9,38 @@ export interface IGalaxyScope extends ng.IRootScopeService {
 
 /** @ngInject */
 export class AuthService {
-  public $mdDialog: IDialogService;
-  public $rootScope: IGalaxyScope;
+  $q: any;
+  $mdDialog: IDialogService;
+  $auth: any;
   toastr: any;
 
-  constructor($mdDialog: IDialogService, $rootScope: IGalaxyScope, toastr: any) {
+  constructor($q: any, $mdDialog: IDialogService, toastr: any, $auth: any) {
+    this.$q = $q;
     this.$mdDialog = $mdDialog;
-    this.$rootScope = $rootScope;
+    this.$auth = $auth;
     this.toastr = toastr;
   }
 
-  public login() {
-    return this.$mdDialog.show({
-      clickOutsideToClose: false,
-      templateUrl: 'app/components/auth/login.html',
-      controller: 'LoginController',
-      controllerAs: 'vm'
+  authenticate() {
+    var deferred = this.$q.defer();
+
+    this.$auth.validateUser().then((user) => {
+      deferred.resolve(user);
+    }).catch((resp) => {
+      // User not authenticated, displaying login modal
+      this.$mdDialog.show({
+        clickOutsideToClose: false,
+        templateUrl: 'app/components/auth/login.html',
+        controller: 'LoginController',
+        controllerAs: 'vm'
+      }).then((user) => {
+        deferred.resolve(user);
+      });
     });
+    return deferred.promise;
   }
 
+  logout() {
+    return this.$auth.signOut();
+  }
 }

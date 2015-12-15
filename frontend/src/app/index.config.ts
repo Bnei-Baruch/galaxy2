@@ -11,6 +11,6 @@ export function config($logProvider: ng.ILogProvider, $authProvider: any, toastr
   toastrConfig.progressBar = true;
 
   $authProvider.configure({
-    apiUrl: config.backendUri
+    apiUrl: config.backendUri,
   });
 }

@@ -20,7 +20,6 @@ module frontend {
   var dependencies = [
     'frontend.config',
     'ngAnimate',
-    'ngCookies',
     'ngTouch',
     'ngSanitize',
     'ngMessages',
