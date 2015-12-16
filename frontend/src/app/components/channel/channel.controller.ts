@@ -101,6 +101,7 @@ export class ChannelController {
     console.debug('User left', login);
 
     if (this.programUser === user) {
+      // TODO: Put dummy video stream to program
       this.programUser = null;
       this.$scope.programElement.src = null;
     } else if (this.previewUser === user) {
@@ -133,8 +134,10 @@ export class ChannelController {
   }
 
   next() {
+    // TODO: Implement forwarding to program in case of one online user
     if (this.onlineUsers.length > 1 && this.nextPreviewUser.stream) {
       // Copy preview to program, attach next preview to preview
+      // TODO: Clone video elements instead of copying stream URLs, to avoid blinking
       this.$scope.programElement.src = this.$scope.previewElement.src;
       attachMediaStream(this.$scope.previewElement, this.nextPreviewUser.stream);
 
