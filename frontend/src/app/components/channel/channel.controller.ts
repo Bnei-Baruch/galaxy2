@@ -30,6 +30,11 @@ export class ChannelController {
               public config: any) {
 
     // Mapping users by login for conveniency
+
+    if (typeof this.users === 'undefined') {
+      this.users = [];
+    }
+
     this.users.forEach((user: IUser) => {
       this.usersByLogin[user.login] = user;
     });
