@@ -22,6 +22,7 @@ interface IFeedForwardInfo {
 
 /* @ngInject */
 export class JanusVideoRoomService {
+  $q: ng.IQService;
   $timeout: ng.ITimeoutService;
   $http: ng.IHttpService;
   config: any;
@@ -44,11 +45,12 @@ export class JanusVideoRoomService {
   localStream: MediaStream;
   localStreamReadyCallback: (stream: MediaStream) => void;
 
-  constructor($timeout: ng.ITimeoutService, $http: ng.IHttpService, toastr: any, config: any) {
-    this.config = config;
-    this.toastr = toastr;
+  constructor($q: ng.IQService, $timeout: ng.ITimeoutService, $http: ng.IHttpService, toastr: any, config: any) {
+    this.$q = $q;
     this.$timeout = $timeout;
     this.$http = $http;
+    this.config = config;
+    this.toastr = toastr;
     this.joined = false;
 
     if(!Janus.isWebrtcSupported()) {
@@ -398,6 +400,7 @@ export class JanusVideoRoomService {
   // Forward stream to janus port
   forwardRemoteFeed(login, port) {
     var self = this;
+    var deferred = this.$q.defer();
 
     if (!(login in this.remoteHandles)) {
       this.toastr.error(`Could not find remote handle for ${login}`);
@@ -426,12 +429,16 @@ export class JanusVideoRoomService {
       this.localHandle.send({
         message: stopfwVideo,
         success: (data) => {
-          console.debug('Forwarding stopped successfully for', forwardInfo, data);
+          console.log('Forwarding stopped successfully for', forwardInfo);
+          deferred.resolve(true);
         },
-        error: (data) => {
-          console.error('Error stopping forwarding', forwardInfo, data);
+        error: (resp) => {
+          console.error('Error stopping forwarding', forwardInfo, resp);
+          deferred.resolve(false);
         }
       });
+
+      return deferred.promise;
     }
 
     var forward = {

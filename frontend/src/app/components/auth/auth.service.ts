@@ -10,13 +10,13 @@ export interface IGalaxyScope extends ng.IRootScopeService {
 
 /** @ngInject */
 export class AuthService {
-  $q: any;
+  $q: ng.IQService;
   $mdDialog: IDialogService;
   $auth: any;
   toastr: any;
   user: IUser;
 
-  constructor($q: any, $mdDialog: IDialogService, toastr: any, $auth: any) {
+  constructor($q: ng.IQService, $mdDialog: IDialogService, toastr: any, $auth: any) {
     this.$q = $q;
     this.$mdDialog = $mdDialog;
     this.$auth = $auth;
