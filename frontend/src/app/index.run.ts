@@ -1,4 +1,4 @@
-import {AuthService, IGalaxyScope} from "./components/auth/auth.service";
+import { AuthService, IGalaxyScope } from './components/auth/auth.service';
 
 /** @ngInject */
 export function runBlock($log: ng.ILogService,

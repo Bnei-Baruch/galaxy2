@@ -6,8 +6,8 @@
   </md-button>
 
   <section flex layout="row" layout-align="left center">
-    <md-button ng-if="$root.currentUser.role === 'operator'" href ui-sref="shidur" class="md-raised">Shidur</md-button>
-    <md-button ng-if="['user', 'operator'].indexOf($root.currentUser.role) !== -1" href ui-sref="user" class="md-raised">User</md-button>
+    <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="shidur" class="md-raised">Shidur</md-button>
+    <md-button ng-if="['user', 'operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="user" class="md-raised">User</md-button>
     <md-button ng-if="$root.currentUser.role === 'admin'" href="/backend/admin" class="md-raised">Admin</md-button>
     <md-button href ui-sref="help" class="md-raised">Help</md-button>
   </section>
@@ -15,7 +15,7 @@
   <md-menu class="galaxy-navbar-text" md-position-mode="target-right bottom">
     <md-button ng-click="vm.openMenu($mdOpenMenu, $event)">
       <md-icon class="material-icons">person</md-icon>
-      {{$root.currentUser.name || $root.currentUser.username || $root.currentUser.email}}
+      {{$root.currentUser.title}}
     </md-button>
     <md-menu-content width="4">
       <md-menu-item>

@@ -22,7 +22,7 @@ export class LoginController {
     console.debug('Signing in as:', this.login);
 
     this.$auth.submitLogin({
-      username: this.login,
+      login: this.login,
       password: this.password
     }).then((user) => {
       this.$mdDialog.hide(user);

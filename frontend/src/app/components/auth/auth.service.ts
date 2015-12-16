@@ -1,3 +1,4 @@
+import { IUser } from '../../shidur/shidur.service';
 import IDialogService = angular.material.IDialogService;
 
 // Implementation follows guidelines from:
@@ -13,6 +14,7 @@ export class AuthService {
   $mdDialog: IDialogService;
   $auth: any;
   toastr: any;
+  user: IUser;
 
   constructor($q: any, $mdDialog: IDialogService, toastr: any, $auth: any) {
     this.$q = $q;
@@ -25,6 +27,7 @@ export class AuthService {
     var deferred = this.$q.defer();
 
     this.$auth.validateUser().then((user) => {
+      this.user = user;
       deferred.resolve(user);
     }).catch((resp) => {
       // User not authenticated, displaying login modal
@@ -34,6 +37,7 @@ export class AuthService {
         controller: 'LoginController',
         controllerAs: 'vm'
       }).then((user) => {
+        this.user = user;
         deferred.resolve(user);
       });
     });
