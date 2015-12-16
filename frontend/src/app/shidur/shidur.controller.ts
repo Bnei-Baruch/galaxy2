@@ -9,7 +9,7 @@ export class ShidurController {
     this.toastr = toastr;
     this.breakdown = {};
 
-    shidur.getUsers().success((users) => {
+    shidur.getUsers().then((users) => {
       this.initBreakdown(users);
     });
   }
