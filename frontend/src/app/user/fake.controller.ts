@@ -1,18 +1,21 @@
 import { JanusVideoRoomService } from '../components/janusVideoRoom/janusVideoRoom.service';
 
+declare var attachMediaStream: any;
 
 export class FakeUserController {
   fakeUsers: string[];
 
   /* @ngInject */
-  constructor ($timeout: any, $http: ng.IHttpService, toastr: any, config: any) {
+  constructor ($timeout: ng.ITimeoutService, $http: ng.IHttpService, toastr: any, config: any) {
     this.fakeUsers = ['afula', 'haifa', 'eilat', 'naharia', 'moscow'];
 
     $timeout(() => {
       this.fakeUsers.forEach((login: string) => {
-        var videoElement = <HTMLVideoElement>document.querySelector(`video[data-login="${login}"]`);
-        var janusService = new JanusVideoRoomService($http, toastr, config);
-        janusService.registerUser(login, videoElement);
+        var mediaElement = <HTMLMediaElement>document.querySelector(`video[data-login="${login}"]`);
+        var janusService = new JanusVideoRoomService($timeout, $http, toastr, config);
+        janusService.registerLocalUser(login, (stream) => {
+          attachMediaStream(mediaElement, stream);
+        });
       });
     });
   }

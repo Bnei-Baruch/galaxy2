@@ -1,5 +1,6 @@
 import { JanusVideoRoomService } from '../components/janusVideoRoom/janusVideoRoom.service';
 
+declare var attachMediaStream: any;
 
 export class UserController {
   public toastr: any;
@@ -10,8 +11,10 @@ export class UserController {
     this.toastr = toastr;
     this.janus = janus;
 
-    var videoElement = <HTMLVideoElement>document.querySelector('#localVideo');
-    this.janus.registerUser('arad', videoElement);
+    var mediaElement = <HTMLMediaElement>document.querySelector('#localVideo');
+    this.janus.registerLocalUser('arad', (stream) => {
+      attachMediaStream(mediaElement, stream);
+    });
   }
 }
 

@@ -19,7 +19,12 @@ exports.config = {
     }
   },
 
-  baseUrl: 'http://localhost:3005',
+  // Uncomment to maximize the browser window
+  // onPrepare: function() {
+  //     browser.driver.manage().window().maximize();
+  // },
+
+  baseUrl: 'http://localhost:3002',
 
   // Spec patterns are relative to the current working directory when
   // protractor is called.
