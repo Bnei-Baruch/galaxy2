@@ -23,7 +23,7 @@ interface IFeedForwardInfo {
 
 /* @ngInject */
 export class JanusVideoRoomService {
-  $http: ng.IHttpService
+  $http: ng.IHttpService;
   config: any;
   toastr: any;
 
