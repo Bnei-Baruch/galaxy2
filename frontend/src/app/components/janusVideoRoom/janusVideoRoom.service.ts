@@ -423,7 +423,15 @@ export class JanusVideoRoomService {
         'secret': self.config.janus.secret
       };
       // TODO: handle stop answers
-      this.localHandle.send({'message': stopfwVideo});
+      this.localHandle.send({
+        message: stopfwVideo,
+        success: (data) => {
+          console.debug('Forwarding stopped successfully for', forwardInfo, data);
+        },
+        error: (data) => {
+          console.error('Error stopping forwarding', forwardInfo, data);
+        }
+      });
     }
 
     var forward = {
