@@ -1,4 +1,3 @@
-declare var attachMediaStream: any;
 declare var escape: any;
 declare var Janus: any;
 
@@ -10,7 +9,7 @@ interface IChannel {
 }
 
 interface IRemoteHandle {
-  mediaElements: HTMLVideoElement[];
+  count: number;
   handle: any;  // Janus handle instance
   stream?: MediaStream;
 }
@@ -23,7 +22,8 @@ interface IFeedForwardInfo {
 
 /* @ngInject */
 export class JanusVideoRoomService {
-  $http: ng.IHttpService
+  $timeout: ng.ITimeoutService;
+  $http: ng.IHttpService;
   config: any;
   toastr: any;
 
@@ -39,14 +39,15 @@ export class JanusVideoRoomService {
   // Mapping between login and inner Janus data
   publishers: { (login: string): any } = <any>{};
 
-  userLogin: string;
-  userVideoElement: HTMLVideoElement;
-  localStream: MediaStream;
   joined: boolean;
+  localUserLogin: string;
+  localStream: MediaStream;
+  localStreamReadyCallback: (stream: MediaStream) => void;
 
-  constructor($http: ng.IHttpService, toastr: any, config: any) {
+  constructor($timeout: ng.ITimeoutService, $http: ng.IHttpService, toastr: any, config: any) {
     this.config = config;
     this.toastr = toastr;
+    this.$timeout = $timeout;
     this.$http = $http;
     this.joined = false;
 
@@ -69,10 +70,15 @@ export class JanusVideoRoomService {
     });
   }
 
-  registerUser(login: string, element: HTMLVideoElement) {
-    this.userLogin = login;
-    this.userVideoElement = element;
-    this.attachLocalMediaStream();
+  registerLocalUser(login: string, streamReadyCallback: (stream: MediaStream) => void) {
+    this.localUserLogin = login;
+    this.localStreamReadyCallback = streamReadyCallback;
+
+    if (this.localStream) {
+      streamReadyCallback(this.localStream);
+    } else if (this.localHandle) {
+      this.publishLocalFeed();
+    }
   }
 
   registerChannel(options: IChannel) {
@@ -131,12 +137,21 @@ export class JanusVideoRoomService {
       self.publishers[p.display] = p;
 
       // Handle channels
-      if (p.display in self.userChannels) {
-        self.userChannels[p.display].forEach((c) => {
-          self.channels[c].joinedCallback(p.display);
-        });
-      }
+      this.applyOnUserChannels(p.display, (channel) => {
+        channel.joinedCallback(p.display);
+      });
     });
+  }
+
+  applyOnUserChannels(login: string, func: (channel: IChannel) => void) {
+    if (login in this.userChannels) {
+      this.userChannels[login].forEach((c) => {
+        // Wrapping into $timeout for syncing the UI
+        this.$timeout(() => {
+          func(this.channels[c]);
+        });
+      });
+    }
   }
 
   deletePublisherByJanusId(janusId) {
@@ -150,12 +165,12 @@ export class JanusVideoRoomService {
     };
     if (login) {
       delete this.publishers[login];
-      // Update channels on leaving user.
-      if (login in this.userChannels) {
-        this.userChannels[login].forEach((c) => {
-          this.channels[c].leftCallback(login);
-        });
-      }
+      this.unsubscribeFromStream(login);
+
+      // Update channels on leaving user
+      this.applyOnUserChannels(login, (channel) => {
+        channel.leftCallback(login);
+      });
     }
   }
 
@@ -168,7 +183,6 @@ export class JanusVideoRoomService {
   /* Local Handle Methods */
 
   attachLocalHandle() {
-    var streaming;
     var self = this;
 
     this.session.attach({
@@ -181,7 +195,7 @@ export class JanusVideoRoomService {
           request: 'join',
           room: self.config.janus.roomId,
           ptype: 'publisher',
-          display: self.userLogin
+          display: self.localUserLogin
         };
         self.localHandle.send({'message': register});
       },
@@ -189,7 +203,7 @@ export class JanusVideoRoomService {
         self.toastr.error('Error attaching plugin: ' + error);
       },
       onmessage: (msg, jsep) => {
-        self.onLocalVideoRoomMessage(streaming, msg, jsep);
+        self.onLocalHandleMessage(msg, jsep);
         if (jsep) {
           console.debug('Handling SDP as well...');
           console.debug(jsep);
@@ -202,7 +216,7 @@ export class JanusVideoRoomService {
       onlocalstream: (stream) => {
         console.debug('Got local stream', stream);
         this.localStream = stream;
-        this.attachLocalMediaStream();
+        this.localStreamReadyCallback(stream);
       },
       onremotestream: (stream) => {
         console.debug('Got a remote stream!', stream);
@@ -214,22 +228,7 @@ export class JanusVideoRoomService {
     });
   }
 
-  attachLocalMediaStream() {
-    if (this.joined) {
-      if (!this.localStream) {
-        // Local stream was not published, publish it.
-        this.publishLocalFeed();
-      } else {
-        if (this.userVideoElement) {
-          attachMediaStream(this.userVideoElement, this.localStream);
-        } else {
-          console.error('No local media element set.');
-        }
-      }
-    } // If not joined, try to join here?
-  }
-
-  onLocalVideoRoomMessage(handle, message, jsep) {
+  onLocalHandleMessage(message, jsep) {
     console.debug('Got a local message', message);
 
     var e = message.videoroom;
@@ -240,10 +239,10 @@ export class JanusVideoRoomService {
         // TODO: Fix following variable formatting (does not work!)
         console.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
 
-        if (this.userVideoElement) {
+        if (this.localUserLogin) {
           this.publishLocalFeed();
         } else {
-          console.debug('No local media element. Not publishing local feed.');
+          console.debug('No local user registered. Not publishing local feed.');
         };
 
         if (message.publishers) {
@@ -295,13 +294,13 @@ export class JanusVideoRoomService {
 
   /* Remote Handle Methods */
 
-  attachRemoteHandle(login: string, mediaElement: HTMLVideoElement) {
+  subscribeForStream(login: string, streamReadyCallback: (stream: MediaStream) => void) {
     var self = this;
-    var streaming;
     var handleInst = null;
 
     if (login in this.remoteHandles) {
-      return this.attachExistingRemoteHandle(login, mediaElement);
+      this.remoteHandles[login].count++;
+      return;
     }
 
     this.session.attach({
@@ -310,7 +309,7 @@ export class JanusVideoRoomService {
         handleInst = pluginHandle;
 				console.debug(`Remote handle attached ${handleInst.getPlugin()}, id=${handleInst.getId()}`);
         var handleContainer: IRemoteHandle = {
-          mediaElements: [mediaElement],
+          count: 1,
           handle: handleInst,
         };
         self.remoteHandles[login] = handleContainer;
@@ -325,7 +324,7 @@ export class JanusVideoRoomService {
         self.toastr.error('Error attaching plugin: ' + error);
       },
       onmessage: (msg, jsep) => {
-        self.onRemoteVideoRoomMessage(handleInst, msg, jsep);
+        self.onRemoteHandleMessage(handleInst, msg, jsep);
       },
       onlocalstream: () => {
         // The subscriber stream is recvonly, we don't expect anything here
@@ -337,7 +336,10 @@ export class JanusVideoRoomService {
           console.error(`Remote handle not attached for ${login}`);
         } else {
           self.remoteHandles[login].stream = stream;
-          attachMediaStream(mediaElement, stream);
+
+          self.$timeout(() => {
+            streamReadyCallback(stream);
+          });
         }
       },
       oncleanup: () => {
@@ -346,14 +348,7 @@ export class JanusVideoRoomService {
     });
   }
 
-  attachExistingRemoteHandle(login: string, mediaElement: HTMLVideoElement) {
-    var handleContainer = this.remoteHandles[login];
-    handleContainer.mediaElements.push(mediaElement);
-    attachMediaStream(mediaElement, handleContainer.stream);
-    console.debug(`Attached existing remote handle for ${login}`);
-  }
-
-  onRemoteVideoRoomMessage(handle, message, jsep) {
+  onRemoteHandleMessage(handle, message, jsep) {
     var self = this;
 
     console.debug('Got a remote message', message);
@@ -386,29 +381,17 @@ export class JanusVideoRoomService {
     }
   }
 
-  releaseRemoteHandle(login: string, mediaElement?: HTMLVideoElement) {
-    if (!(login in this.remoteHandles)) {
-      console.debug(`Remote handle is not attached for ${login}`);
-      return;
-    }
+  unsubscribeFromStream(login: string) {
+    if (login in this.remoteHandles) {
+      var handleItem = this.remoteHandles[login];
+      handleItem.count--;
 
-    var handleContainer = this.remoteHandles[login];
-
-    if (mediaElement === undefined) {
-      // No media element provided, detaching all handle elements
-      handleContainer.mediaElements.forEach((element) => {
-        element.src = null;
-      });
-      handleContainer.mediaElements = [];
+      if (!handleItem.count) {
+        handleItem.handle.detach();
+        delete this.remoteHandles[login];
+      }
     } else {
-      // Detaching only one media element
-      var elementIndex = handleContainer.mediaElements.indexOf(mediaElement);
-      handleContainer.mediaElements.splice(elementIndex, 1);
-    }
-
-    if (handleContainer.mediaElements.length === 0) {
-      handleContainer.handle.detach();
-      delete this.remoteHandles[login];
+      console.debug(`Remote handle is not attached for ${login}`);
     }
   }
 
