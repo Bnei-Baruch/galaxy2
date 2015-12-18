@@ -7,17 +7,22 @@ export class ShidurController {
   /* @ngInject */
   constructor (shidur: ShidurService, toastr: any) {
     this.toastr = toastr;
-    this.breakdown = {};
 
-    this.initBreakdown(shidur.getUsers().users);
+    shidur.getUsers().then((users) => {
+      this.initBreakdown(users);
+    });
   }
 
   initBreakdown(users) {
+    this.breakdown = {};
+
     users.forEach((u: IUser) => {
-      if (!(u.channel in this.breakdown)) {
-        this.breakdown[u.channel] = [];
+      var channel = u.channel || 'large1';
+
+      if (!(channel in this.breakdown)) {
+        this.breakdown[channel] = [];
       }
-      this.breakdown[u.channel].push(u);
+      this.breakdown[channel].push(u);
     });
   }
 }

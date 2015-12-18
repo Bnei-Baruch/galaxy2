@@ -422,6 +422,7 @@ export class JanusVideoRoomService {
         'room': self.config.janus.roomId,
         'secret': self.config.janus.secret
       };
+      // TODO: handle stop answers
       this.localHandle.send({'message': stopfwVideo});
     }
 

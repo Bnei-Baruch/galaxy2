@@ -12,5 +12,6 @@
       "control": 10005
     },
     "titleApiUrl": "http://10.66.24.89/index.php?title=%title%&port=%port%"
-  }
+  },
+  "backendUri": "http://rt-dev.kbb1.com:5000/rest"
 }

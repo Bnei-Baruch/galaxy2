@@ -5,19 +5,31 @@ export function routerConfig($stateProvider: ng.ui.IStateProvider, $urlRouterPro
       url: '/shidur',
       templateUrl: 'app/shidur/shidur.html',
       controller: 'ShidurController',
-      controllerAs: 'shidur'
+      controllerAs: 'shidur',
+      data: {
+        requireLogin: true,
+        allowedRoles: ['operator'],
+      }
     })
     .state('user', {
       url: '/user',
       templateUrl: 'app/user/user.html',
       controller: 'UserController',
-      controllerAs: 'user'
+      controllerAs: 'user',
+      data: {
+        requireLogin: true,
+        allowedRoles: ['operator', 'user'],
+      }
     })
     .state('fake', {
       url: '/fake',
       templateUrl: 'app/user/fake.html',
       controller: 'FakeUserController',
-      controllerAs: 'fake'
+      controllerAs: 'fake',
+      data: {
+        requireLogin: true,
+        allowedRoles: ['admin'],
+      }
     });
 
   $urlRouterProvider.otherwise('/shidur');

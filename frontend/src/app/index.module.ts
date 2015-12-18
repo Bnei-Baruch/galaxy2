@@ -9,6 +9,8 @@ import { ShidurController } from './shidur/shidur.controller';
 import { ShidurService } from './shidur/shidur.service';
 import { UserController } from './user/user.controller';
 import { FakeUserController } from './user/fake.controller';
+import { LoginController } from '../app/components/auth/login.controller';
+import { AuthService } from '../app/components/auth/auth.service';
 import { channelWidget } from '../app/components/channel/channel.directive';
 import { ChannelService } from '../app/components/channel/channel.service';
 
@@ -18,14 +20,14 @@ module frontend {
   var dependencies = [
     'frontend.config',
     'ngAnimate',
-    'ngCookies',
     'ngTouch',
     'ngSanitize',
     'ngMessages',
     'ngAria',
     'ui.router',
     'ngMaterial',
-    'toastr'
+    'toastr',
+    'ng-token-auth'
   ];
 
   angular.module('frontend', dependencies)
@@ -36,9 +38,12 @@ module frontend {
     .service('janus', JanusVideoRoomService)
     .service('shidur', ShidurService)
     .service('channel', ChannelService)
+    .service('authService', AuthService)
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
     .controller('FakeUserController', FakeUserController)
+    .controller('LoginController', LoginController)
     .directive('galaxyNavbar', galaxyNavbar)
-    .directive('channelWidget', channelWidget);
+    .directive('channelWidget', channelWidget)
+    ;
 }

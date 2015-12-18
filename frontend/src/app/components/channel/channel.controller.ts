@@ -33,6 +33,8 @@ export class ChannelController {
               public janus: JanusVideoRoomService,
               public config: any) {
 
+    // Mapping users by login for conveniency
+
     this.mapUsersByLogin();
     this.bindHotkey();
 
@@ -49,6 +51,10 @@ export class ChannelController {
   }
 
   mapUsersByLogin() {
+    if (typeof this.users === 'undefined') {
+      this.users = [];
+    }
+
     // Mapping users by login for conveniency
     this.users.forEach((user: IUser) => {
       this.usersByLogin[user.login] = user;
