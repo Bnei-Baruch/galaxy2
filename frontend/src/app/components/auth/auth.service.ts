@@ -44,6 +44,14 @@ export class AuthService {
     return deferred.promise;
   }
 
+  can(role) {
+    if (!role) return true;
+    if (this.user.role === 'admin') return true;
+    if (this.user.role === 'operator') return ['operator', 'user'].indexOf(role) !== -1;
+    if (this.user.role === 'user') return role === 'user';
+    return false;
+  }
+
   logout() {
     return this.$auth.signOut();
   }
