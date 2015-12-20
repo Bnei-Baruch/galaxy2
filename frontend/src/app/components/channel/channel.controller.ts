@@ -23,6 +23,8 @@ export class ChannelController {
   usersByLogin: { [login: string]: IUser } = {};
   onlineUsers: IUser[] = [];
 
+  programForwarded: boolean = true;
+
   programUser: IUser = null;
   previewUser: IUser = null;
   nextPreviewUser: IUser = null;
@@ -141,7 +143,7 @@ export class ChannelController {
 
   next() {
     // TODO: Implement forwarding to program in case of one online user
-    if (this.onlineUsers.length > 1 && this.nextPreviewUser.stream) {
+    if (this.onlineUsers.length > 1 && this.nextPreviewUser.stream && this.programForwarded) {
       // Copy preview to program, attach next preview to preview
       // TODO: Clone video elements instead of copying stream URLs, to avoid blinking
       this.$scope.programElement.src = this.$scope.previewElement.src;
@@ -169,7 +171,13 @@ export class ChannelController {
   forwardProgramToSDI() {
     // Forward program to SDI and change video title
     var sdiPort = this.config.janus.sdiPorts[this.name];
-    this.janus.forwardRemoteFeed(this.programUser.login, sdiPort);
+
+    this.programForwarded = false;
+
+    this.janus.forwardRemoteFeed(this.programUser.login, sdiPort, () => {
+      this.programForwarded = true;
+    });
+
     this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPort);
   }
 
@@ -187,7 +195,7 @@ export class ChannelController {
   }
 
   isReadyToRotate() {
-    if (!this.onlineUsers.length) {
+    if (!this.onlineUsers.length || !this.programForwarded) {
       return false;
     } else if (this.onlineUsers.length === 1) {
       return Boolean(this.previewUser && this.previewUser.stream);

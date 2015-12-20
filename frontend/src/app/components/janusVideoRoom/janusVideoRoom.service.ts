@@ -398,7 +398,7 @@ export class JanusVideoRoomService {
   }
 
   // Forward stream to janus port
-  forwardRemoteFeed(login, port) {
+  forwardRemoteFeed(login, port, forwardedCallback: (login: string) => void) {
     var self = this;
     var deferred = this.$q.defer();
 
@@ -425,20 +425,17 @@ export class JanusVideoRoomService {
         'room': self.config.janus.roomId,
         'secret': self.config.janus.secret
       };
-      // TODO: handle stop answers
+
       this.localHandle.send({
         message: stopfwVideo,
         success: (data) => {
           console.log('Forwarding stopped successfully for', forwardInfo);
-          deferred.resolve(true);
+          forwardedCallback(login);
         },
         error: (resp) => {
           console.error('Error stopping forwarding', forwardInfo, resp);
-          deferred.resolve(false);
         }
       });
-
-      return deferred.promise;
     }
 
     var forward = {

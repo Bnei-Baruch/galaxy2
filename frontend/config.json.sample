@@ -1,6 +1,6 @@
 {
   "janus": {
-    "serverUri": "http://galaxy-dev.kbb1.com:8088/janus",
+    "serverUri": "https://galaxy-dev.kbb1.com:8889/janus",
     "serverIp": "51.254.244.44",
     "secret": "adminpwd",
     "roomId": 4,
@@ -11,7 +11,7 @@
       "small2": 10004,
       "control": 10005
     },
-    "titleApiUrl": "http://10.66.24.89/index.php?title=%title%&port=%port%"
+    "titleApiUrl": "https://v4g.kbb1.com:8080/title.php?title=%title%&port=%port%"
   },
-  "backendUri": "http://rt-dev.kbb1.com:5000/rest"
+  "backendUri": "https://rt-dev.kbb1.com:5000/rest"
 }
