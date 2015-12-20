@@ -1,27 +1,30 @@
-import {AuthService, IGalaxyScope} from "./components/auth/auth.service";
+import { AuthService, IGalaxyScope } from './components/auth/auth.service';
 
 /** @ngInject */
-export function runBlock($log: ng.ILogService,
-                         $rootScope: IGalaxyScope,
-                         $state: ng.ui.IStateService,
-                         toastr: any,
-                         $auth: any,
-                         authService: AuthService) {
+export function runBlock($log:ng.ILogService,
+                         $rootScope:IGalaxyScope,
+                         $state:ng.ui.IStateService,
+                         toastr:any,
+                         $auth:any,
+                         authService:AuthService) {
+
+  // TODO: support pages that don't require login
 
   authService.authenticate()
     .then(function (user) {
       $rootScope.currentUser = user;
 
-      $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
-        var requireLogin = toState.data.requireLogin;
-
-        if (requireLogin && typeof $rootScope.currentUser === 'undefined') {
-          event.preventDefault();
+      $rootScope.$on('$stateChangeStart', function (e, to) {
+        if (to.data.requireLogin && !authService.can(to.data.minRole)) {
+          e.preventDefault();
+          $state.go('user', null, {notify: false});
         }
-
-        $state.go(toState.name, toParams);
       });
 
+      if (!$state.current.name) {
+        $state.go(authService.can('operator') ? 'shidur' : 'user');
+      }
     });
+
   $log.debug('runBlock end');
 }

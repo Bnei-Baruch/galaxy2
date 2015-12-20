@@ -9,7 +9,11 @@ class UserDashboard < Administrate::BaseDashboard
   # on pages throughout the dashboard.
   ATTRIBUTE_TYPES = {
     id: Field::Number,
+    login: Field::String,
+    title: Field::String,
     email: Field::String,
+    channel: Field::String,
+    role: Field::String,
     encrypted_password: Field::String,
     reset_password_token: Field::String,
     reset_password_sent_at: Field::DateTime,
@@ -21,8 +25,6 @@ class UserDashboard < Administrate::BaseDashboard
     last_sign_in_ip: Field::String,
     created_at: Field::DateTime,
     updated_at: Field::DateTime,
-    name: Field::String,
-    role: EnumField
   }
 
   # COLLECTION_ATTRIBUTES
@@ -32,9 +34,11 @@ class UserDashboard < Administrate::BaseDashboard
   # Feel free to add, remove, or rearrange items.
   COLLECTION_ATTRIBUTES = [
     :id,
+    :login,
+    :title,
     :email,
-    :name,
     :role,
+    :channel,
     :last_sign_in_at,
     :created_at,
   ]
@@ -47,15 +51,17 @@ class UserDashboard < Administrate::BaseDashboard
   # an array of attributes that will be displayed
   # on the model's form (`new` and `edit`) pages.
   FORM_ATTRIBUTES = [
+    :login,
+    :title,
     :email,
-    :name,
-    :role
+    :role,
+    :channel,
   ]
 
   # Overwrite this method to customize how users are displayed
   # across all pages of the admin dashboard.
   #
   # def display_resource(user)
-  #   "User #{user.name} [#{user.id}]"
+  #   "User ##{user.id}"
   # end
 end

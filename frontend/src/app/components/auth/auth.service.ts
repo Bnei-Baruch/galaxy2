@@ -1,3 +1,4 @@
+import { IUser } from '../../shidur/shidur.service';
 import IDialogService = angular.material.IDialogService;
 
 // Implementation follows guidelines from:
@@ -9,12 +10,13 @@ export interface IGalaxyScope extends ng.IRootScopeService {
 
 /** @ngInject */
 export class AuthService {
-  $q: any;
+  $q: ng.IQService;
   $mdDialog: IDialogService;
   $auth: any;
   toastr: any;
+  user: IUser;
 
-  constructor($q: any, $mdDialog: IDialogService, toastr: any, $auth: any) {
+  constructor($q: ng.IQService, $mdDialog: IDialogService, toastr: any, $auth: any) {
     this.$q = $q;
     this.$mdDialog = $mdDialog;
     this.$auth = $auth;
@@ -25,6 +27,7 @@ export class AuthService {
     var deferred = this.$q.defer();
 
     this.$auth.validateUser().then((user) => {
+      this.user = user;
       deferred.resolve(user);
     }).catch((resp) => {
       // User not authenticated, displaying login modal
@@ -34,10 +37,24 @@ export class AuthService {
         controller: 'LoginController',
         controllerAs: 'vm'
       }).then((user) => {
+        this.user = user;
         deferred.resolve(user);
       });
     });
     return deferred.promise;
+  }
+
+  can(role) {
+    switch (this.user.role) {
+      case 'admin':
+        return true;
+      case 'operator':
+        return ['operator', 'user'].indexOf(role) !== -1;
+      case 'user':
+        return role === 'user';
+      default:
+        return false;
+    }
   }
 
   logout() {

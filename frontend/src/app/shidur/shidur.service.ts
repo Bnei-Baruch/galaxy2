@@ -2,6 +2,7 @@ export interface IUser {
   login: string;
   title: string;
   channel: string;
+  role: string;
   joined?: moment.Moment;
   stream?: MediaStream;
 }

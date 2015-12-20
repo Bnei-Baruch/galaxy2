@@ -26,7 +26,7 @@
 
       <md-grid-tile-header>
         <h3>PREVIEW {{vm.previewUser.title}}
-        <md-icon ng-if="!vm.isReadyToRotate()" aria-label="Waiting for preview..." ng-style="{color: 'white'}" class="material-icons">hourglass_empty</md-icon>
+        <md-icon ng-if="!vm.isReadyToRotate()" aria-label="Waiting for preview..." ng-style="{color: 'white'}" class="material-icons">schedule</md-icon>
         </h3>
       </md-grid-tile-header>
     </md-grid-tile>
@@ -41,7 +41,7 @@
       <div class="md-list-item-text" layout="column" flex="100">
         <p class="{{user === vm.programUser ? 'program' :
           (user === vm.previewUser ? 'preview' : '')}}">
-          {{ user.username }}
+          {{ user.title }}
         </p>
       </div>
     </md-list-item>
@@ -52,7 +52,7 @@
     <md-list-item ng-repeat="user in vm.users | filter : {joined: '!'} | orderBy:'title'">
       <md-icon layout="column" aria-label="" ng-style="{color: '#9E9E9E'}" class="material-icons">lens</md-icon>
       <div class="md-list-item-text" layout="column" flex="100">
-        <p>{{ user.username }}</p>
+        <p>{{ user.title }}</p>
       </div>
     </md-list-item>
 
