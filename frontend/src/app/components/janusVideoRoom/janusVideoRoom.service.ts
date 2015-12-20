@@ -410,6 +410,18 @@ export class JanusVideoRoomService {
     var handleContainer = this.remoteHandles[login];
     var rmid = handleContainer.handle.rfid;
 
+    var stoppedOrForwarded: boolean;
+
+    var triggerCallbackIfLast = () => {
+      if (stoppedOrForwarded) {
+        this.$timeout(() => {
+          forwardedCallback(login);
+        });
+      } else {
+        stoppedOrForwarded = true;
+      }
+    };
+
     // Forward remote rtp stream
     if (port in this.portsFeedForwardInfo) {
       var forwardInfo = this.portsFeedForwardInfo[port];
@@ -430,12 +442,14 @@ export class JanusVideoRoomService {
         message: stopfwVideo,
         success: (data) => {
           console.log('Forwarding stopped successfully for', forwardInfo);
-          forwardedCallback(login);
+          triggerCallbackIfLast();
         },
         error: (resp) => {
           console.error('Error stopping forwarding', forwardInfo, resp);
         }
       });
+    } else {
+      stoppedOrForwarded = true;
     }
 
     var forward = {
@@ -456,6 +470,8 @@ export class JanusVideoRoomService {
           audioStreamId: data.rtp_stream.audio_stream_id
         };
 
+        triggerCallbackIfLast();
+
         console.log(`  -- We got rtp forward video ID: ${data.rtp_stream.video_stream_id}`);
         console.log(`  -- We got rtp forward audio ID: ${data.rtp_stream.audio_stream_id}`);
         console.log(`  -- We got rtp forward publisher ID: ${data.publisher_id}`);
@@ -470,7 +486,7 @@ export class JanusVideoRoomService {
       .replace('%port%', port);
 
     this.$http.get(titleApiUrl).error((data, st) => {
-      this.toastr.error(`Unable to change remote feed to ${title}`);
+      /* this.toastr.error(`Unable to change remote feed to ${title}`); */
       console.error('Unable to change remote feed:', data, st);
     });
   }

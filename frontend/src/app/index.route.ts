@@ -31,6 +31,4 @@ export function routerConfig($stateProvider: ng.ui.IStateProvider, $urlRouterPro
         minRole: 'admin'
       }
     });
-
-  // $urlRouterProvider.otherwise('/shidur');
 }
