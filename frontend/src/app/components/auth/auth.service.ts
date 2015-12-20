@@ -45,11 +45,16 @@ export class AuthService {
   }
 
   can(role) {
-    if (!role) return true;
-    if (this.user.role === 'admin') return true;
-    if (this.user.role === 'operator') return ['operator', 'user'].indexOf(role) !== -1;
-    if (this.user.role === 'user') return role === 'user';
-    return false;
+    switch (this.user.role) {
+      case 'admin':
+        return true;
+      case 'operator':
+        return ['operator', 'user'].indexOf(role) !== -1;
+      case 'user':
+        return role === 'user';
+      default:
+        return false;
+    }
   }
 
   logout() {
