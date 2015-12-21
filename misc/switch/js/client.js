@@ -15,7 +15,7 @@ var janusStream;
     function initCallback() {
         // Create session
         janus = new Janus({
-            server: "http://galaxy-dev.kbb1.com:8088/janus",
+            server: "https://galaxy-dev.kbb1.com:8889/janus",
             success: function () {
                 // 1 is hard coded value for Video stream
                 attachStreamingHandle(11, '#remoteVideo1');

@@ -14,6 +14,12 @@ export interface IChannelScope extends ng.IScope {
 
 /** @ngInject */
 export class ChannelController {
+  $scope: IChannelScope;
+  $timeout: ng.ITimeoutService;
+  $document: any;
+  janus: JanusVideoRoomService;
+  config: any;
+
   channel: ChannelService;
 
   name: string;
@@ -29,11 +35,17 @@ export class ChannelController {
   previewUser: IUser = null;
   nextPreviewUser: IUser = null;
 
-  constructor(public $scope: IChannelScope,
-              public $timeout: ng.ITimeoutService,
-              public $document: any,
-              public janus: JanusVideoRoomService,
-              public config: any) {
+  constructor($scope: IChannelScope,
+              $timeout: ng.ITimeoutService,
+              $document: any,
+              janus: JanusVideoRoomService,
+              config: any) {
+
+    this.$scope = $scope;
+    this.$timeout = $timeout;
+    this.$document = $document;
+    this.janus = janus;
+    this.config = config;
 
     // Mapping users by login for conveniency
 
@@ -87,14 +99,14 @@ export class ChannelController {
     if (this.previewUser === null) {
       this.previewUser = user;
 
-      this.janus.subscribeForStream(user.login, (stream) => {
+      this.janus.subscribeForStream(user.login, (stream: MediaStream) => {
         user.stream = stream;
         attachMediaStream(this.$scope.previewElement, stream);
       });
     } else if (this.nextPreviewUser === null) {
       this.nextPreviewUser = user;
 
-      this.janus.subscribeForStream(user.login, (stream) => {
+      this.janus.subscribeForStream(user.login, (stream: MediaStream) => {
         user.stream = stream;
       });
     }
@@ -106,51 +118,57 @@ export class ChannelController {
     user.stream = null;
 
     this.onlineUsers.splice(this.onlineUsers.indexOf(user), 1);
-    console.debug('User left', login);
+    console.log('User left', login);
 
     if (this.programUser === user) {
       // TODO: Put dummy video stream to program
       this.programUser = null;
       this.$scope.programElement.src = null;
-    } else if (this.previewUser === user) {
+    }
+
+    if (this.previewUser === user) {
       if (!this.onlineUsers.length) {
         this.previewUser = null;
         this.$scope.previewElement.src = null;
       } else {
-        attachMediaStream(this.$scope.previewElement, this.nextPreviewUser.stream);
-        this.previewUser = this.nextPreviewUser;
-        var nextPreviewUser = this.getNextUser(this.previewUser);
+        if (this.nextPreviewUser && this.nextPreviewUser.stream) {
+          attachMediaStream(this.$scope.previewElement, this.nextPreviewUser.stream);
+          this.previewUser = this.nextPreviewUser;
+          var nextPreviewUser = this.getNextUser(this.previewUser);
 
-        if (this.onlineUsers.length >= 3) {
-          this.janus.subscribeForStream(nextPreviewUser.login, (stream) => {
-            nextPreviewUser.stream = stream;
-          });
+          if (this.onlineUsers.length >= 3) {
+            this.janus.subscribeForStream(nextPreviewUser.login, (stream: MediaStream) => {
+              nextPreviewUser.stream = stream;
+            });
+          }
+          this.nextPreviewUser = nextPreviewUser;
         }
-        this.nextPreviewUser = nextPreviewUser;
       }
     } else if (this.nextPreviewUser === user && this.onlineUsers.length) {
       var nextPreviewUser = this.getNextUser(this.previewUser);
 
-      if (this.onlineUsers.length >= 3) {
-        this.janus.subscribeForStream(nextPreviewUser.login, (stream) => {
-          nextPreviewUser.stream = stream;
-        });
-      }
+      if (nextPreviewUser) {
+        if (this.onlineUsers.length >= 3) {
+          this.janus.subscribeForStream(nextPreviewUser.login, (stream: MediaStream) => {
+            nextPreviewUser.stream = stream;
+          });
+        }
 
-      this.nextPreviewUser = nextPreviewUser;
+        this.nextPreviewUser = nextPreviewUser;
+      }
     }
   }
 
   next() {
-    // TODO: Implement forwarding to program in case of one online user
-    if (this.onlineUsers.length > 1 && this.nextPreviewUser.stream && this.programForwarded) {
+    if (this.onlineUsers.length > 0 && this.programForwarded) {
       // Copy preview to program, attach next preview to preview
       // TODO: Clone video elements instead of copying stream URLs, to avoid blinking
       this.$scope.programElement.src = this.$scope.previewElement.src;
-      attachMediaStream(this.$scope.previewElement, this.nextPreviewUser.stream);
 
       var oldProgramUser = this.programUser;
-
+      if (this.nextPreviewUser && this.nextPreviewUser.stream) {
+        attachMediaStream(this.$scope.previewElement, this.nextPreviewUser.stream);
+      }
       this.rotateSlotUsers();
       this.forwardProgramToSDI();
 
@@ -161,7 +179,7 @@ export class ChannelController {
 
       if (this.onlineUsers.length > 2 && !this.nextPreviewUser.stream) {
         var nextPreviewUser = this.nextPreviewUser;
-        this.janus.subscribeForStream(nextPreviewUser.login, (stream) => {
+        this.janus.subscribeForStream(nextPreviewUser.login, (stream: MediaStream) => {
           nextPreviewUser.stream = stream;
         });
       }
@@ -183,9 +201,11 @@ export class ChannelController {
 
   rotateSlotUsers() {
     this.programUser = this.previewUser;
-    this.previewUser = this.nextPreviewUser;
 
-    this.nextPreviewUser = this.getNextUser(this.nextPreviewUser);
+    if (this.nextPreviewUser) {
+      this.previewUser = this.nextPreviewUser;
+      this.nextPreviewUser = this.getNextUser(this.nextPreviewUser);
+    }
   }
 
   getNextUser(user: IUser) {
@@ -202,4 +222,55 @@ export class ChannelController {
     }
     return Boolean(this.nextPreviewUser && this.nextPreviewUser.stream);
   }
+
+
+  /*
+  TODO: Finish the refactoring
+
+  assignUserToProgram(login: string) {
+    this.programUser = this.usersByLogin[login];
+
+    if (!this.programUser.stream) {
+      this.janus.subscribeForStream(login, (stream) => {
+        this.programUser.stream = stream;
+        attachMediaStream(this.$scope.programElement, this.programUser.stream);
+      });
+    }
+  }
+
+  unassignUserFromProgram() {
+    this.programUser = null;
+    this.$scope.programElement.src = null;
+  }
+
+  assignUserToPreview(login) {
+    this.previewUser = this.usersByLogin[login];
+
+    if (!this.previewUser.stream) {
+      this.janus.subscribeForStream(login, (stream) => {
+        this.previewUser.stream = stream;
+        attachMediaStream(this.$scope.previewElement, this.previewUser.stream);
+      });
+    }
+  }
+
+  unassignUserFromPreview() {
+    this.previewUser = null;
+    this.$scope.previewElement.src = null;
+  }
+
+  assignUserToNextPreview(login) {
+    this.nextPreviewUser = this.usersByLogin[login];
+
+    if (!this.nextPreviewUser.stream) {
+      this.janus.subscribeForStream(login, (stream) => {
+        this.nextPreviewUser.stream = stream;
+      });
+    }
+  }
+
+  unassignUserFromNextPreview() {
+    // Seems we don't need this.
+  }
+  */
 }
