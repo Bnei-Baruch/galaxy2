@@ -160,7 +160,7 @@ export class ChannelController {
   }
 
   next() {
-    if (this.onlineUsers.length > 0 && this.programForwarded) {
+    if (this.isReadyToRotate()) {
       // Copy preview to program, attach next preview to preview
       // TODO: Clone video elements instead of copying stream URLs, to avoid blinking
       this.$scope.programElement.src = this.$scope.previewElement.src;
