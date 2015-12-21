@@ -28,8 +28,8 @@ puts '--> Users'
 rome|Rome|large1
 milan|Milan|large1
 tallinn|Tallinn|large1
-riga|riga|large1
-orlando|orlando|large1
+riga|Riga|large1
+orlando|Orlando|large1
 nuremberg|Nuremberg|large1
 afula|Afula|small1
 arad|Arad|small1
