@@ -25,14 +25,20 @@ create_user login: 'shidur', role: :operator, title: 'Shidur', channel: 'hidden'
 
 puts '--> Users'
 %w(
-afula|Afula|large1
-arad|Arad|large1
-arava|Arava|large1
-ashdod|Ashdod|large1
-ashkelon|Ashkelon|large1
-beer-sheva|Beer\ Sheva|large1
-eilat|Eilat|large1
-eilat1|Eilat1|large1
+rome|Rome|large1
+milan|Milan|large1
+tallinn|Tallinn|large1
+riga|riga|large1
+orlando|orlando|large1
+nuremberg|Nuremberg|large1
+afula|Afula|small1
+arad|Arad|small1
+arava|Arava|small1
+ashdod|Ashdod|small1
+ashkelon|Ashkelon|small1
+beer-sheva|Beer\ Sheva|small1
+eilat|Eilat|small1
+eilat1|Eilat1|small1
 galilgolan|Galil\ Golan|large2
 hadera|Hadera|large2
 haifa|Haifa|large2
