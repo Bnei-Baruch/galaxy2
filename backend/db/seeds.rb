@@ -25,6 +25,7 @@ create_user login: 'shidur', role: :operator, title: 'Shidur', channel: 'hidden'
 
 puts '--> Users'
 %w(
+piter|St.\ Petersburg|large1
 krasnodar|Krasnodar|large1
 tbilisi|Tbilisi|large1
 rome|Rome|large1
