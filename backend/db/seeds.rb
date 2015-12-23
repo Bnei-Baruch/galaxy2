@@ -25,6 +25,9 @@ create_user login: 'shidur', role: :operator, title: 'Shidur', channel: 'hidden'
 
 puts '--> Users'
 %w(
+novosibirsk|Novosibirsk|large1
+dnepropetrovsk|Dnepropetrovsk|large1
+krasnoyarsk|Krasnoyarsk|large1
 piter|St.\ Petersburg|large1
 krasnodar|Krasnodar|large1
 tbilisi|Tbilisi|large1
@@ -64,8 +67,14 @@ tel-aviv|Tel\ Aviv|small2
 tveria|Tveria|small2
 yokneam|Yokneam|small2
 zichron|Zichron|small2).each {|x|
-    login, title, channel = x.split('|')
-    create_user(login: login, title: title, channel: channel)
+  login, title, channel = x.split('|')
+  create_user(login: login, title: title, channel: channel)
 }
+
+puts '--> Shidur State'
+ShidurState.find_or_create_by(id: 1) do |s|
+  s.state = {}
+  s.save!
+end
 
 puts '--> Done'
