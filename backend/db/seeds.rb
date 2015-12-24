@@ -61,7 +61,6 @@ jerusalem|Jerusalem|large2
 karmiel|Karmiel|large2
 kfar-saba|Kfar\ Saba|large2
 kiriat-gat|Kiriat\ Gat|large2
-<<<<<<< HEAD
 mizpe|Mizpe\ Ramon|large1
 moscow|Test|large1
 naharia|Naharia|large1
