@@ -121,8 +121,24 @@ export class JanusVideoRoomService {
       },
       error: (error) => {
         this.toastr.error(`Janus creation error: ${error}`);
+        this.reloadAfterTimeout();
       }
     });
+  }
+
+  reloadAfterTimeout(counter?: number) {
+    if (counter === undefined) {
+      counter = this.config.janus.reconnectTimeout;
+    }
+
+    if (counter === 0) {
+      window.location.reload();
+    } else {
+      this.toastr.info(`Reloading the page in ${counter} seconds...`);
+      this.$timeout(() => {
+        this.reloadAfterTimeout(--counter);
+      }, 1000);
+    }
   }
 
   updatePublishersAndTriggerJoined(publishers) {
