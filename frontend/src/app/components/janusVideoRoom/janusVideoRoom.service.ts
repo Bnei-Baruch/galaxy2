@@ -8,6 +8,14 @@ interface IChannel {
   leftCallback: (login: string) => void
 }
 
+interface IShidurState {
+  janus: {
+    portsFeedForwardInfo: {
+      (key: number): IFeedForwardInfo
+    }
+  };
+}
+
 interface IRemoteHandle {
   count: number;
   handle: any;  // Janus handle instance
@@ -53,7 +61,7 @@ export class JanusVideoRoomService {
     this.toastr = toastr;
     this.joined = false;
 
-    if(!Janus.isWebrtcSupported()) {
+    if (!Janus.isWebrtcSupported()) {
       toastr.error('No WebRTC support... ');
       return;
     }
@@ -399,34 +407,74 @@ export class JanusVideoRoomService {
   }
 
   // Forward stream to janus port
-  forwardRemoteFeed(login, port, forwardedCallback: (login: string) => void) {
-    var self = this;
-    var deferred = this.$q.defer();
-
+  forwardRemoteFeed(login: string, port: number, forwardedCallback: (login: string) => void) {
     if (!(login in this.remoteHandles)) {
       this.toastr.error(`Could not find remote handle for ${login}`);
       return;
     }
 
+    // Stop (if exists) => Start => Update state => Callback.
+    this.$http.get(this.config.backendUri + '/shidur_state').success((shidurState: IShidurState) => {
+      if (!shidurState.janus) {
+        shidurState.janus = <any>{};
+      }
+      if (!shidurState.janus.portsFeedForwardInfo) {
+        shidurState.janus.portsFeedForwardInfo = <any>{};
+      }
+      var feedForwardInfo = shidurState.janus.portsFeedForwardInfo[port];
+
+      this.stopSdiForwarding(feedForwardInfo, () => {
+        this.startSdiForwarding(login, port, (forwardInfo: IFeedForwardInfo) => {
+          shidurState.janus.portsFeedForwardInfo[port] = forwardInfo;
+          this.$http.post(this.config.backendUri + '/shidur_state', shidurState).success(() => {
+            this.$timeout(() => {
+              forwardedCallback(login);
+            });
+          });
+        });
+      });
+    });
+
+  }
+
+  startSdiForwarding(login: string, port: number, callback: (forwardInfo: IFeedForwardInfo) => void) {
+    var self = this;
     var handleContainer = this.remoteHandles[login];
     var rmid = handleContainer.handle.rfid;
 
-    var stoppedOrForwarded: boolean;
-
-    var triggerCallbackIfLast = () => {
-      if (stoppedOrForwarded) {
-        this.$timeout(() => {
-          forwardedCallback(login);
-        });
-      } else {
-        stoppedOrForwarded = true;
-      }
+    var forward = {
+      'request': 'rtp_forward',
+      'publisher_id': rmid,
+      'room': self.config.janus.roomId,
+      'secret': self.config.janus.secret,
+      'host': self.config.janus.serverIp,
+      'video_port': port
     };
 
-    // Forward remote rtp stream
-    if (port in this.portsFeedForwardInfo) {
-      var forwardInfo = this.portsFeedForwardInfo[port];
+    this.localHandle.send({
+      message: forward,
+      success: (data) => {
+        var forwardInfo = <IFeedForwardInfo> {
+          publisherId: data.publisher_id,
+          videoStreamId: data.rtp_stream.video_stream_id,
+          audioStreamId: data.rtp_stream.audio_stream_id
+        };
 
+        console.log(`  -- We got rtp forward video ID: ${data.rtp_stream.video_stream_id}`);
+        console.log(`  -- We got rtp forward audio ID: ${data.rtp_stream.audio_stream_id}`);
+        console.log(`  -- We got rtp forward publisher ID: ${data.publisher_id}`);
+        console.log(JSON.stringify(data));
+
+        callback(forwardInfo);
+      },
+    });
+  }
+
+  stopSdiForwarding(forwardInfo: IFeedForwardInfo, callback: () => void) {
+    var self = this;
+
+    // Forward remote rtp stream
+    if (forwardInfo) {
       console.log(`  -- We need to stop rtp forward video ID: ${forwardInfo.videoStreamId}`);
       console.log(`  -- We need to stop rtp forward audio ID: ${forwardInfo.audioStreamId}`);
       console.log(`  -- We need to stop rtp forward publisher ID: ${forwardInfo.publisherId}`);
@@ -443,42 +491,18 @@ export class JanusVideoRoomService {
         message: stopfwVideo,
         success: (data) => {
           console.log('Forwarding stopped successfully for', forwardInfo);
-          triggerCallbackIfLast();
+          callback();
         },
         error: (resp) => {
           console.error('Error stopping forwarding', forwardInfo, resp);
+          callback();
         }
       });
     } else {
-      stoppedOrForwarded = true;
+      console.debug('No forwardInfo, assuming no stream to SDI port');
+      callback();
     }
 
-    var forward = {
-      'request': 'rtp_forward',
-      'publisher_id': rmid,
-      'room': self.config.janus.roomId,
-      'secret': self.config.janus.secret,
-      'host': self.config.janus.serverIp,
-      'video_port': port
-    };
-
-    this.localHandle.send({
-      message: forward,
-      success: (data) => {
-        self.portsFeedForwardInfo[port] = <IFeedForwardInfo> {
-          publisherId: data.publisher_id,
-          videoStreamId: data.rtp_stream.video_stream_id,
-          audioStreamId: data.rtp_stream.audio_stream_id
-        };
-
-        triggerCallbackIfLast();
-
-        console.log(`  -- We got rtp forward video ID: ${data.rtp_stream.video_stream_id}`);
-        console.log(`  -- We got rtp forward audio ID: ${data.rtp_stream.audio_stream_id}`);
-        console.log(`  -- We got rtp forward publisher ID: ${data.publisher_id}`);
-        console.log(JSON.stringify(data));
-      },
-    });
   }
 
   changeRemoteFeedTitle(title: string, port: number) {
