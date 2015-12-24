@@ -11,6 +11,7 @@
       "small2": 10004,
       "control": 10005
     },
+    "reconnectTimeout": 10,
     "titleApiUrl": "https://v4g.kbb1.com:8080/title.php?title=%title%&port=%port%"
   },
   "backendUri": "https://rt-dev.kbb1.com:5000/rest"
