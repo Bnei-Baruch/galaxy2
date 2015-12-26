@@ -58,6 +58,8 @@ export class AuthService {
   }
 
   logout() {
-    return this.$auth.signOut();
+    return this.$auth.signOut().catch((resp) => {
+      this.toastr.error(`Unable to sign out: $(resp.errors)`);
+    });
   }
 }

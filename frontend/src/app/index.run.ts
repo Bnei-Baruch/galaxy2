@@ -1,12 +1,12 @@
 import { AuthService, IGalaxyScope } from './components/auth/auth.service';
 
 /** @ngInject */
-export function runBlock($log:ng.ILogService,
-                         $rootScope:IGalaxyScope,
-                         $state:ng.ui.IStateService,
-                         toastr:any,
-                         $auth:any,
-                         authService:AuthService) {
+export function runBlock($log: ng.ILogService,
+                         $rootScope: IGalaxyScope,
+                         $state: ng.ui.IStateService,
+                         toastr: any,
+                         $auth: any,
+                         authService: AuthService) {
 
   // TODO: support pages that don't require login
 

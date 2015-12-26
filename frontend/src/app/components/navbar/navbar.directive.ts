@@ -1,3 +1,5 @@
+import { AuthService, IGalaxyScope } from '../auth/auth.service';
+
 /** @ngInject */
 export function galaxyNavbar(): ng.IDirective {
 
@@ -14,9 +16,13 @@ export function galaxyNavbar(): ng.IDirective {
 
 /** @ngInject */
 export class NavbarController {
+  $rootScope: IGalaxyScope;
+  auth: AuthService;
   toastr: any;
 
-  constructor (toastr: any) {
+  constructor ($rootScope: IGalaxyScope, authService: AuthService, toastr: any) {
+    this.$rootScope = $rootScope;
+    this.auth = authService;
     this.toastr = toastr;
   }
 
@@ -25,6 +31,8 @@ export class NavbarController {
   };
 
   logout() {
-    this.toastr.warning('Logout not implemented yet (;')
+    this.auth.logout().then(() => {
+      window.location.reload();
+    });
   }
 }
