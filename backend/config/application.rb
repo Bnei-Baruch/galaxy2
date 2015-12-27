@@ -34,5 +34,7 @@ module RailsDeviseRoles
       end
     end
 
+    config.relative_url_root = "/galaxy2/backend"
+
   end
 end
