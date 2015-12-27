@@ -8,7 +8,7 @@
   <section flex layout="row" layout-align="left center">
     <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="shidur" class="md-raised">Shidur</md-button>
     <md-button ng-if="['user', 'operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="user" class="md-raised">User</md-button>
-    <md-button ng-if="$root.currentUser.role === 'admin'" href="/backend/admin" class="md-raised">Admin</md-button>
+    <md-button ng-if="$root.currentUser.role === 'admin'" href="/galaxy2/backend/admin" class="md-raised">Admin</md-button>
     <md-button href ui-sref="help" class="md-raised">Help</md-button>
   </section>
 
