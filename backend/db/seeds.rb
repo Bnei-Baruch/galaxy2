@@ -5,7 +5,7 @@ def create_user(opts)
     u.password = password
     u.password_confirmation = password
     u.title = opts[:title]
-    u.channel = opts[:channel]
+    u.channel = opts[:channel] || 'hidden'
     u.email = opts[:email] || "#{login}@kbb1.com"
     u.role = opts[:role] || :user
     u.save!
@@ -18,7 +18,7 @@ puts '--> Admins'
  {email: 'edoshor@gmail.com', login: 'edos', title: 'Edo Shor'},
  {email: 'yosef.yudilevich@gmail.com', login: 'yosefy', title: 'Yosef Yudilevich'},
  {email: 'amnonbb@gmail.com', login: 'amnon', title: 'Amnon Israeli'},
-].each {|x| create_user x.merge(role: :admin, channel: :hidden)}
+].each {|x| create_user x.merge(role: :admin, channel: 'hidden')}
 
 puts '--> Shidur operators'
 create_user login: 'shidur', role: :operator, title: 'Shidur', channel: 'hidden'

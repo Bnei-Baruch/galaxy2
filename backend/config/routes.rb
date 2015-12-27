@@ -11,16 +11,7 @@ Rails.application.routes.draw do
     resources :shidur_state
   end
 
-  # Admin interface routes
-  namespace :admin do
-    # We reveal the admin paths only for signed in users with admin role
-    authenticate :user, lambda {|u| u.role == 'admin' } do
-      DashboardManifest::DASHBOARDS.each do |dashboard_resource|
-        resources dashboard_resource
-      end
-      root controller: DashboardManifest::ROOT_DASHBOARD, action: :index
-    end
-  end
+  mount RailsAdmin::Engine => '/admin', as: 'rails_admin'
 
   root to: 'home#index'
 end
