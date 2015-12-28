@@ -9,8 +9,9 @@
 
       <video class="program" poster="data:image/gif,AAAA" autoplay></video>
 
-      <md-grid-tile-header>
-        <h3>PROGRAM {{vm.programUser.title}}</h3>
+      <md-grid-tile-header layout-align="end">
+        <h3>PROGRAM</h3>
+        <label ng-if="vm.programUser.title">{{vm.programUser.title}}</label>
       </md-grid-tile-header>
     </md-grid-tile>
 
@@ -24,11 +25,14 @@
 
       <video class="preview" poster="data:image/gif,AAAA" autoplay></video>
 
-      <md-grid-tile-header>
-        <h3>PREVIEW {{vm.previewUser.title}}
-        <md-icon ng-if="!vm.isReadyToRotate()" aria-label="Waiting for preview..." ng-style="{color: 'white'}" class="material-icons">schedule</md-icon>
-        </h3>
+      <md-grid-tile-header layout-align="end">
+        <h3>PREVIEW</h3>
+        <label ng-if="vm.previewUser.title">{{vm.previewUser.title}}</label>
       </md-grid-tile-header>
+
+      <md-grid-tile-footer layout-align="end">
+        <md-icon ng-if="!vm.isReadyToRotate()" aria-label="Waiting for preview..." ng-style="{color: 'white'}" class="material-icons">schedule</md-icon>&nbsp;
+      </md-grid-tile-footer>
     </md-grid-tile>
   </md-grid-list>
 

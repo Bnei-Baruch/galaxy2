@@ -16,3 +16,26 @@ video {
   color: #43A047;
   font-weight: bold;
 }
+
+md-grid-tile-header, md-grid-tile-footer {
+  background: none !important;
+}
+
+md-grid-tile-header h3, md-grid-tile-footer h3 {
+  position: absolute;
+  left: 0px;
+  user-select: none;
+  font-weight: 500 !important;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+}
+
+md-grid-tile-header label, md-grid-tile-footer label {
+  user-select: none;
+  background-color: blue;
+  padding: 3px 6px 3px 6px;
+  margin-right: 6px;
+}
