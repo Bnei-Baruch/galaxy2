@@ -36,5 +36,7 @@ module RailsDeviseRoles
 
     config.relative_url_root = "/galaxy2/backend"
 
+    config.assets.precompile += %w(rails_admin/rails_admin.css rails_admin/rails_admin.js)
+
   end
 end
