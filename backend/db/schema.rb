@@ -38,7 +38,7 @@ ActiveRecord::Schema.define(version: 20151223130819) do
     t.string   "tokens"
     t.string   "login"
     t.string   "title"
-    t.string   "channel"
+    t.integer  "channel"
   end
 
   add_index "users", ["email"], name: "index_users_on_email", unique: true
