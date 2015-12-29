@@ -1,64 +1,18 @@
 <section class="channel md-whiteframe-z1">
-  <md-grid-list md-cols="1" md-row-height="16:9" md-gutter="3px">
-    <md-grid-tile
-      ng-style="{
-      'background': 'red'
-      }"
-      md-colspan="1"
-      md-rowspan="1">
+  <channel-program-widget
+    user="vm.programUser">
+  </channel-program-widget>
 
-      <video class="program" poster="data:image/gif,AAAA" autoplay></video>
+  <channel-preview-widget
+    user="vm.previewUser"
+    trigger="vm.next"
+    ready="vm.isReadyToRotate">
+  </channel-preview-widget>
 
-      <md-grid-tile-header layout-align="end">
-        <h3>PROGRAM</h3>
-        <label ng-if="vm.programUser.title">{{vm.programUser.title}}</label>
-      </md-grid-tile-header>
-    </md-grid-tile>
+  <channel-users-widget
+    users="vm.users"
+    program-user="vm.programUser"
+    preview-user="vm.previewUser">
+  </channel-users-widget>
 
-    <md-grid-tile
-      ng-style="{
-      'background': 'green'
-      }"
-      md-colspan="1"
-      md-rowspan="1"
-      ng-click="vm.next()">
-
-      <video class="preview" poster="data:image/gif,AAAA" autoplay></video>
-
-      <md-grid-tile-header layout-align="end">
-        <h3>PREVIEW</h3>
-        <label ng-if="vm.previewUser.title">{{vm.previewUser.title}}</label>
-      </md-grid-tile-header>
-
-      <md-grid-tile-footer layout-align="end">
-        <md-icon ng-if="!vm.isReadyToRotate()" aria-label="Waiting for preview..." ng-style="{color: 'white'}" class="material-icons">schedule</md-icon>&nbsp;
-      </md-grid-tile-footer>
-    </md-grid-tile>
-  </md-grid-list>
-
-  <md-list class="users">
-    <!-- Online users -->
-    <md-list-item ng-repeat="user in vm.onlineUsers">
-      <!-- #9E9E9E -->
-
-      <md-icon layout="column" aria-label="" ng-style="{color: '#4CAF50'}" class="material-icons">lens</md-icon>
-      <div class="md-list-item-text" layout="column" flex="100">
-        <p class="{{user === vm.programUser ? 'program' :
-          (user === vm.previewUser ? 'preview' : '')}}">
-          {{ user.title }}
-        </p>
-      </div>
-    </md-list-item>
-
-    <!-- Offline users -->
-    <md-divider></md-divider>
-
-    <md-list-item ng-repeat="user in vm.users | filter : {joined: '!'} | orderBy:'title'">
-      <md-icon layout="column" aria-label="" ng-style="{color: '#9E9E9E'}" class="material-icons">lens</md-icon>
-      <div class="md-list-item-text" layout="column" flex="100">
-        <p>{{ user.title }}</p>
-      </div>
-    </md-list-item>
-
-  </md-list>
 </section>

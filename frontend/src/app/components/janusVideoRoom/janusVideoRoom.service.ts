@@ -23,9 +23,9 @@ interface IRemoteHandle {
 }
 
 interface IFeedForwardInfo {
-  publisherId: string,
-  videoStreamId: string,
-  audioStreamId: string
+  publisherId: string;
+  videoStreamId: string;
+  audioStreamId: string;
 }
 
 /* @ngInject */
@@ -40,7 +40,6 @@ export class JanusVideoRoomService {
   remoteHandles: { (login: string): IRemoteHandle } = <any>{};
   localHandle: any;
   channels: { (key: string): IChannel } = <any>{};
-  portsFeedForwardInfo: { (key: number): IFeedForwardInfo } = <any> {};
 
   // Reverse map of logins to channels names
   userChannels: { (login: string): string[] } = <any>{};
@@ -239,12 +238,18 @@ export class JanusVideoRoomService {
       consentDialog: (on) => {
         console.debug('Consent dialog should be ' + (on ? 'on' : 'off') + ' now.');
       },
-      onlocalstream: (stream) => {
+      onlocalstream: (stream: MediaStream) => {
         console.debug('Got local stream', stream);
         this.localStream = stream;
+
+        // Disable local audio track
+        var audioTracks = stream.getAudioTracks();
+        audioTracks.forEach((audioTrack: MediaStreamTrack) => {
+          audioTrack.enabled = false;
+        });
         this.localStreamReadyCallback(stream);
       },
-      onremotestream: (stream) => {
+      onremotestream: (stream: MediaStream) => {
         console.debug('Got a remote stream!', stream);
         // This should not happen. This is local handle.
       },
@@ -300,7 +305,7 @@ export class JanusVideoRoomService {
         audioRecv: false,
         videoRecv: false,
         // Sound disabled for testing
-        audioSend: false,
+        audioSend: true,
         videoSend: true,
         video: 'stdres-16:9'
       },

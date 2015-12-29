@@ -1,0 +1,46 @@
+<section class="channel md-whiteframe-z1">
+  <channel-program-widget
+    user="vm.programUser">
+  </channel-program-widget>
+
+  <channel-preview-widget
+    user="vm.previewUser"
+    toggle-audio="vm.toggleAudio">
+  </channel-preview-widget>
+
+  <md-autocomplete
+    ng-disabled="vm.isDisabled"
+    md-no-cache="true"
+    md-selected-item="vm.selectedItem"
+    md-search-text-change="vm.searchTextChange(vm.searchText)"
+    md-search-text="vm.searchText"
+    md-selected-item-change="vm.selectedItemChange(user)"
+    md-items="user in vm.querySearch(vm.searchText)"
+    md-item-text="user.title"
+    md-min-length="0"
+    placeholder="Pick a user"
+    md-menu-class="autocomplete-custom-template">
+    <md-item-template>
+      <span class="item-title">
+        <md-icon md-svg-icon="img/icons/octicon-repo.svg"></md-icon>
+        <span> {{user.name}} </span>
+      </span>
+      <span class="item-metadata">
+        <span class="item-metastat">
+          <strong>{{item.watchers}}</strong> watchers
+        </span>
+        <span class="item-metastat">
+          <strong>{{item.forks}}</strong> forks
+        </span>
+      </span>
+    </md-item-template>
+  </md-autocomplete>
+
+  <channel-users-widget
+    users="vm.users"
+    program-user="vm.programUser"
+    preview-user="vm.previewUser">
+  </channel-users-widget>
+
+</section>
+
