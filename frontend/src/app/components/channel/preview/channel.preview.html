@@ -15,7 +15,15 @@
     </md-grid-tile-header>
 
     <md-grid-tile-footer layout-align="end">
-      <md-icon ng-if="toggleAudio" class="material-icons" ng-style="{color: 'white'}" style="position: absolute; left: 12px;">volume_up</md-icon>
+      <md-icon
+        ng-if="preview.toggleAudio"
+        class="material-icons"
+        ng-style="preview.audioEnabled ? {color: 'red'} : {color: 'white'}"
+        style="position: absolute; left: 12px;"
+        ng-click="preview.triggerToggleAudio()">
+        {{preview.audioEnabled ? 'volume_off' : 'volume_up'}}
+      </md-icon>
+
       <md-icon ng-if="!ready()" aria-label="Waiting for preview..." ng-style="{color: 'white'}" class="material-icons">schedule</md-icon>&nbsp;
     </md-grid-tile-footer>
   </md-grid-tile>

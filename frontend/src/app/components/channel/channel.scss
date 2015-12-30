@@ -33,6 +33,17 @@ md-grid-tile-header h3, md-grid-tile-footer h3 {
     1px 1px 0 #000;
 }
 
+md-grid-tile-footer md-icon {
+  cursor: default;
+  outline: none;
+  user-select: none;
+  text-shadow:
+    -1px -1px 0 #333,
+    1px -1px 0 #333,
+    -1px 1px 0 #333,
+    1px 1px 0 #333;
+}
+
 md-grid-tile-header label, md-grid-tile-footer label {
   user-select: none;
   background-color: blue;

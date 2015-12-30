@@ -14,6 +14,10 @@ export class ControlChannelController extends ChannelController {
     }
   }
 
+  toggleAudio() {
+    console.debug('toggleAudio() triggered');
+  }
+
   querySearch(searchText: string): IUser[] {
     var users = [];
     console.log('query search', searchText);
