@@ -1,4 +1,5 @@
-// import { ChannelController, IChannelScope } from './channel.controller';
+import { IChannelScope } from '../channel.controller';
+import { ControlChannelController } from './channel.control.controller';
 
 /** @ngInject */
 export function channelControlWidget(): ng.IDirective {
@@ -10,15 +11,15 @@ export function channelControlWidget(): ng.IDirective {
       usersBreakdown: '=',
       hotkey: '@'
     },
-    // link: ($scope: IChannelScope, el, attrs, ctrl) => {
-    //   $scope.selfElement = el;
-    //   $scope.programElement = el.find('.program').get(0);
-    //   $scope.previewElement = el.find('.preview').get(0);
-    // },
+    link: ($scope: IChannelScope, el, attrs, ctrl) => {
+      $scope.selfElement = el;
+      $scope.programElement = el.find('.program').get(0);
+      $scope.previewElement = el.find('.preview').get(0);
+    },
     templateUrl: 'app/components/channel/control/channel.control.html',
-    // controller: ChannelController,
-    // controllerAs: 'vm',
-    // bindToController: true
+    controller: ControlChannelController,
+    controllerAs: 'vm',
+    bindToController: true
   };
 
 }
