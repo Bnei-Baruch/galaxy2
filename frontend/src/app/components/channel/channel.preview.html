@@ -17,11 +17,11 @@
     <md-grid-tile-footer layout-align="end">
 
       <md-icon
-        ng-if="showAudioToggle"
+        ng-if="showAudioToggle && vm.isReadyToSwitch()"
         class="material-icons"
         ng-style="vm.audioEnabled ? {color: 'red'} : {color: 'white'}"
         style="position: absolute; left: 12px;"
-        ng-click="vm.toggleAudio()">
+        ng-click="vm.toggleAudio(); $event.stopPropagation()">
         {{vm.audioEnabled ? 'volume_off' : 'volume_up'}}
       </md-icon>
 

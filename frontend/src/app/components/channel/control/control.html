@@ -1,6 +1,6 @@
 <section class="channel md-whiteframe-z1">
   <ng-include ng-init="vm = vm" src="'app/components/channel/channel.program.html'"></ng-include>
-  <ng-include ng-init="vm = vm" src="'app/components/channel/channel.preview.html'"></ng-include>
+  <ng-include ng-init="vm = vm; showAudioToggle = true" src="'app/components/channel/channel.preview.html'"></ng-include>
 
   <md-autocomplete
     md-no-cache="true"
@@ -21,7 +21,7 @@
           class="material-icons">
           lens
         </md-icon>
-        <span flex="80">{{ user.title }}</span>
+        <span flex="80" ng-bind="user.title"></span>
       </span>
     </md-item-template>
   </md-autocomplete>

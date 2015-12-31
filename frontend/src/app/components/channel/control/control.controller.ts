@@ -5,8 +5,9 @@ import { IUser } from '../../../shidur/shidur.service';
 export class ControlChannelController extends BaseChannelController {
   users: IUser[] = [];
   usersBreakdown: { [channel: string]: IUser[]; };
-  searchText: string;
   selectedUser: IUser;
+  searchText: string;
+  audioEnabled: boolean = false;
 
   pickUser(user: IUser): void {
     if (user !== undefined) {
@@ -18,7 +19,9 @@ export class ControlChannelController extends BaseChannelController {
   }
 
   toggleAudio() {
+    this.audioEnabled = !this.audioEnabled;
     console.debug('toggleAudio() triggered');
+    return false;
   }
 
   querySearch(searchText: string): IUser[] {
