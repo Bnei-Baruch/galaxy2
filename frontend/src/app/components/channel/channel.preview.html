@@ -5,26 +5,35 @@
     }"
     md-colspan="1"
     md-rowspan="1"
-    ng-click="preview.trigger()">
+    ng-click="vm.next()">
 
     <video class="preview" poster="data:image/gif,AAAA" autoplay></video>
 
     <md-grid-tile-header layout-align="end">
       <h3>PREVIEW</h3>
-      <label ng-if="preview.user.title">{{preview.user.title}}</label>
+      <label ng-if="vm.previewUser.title">{{vm.previewUser.title}}</label>
     </md-grid-tile-header>
 
     <md-grid-tile-footer layout-align="end">
+
       <md-icon
-        ng-if="preview.toggleAudio"
+        ng-if="showAudioToggle"
         class="material-icons"
-        ng-style="preview.audioEnabled ? {color: 'red'} : {color: 'white'}"
+        ng-style="vm.audioEnabled ? {color: 'red'} : {color: 'white'}"
         style="position: absolute; left: 12px;"
-        ng-click="preview.triggerToggleAudio()">
-        {{preview.audioEnabled ? 'volume_off' : 'volume_up'}}
+        ng-click="vm.toggleAudio()">
+        {{vm.audioEnabled ? 'volume_off' : 'volume_up'}}
       </md-icon>
 
-      <md-icon ng-if="!preview.ready()" aria-label="Waiting for preview..." ng-style="{color: 'white'}" class="material-icons">schedule</md-icon>&nbsp;
+      <md-icon
+        ng-if="!vm.isReadyToSwitch()"
+        aria-label="Waiting for preview..."
+        ng-style="{color: 'white'}"
+        class="material-icons">
+        schedule
+      </md-icon>&nbsp;
+
     </md-grid-tile-footer>
+
   </md-grid-tile>
 </md-grid-list>

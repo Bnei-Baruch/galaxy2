@@ -1,8 +1,8 @@
-import { ChannelController } from '../channel.controller';
+import { BaseChannelController } from '../channel.controller';
 import { IUser } from '../../../shidur/shidur.service';
 
 /** @ngInject */
-export class ControlChannelController extends ChannelController {
+export class ControlChannelController extends BaseChannelController {
   users: IUser[] = [];
   usersBreakdown: { [channel: string]: IUser[]; };
   searchText: string;

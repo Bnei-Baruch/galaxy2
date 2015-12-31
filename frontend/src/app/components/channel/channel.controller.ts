@@ -13,7 +13,7 @@ export interface IChannelScope extends ng.IScope {
 }
 
 /** @ngInject */
-export class ChannelController {
+export class BaseChannelController {
   $scope: IChannelScope;
   $timeout: ng.ITimeoutService;
   $document: any;
@@ -138,7 +138,9 @@ export class ChannelController {
     if (user === null) {
       this.$scope.programElement.src = null;
     } else {
-      attachMediaStream(this.$scope.programElement, this.programUser.stream);
+      var programElement = this.$scope.selfElement.find('.program');
+      attachMediaStream(programElement.get(0), this.programUser.stream);
+
       this.forwardProgramToSDI();
 
       this.janus.unsubscribeFromStream(oldProgramUser.login);
@@ -151,7 +153,8 @@ export class ChannelController {
 
     this.janus.subscribeForStream(user.login, (stream: MediaStream) => {
       user.stream = stream;
-      attachMediaStream(this.$scope.previewElement, stream);
+      var previewElement = this.$scope.selfElement.find('.preview');
+      attachMediaStream(previewElement.get(0), stream);
     });
   }
 

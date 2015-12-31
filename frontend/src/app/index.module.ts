@@ -11,11 +11,8 @@ import { UserController } from './user/user.controller';
 import { FakeUserController } from './user/fake.controller';
 import { LoginController } from '../app/components/auth/login.controller';
 import { AuthService } from '../app/components/auth/auth.service';
-import { channelWidget } from '../app/components/channel/channel.directive';
-import { channelControlWidget } from '../app/components/channel/control/channel.control.directive';
-import { channelProgramWidget } from '../app/components/channel/program/channel.program.directive';
-import { channelPreviewWidget } from '../app/components/channel/preview/channel.preview.directive';
-import { channelUsersWidget } from '../app/components/channel/users/channel.users.directive';
+import { largeChannelWidget } from '../app/components/channel/large/large.directive';
+import { controlChannelWidget } from '../app/components/channel/control/control.directive';
 import { ChannelService } from '../app/components/channel/channel.service';
 
 module frontend {
@@ -48,10 +45,7 @@ module frontend {
     .controller('FakeUserController', FakeUserController)
     .controller('LoginController', LoginController)
     .directive('galaxyNavbar', galaxyNavbar)
-    .directive('channelWidget', channelWidget)
-    .directive('channelControlWidget', channelControlWidget)
-    .directive('channelProgramWidget', channelProgramWidget)
-    .directive('channelPreviewWidget', channelPreviewWidget)
-    .directive('channelUsersWidget', channelUsersWidget)
+    .directive('largeChannelWidget', largeChannelWidget)
+    .directive('controlChannelWidget', controlChannelWidget)
     ;
 }
