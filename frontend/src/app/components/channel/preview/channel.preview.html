@@ -5,13 +5,13 @@
     }"
     md-colspan="1"
     md-rowspan="1"
-    ng-click="trigger()">
+    ng-click="preview.trigger()">
 
     <video class="preview" poster="data:image/gif,AAAA" autoplay></video>
 
     <md-grid-tile-header layout-align="end">
       <h3>PREVIEW</h3>
-      <label ng-if="user.title">{{user.title}}</label>
+      <label ng-if="preview.user.title">{{preview.user.title}}</label>
     </md-grid-tile-header>
 
     <md-grid-tile-footer layout-align="end">
@@ -24,7 +24,7 @@
         {{preview.audioEnabled ? 'volume_off' : 'volume_up'}}
       </md-icon>
 
-      <md-icon ng-if="!ready()" aria-label="Waiting for preview..." ng-style="{color: 'white'}" class="material-icons">schedule</md-icon>&nbsp;
+      <md-icon ng-if="!preview.ready()" aria-label="Waiting for preview..." ng-style="{color: 'white'}" class="material-icons">schedule</md-icon>&nbsp;
     </md-grid-tile-footer>
   </md-grid-tile>
 </md-grid-list>

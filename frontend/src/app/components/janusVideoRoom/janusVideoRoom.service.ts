@@ -327,11 +327,15 @@ export class JanusVideoRoomService {
   /* Remote Handle Methods */
 
   subscribeForStream(login: string, streamReadyCallback: (stream: MediaStream) => void) {
+    // TODO: implement timeout
+
     var self = this;
     var handleInst = null;
 
     if (login in this.remoteHandles) {
-      this.remoteHandles[login].count++;
+      var loginHandle = this.remoteHandles[login];
+      loginHandle.count++;
+      streamReadyCallback(loginHandle.stream);
       return;
     }
 

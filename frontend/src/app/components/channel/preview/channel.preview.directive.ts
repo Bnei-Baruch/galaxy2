@@ -6,8 +6,8 @@ export function channelPreviewWidget(): ng.IDirective {
     scope: {
       user: '=',
       ready: '&',
-      trigger: '&',
-      toggleAudio: '&'
+      trigger: '=',
+      toggleAudio: '='
     },
     templateUrl: 'app/components/channel/preview/channel.preview.html',
     controller: ChannelPreviewController,
@@ -18,10 +18,13 @@ export function channelPreviewWidget(): ng.IDirective {
 
 /** @ngInject */
 export class ChannelPreviewController {
+  trigger: () => void;
+  ready: () => boolean;
   toggleAudio: (audioEnabled: boolean) => void;
   audioEnabled: boolean = false;
 
   triggerToggleAudio() {
+    debugger;
     if (this.toggleAudio) {
       this.audioEnabled = !this.audioEnabled;
       this.toggleAudio(this.audioEnabled);

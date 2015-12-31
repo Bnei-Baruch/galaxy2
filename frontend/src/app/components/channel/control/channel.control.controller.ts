@@ -11,6 +11,9 @@ export class ControlChannelController extends ChannelController {
   pickUser(user: IUser): void {
     if (user !== undefined) {
       this.users.unshift(user);
+      if (user.joined) {
+        this.putUserToPreview(user);
+      }
     }
   }
 
