@@ -1,3 +1,4 @@
+import { PubSubService } from '../pubSub/pubSub.service';
 import { JanusVideoRoomService } from '../janusVideoRoom/janusVideoRoom.service';
 import { IUser } from '../../shidur/shidur.service';
 import { ChannelService } from './channel.service';
@@ -19,6 +20,7 @@ export class BaseChannelController {
   $document: any;
   janus: JanusVideoRoomService;
   config: any;
+  pubSub: PubSubService;
 
   channel: ChannelService;
 
@@ -38,13 +40,15 @@ export class BaseChannelController {
               $timeout: ng.ITimeoutService,
               $document: any,
               janus: JanusVideoRoomService,
-              config: any) {
+              config: any,
+              pubSub: PubSubService) {
 
     this.$scope = $scope;
     this.$timeout = $timeout;
     this.$document = $document;
     this.janus = janus;
     this.config = config;
+    this.pubSub = pubSub;
 
     // Mapping users by login for conveniency
 

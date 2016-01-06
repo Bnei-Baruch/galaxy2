@@ -242,11 +242,9 @@ export class JanusVideoRoomService {
         console.debug('Got local stream', stream);
         this.localStream = stream;
 
-        // Disable local audio track
-        var audioTracks = stream.getAudioTracks();
-        audioTracks.forEach((audioTrack: MediaStreamTrack) => {
-          audioTrack.enabled = false;
-        });
+        // Disable local audio tracks
+        this.toggleLocalAudio(false);
+
         this.localStreamReadyCallback(stream);
       },
       onremotestream: (stream: MediaStream) => {
@@ -439,7 +437,7 @@ export class JanusVideoRoomService {
     }
 
     // Stop (if exists) => Start => Update state => Callback.
-    this.$http.get(this.config.backendUri + '/shidur_state').success((shidurState: IShidurState) => {
+    this.$http.get(this.config.backendUri + '/rest/shidur_state').success((shidurState: IShidurState) => {
       if (!shidurState.janus) {
         shidurState.janus = <any>{};
       }
@@ -451,7 +449,7 @@ export class JanusVideoRoomService {
       this.stopSdiForwarding(feedForwardInfo, () => {
         this.startSdiForwarding(login, port, (forwardInfo: IFeedForwardInfo) => {
           shidurState.janus.portsFeedForwardInfo[port] = forwardInfo;
-          this.$http.post(this.config.backendUri + '/shidur_state', shidurState).success(() => {
+          this.$http.post(this.config.backendUri + '/rest/shidur_state', shidurState).success(() => {
             this.$timeout(() => {
               forwardedCallback(login);
             });
@@ -538,6 +536,13 @@ export class JanusVideoRoomService {
     this.$http.get(titleApiUrl).error((data, st) => {
       /* this.toastr.error(`Unable to change remote feed to ${title}`); */
       console.error('Unable to change remote feed:', data, st);
+    });
+  }
+
+  toggleLocalAudio(enabled: boolean) {
+    var audioTracks = this.localStream.getAudioTracks();
+    audioTracks.forEach((audioTrack: MediaStreamTrack) => {
+      audioTrack.enabled = enabled;
     });
   }
 }

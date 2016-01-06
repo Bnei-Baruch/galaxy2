@@ -10,6 +10,7 @@ gem 'rails_admin'
 gem 'bootstrap-sass'
 gem 'devise'
 gem 'devise_token_auth'
+gem 'faye-rails'
 gem 'administrate'
 gem 'rack-cors', :require => 'rack/cors'
 group :development, :test do

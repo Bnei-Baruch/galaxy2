@@ -11,6 +11,7 @@ import { UserController } from './user/user.controller';
 import { FakeUserController } from './user/fake.controller';
 import { LoginController } from '../app/components/auth/login.controller';
 import { AuthService } from '../app/components/auth/auth.service';
+import { PubSubService } from '../app/components/pubSub/pubSub.service';
 import { largeChannelWidget } from '../app/components/channel/large/large.directive';
 import { controlChannelWidget } from '../app/components/channel/control/control.directive';
 import { ChannelService } from '../app/components/channel/channel.service';
@@ -40,6 +41,7 @@ module frontend {
     .service('shidur', ShidurService)
     .service('channel', ChannelService)
     .service('authService', AuthService)
+    .service('pubSub', PubSubService)
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
     .controller('FakeUserController', FakeUserController)
