@@ -1,3 +1,22 @@
+var EC = protractor.ExpectedConditions;
+
+exports.login = function() {
+  'use strict'
+
+  var login = element(by.model('vm.login'));
+  var password = element(by.model('vm.password'));
+  var submit = element(by.tagName('button'));
+
+  login.sendKeys('kolmanv');
+  password.sendKeys('kolmanvARVUT2014');
+
+  submit.click();
+
+  var ret = false;
+  setTimeout(function() { ret = true; }, 2500);
+  browser.wait(function() { return ret; });
+}
+
 exports.waitForVideo = function(cssSelector) {
   'use strict';
 

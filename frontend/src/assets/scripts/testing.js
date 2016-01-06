@@ -1,5 +1,8 @@
 function getAverageVideoColor(selector) {
   var videoElement = document.querySelector(selector);
+  if (!videoElement) {
+    return undefined;
+  }
 
   var snapshotCanvas = document.createElement('canvas');
   snapshotCanvas.width = videoElement.videoWidth;
