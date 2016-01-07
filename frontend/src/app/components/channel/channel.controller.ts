@@ -1,7 +1,5 @@
-import { PubSubService } from '../pubSub/pubSub.service';
 import { JanusVideoRoomService } from '../janusVideoRoom/janusVideoRoom.service';
 import { IUser } from '../../shidur/shidur.service';
-import { ChannelService } from './channel.service';
 
 declare var attachMediaStream: any;
 
@@ -16,17 +14,11 @@ export interface IChannelScope extends ng.IScope {
 /** @ngInject */
 export class BaseChannelController {
   $scope: IChannelScope;
-  $timeout: ng.ITimeoutService;
-  $document: any;
   janus: JanusVideoRoomService;
   config: any;
-  pubSub: PubSubService;
-
-  channel: ChannelService;
 
   name: string;
   users: IUser[];
-  hotkey: string;
 
   usersByLogin: { [login: string]: IUser } = {};
   onlineUsers: IUser[] = [];
@@ -36,24 +28,13 @@ export class BaseChannelController {
   programUser: IUser = null;
   previewUser: IUser = null;
 
-  constructor($scope: IChannelScope,
-              $timeout: ng.ITimeoutService,
-              $document: any,
-              janus: JanusVideoRoomService,
-              config: any,
-              pubSub: PubSubService) {
-
+  constructor($scope: IChannelScope, janus: JanusVideoRoomService, config: any) {
     this.$scope = $scope;
-    this.$timeout = $timeout;
-    this.$document = $document;
     this.janus = janus;
     this.config = config;
-    this.pubSub = pubSub;
 
     // Mapping users by login for conveniency
-
     this.mapUsersByLogin();
-    this.bindHotkey();
 
     this.janus.registerChannel({
       name: this.name,
@@ -67,6 +48,12 @@ export class BaseChannelController {
     });
   }
 
+  userJoined(login: string) {
+  }
+
+  userLeft(login: string) {
+  }
+
   mapUsersByLogin() {
     if (typeof this.users === 'undefined') {
       this.users = [];
@@ -76,59 +63,6 @@ export class BaseChannelController {
     this.users.forEach((user: IUser) => {
       this.usersByLogin[user.login] = user;
     });
-  }
-
-  bindHotkey() {
-    if (this.hotkey) {
-      this.$document.bind('keydown', (e: KeyboardEvent) => {
-        if (e.keyCode === this.hotkey.charCodeAt(0)) {
-          this.$timeout(() => {
-            this.next();
-          });
-        }
-      });
-    }
-  }
-
-  /* TODO: refactor repeating code in userJoined/userLeft/next() */
-
-  userJoined(login: string) {
-    // TODO: The timestamp should be better taken from Janus point of view
-    var user = this.usersByLogin[login];
-    user.joined = moment();
-    this.onlineUsers.push(user);
-
-    // Put user video on preview if first user
-    if (this.previewUser === null) {
-      this.putUserToPreview(user);
-    }
-  }
-
-  userLeft(login: string) {
-    var user = this.usersByLogin[login];
-    user.joined = null;
-    user.stream = null;
-
-    this.onlineUsers.splice(this.onlineUsers.indexOf(user), 1);
-    console.log('User left', login);
-
-    if (this.programUser === user) {
-      this.putUserToProgram(null);
-      // TODO: Put dummy video stream to program
-    }
-
-    if (this.previewUser === user) {
-      var previewUser = this.getNextUser(user);
-      this.putUserToPreview(previewUser);
-    }
-  }
-
-  next() {
-    if (this.isReadyToSwitch()) {
-      this.putUserToProgram(this.previewUser);
-      var nextUser = this.getNextUser(this.previewUser);
-      this.putUserToPreview(nextUser);
-    }
   }
 
   putUserToProgram(user: IUser) {
@@ -160,17 +94,6 @@ export class BaseChannelController {
       var previewElement = this.$scope.selfElement.find('.preview');
       attachMediaStream(previewElement.get(0), stream);
     });
-  }
-
-  getNextUser(user: IUser) {
-    var userIndex = this.onlineUsers.indexOf(user);
-
-    if (userIndex === -1) {
-      return null;
-    }
-
-    var nextUser = this.onlineUsers[(userIndex + 1) % this.onlineUsers.length];
-    return nextUser;
   }
 
   isReadyToSwitch() {

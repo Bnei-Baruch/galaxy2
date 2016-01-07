@@ -9,8 +9,6 @@ export class ControlChannelController extends BaseChannelController {
   selectedUser: IUser;
   searchText: string;
 
-  audioEnabled: boolean = false;
-
   pickUser(user: IUser): void {
     if (user !== undefined) {
       this.users.unshift(user);
@@ -18,18 +16,6 @@ export class ControlChannelController extends BaseChannelController {
         this.putUserToPreview(user);
       }
     }
-  }
-
-  toggleAudio() {
-    this.audioEnabled = !this.audioEnabled;
-
-    this.pubSub.client.publish('/users/' + this.previewUser.login, {
-      message: 'toggleAudio',
-      enabled: this.audioEnabled
-    });
-
-    console.debug('toggleAudio() triggered');
-    return false;
   }
 
   querySearch(searchText: string): IUser[] {

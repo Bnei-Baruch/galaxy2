@@ -4,7 +4,8 @@
   <slot-widget kind="preview"
     user="vm.previewUser"
     is-ready="vm.isReadyToSwitch()"
-    trigger="vm.next()"></slot-widget>
+    trigger="vm.next()"
+    hotkey="vm.hotkey"></slot-widget>
 
   <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"></ng-include>
 </section>

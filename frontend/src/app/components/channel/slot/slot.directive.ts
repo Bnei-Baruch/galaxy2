@@ -10,7 +10,8 @@ export function slotWidget(): ng.IDirective {
       showAudioToggle: '=',
       user: '=',
       isReady: '&',
-      trigger: '&'
+      trigger: '&',
+      hotkey: '='
     },
     templateUrl: 'app/components/channel/slot/slot.html',
     controller: SlotController,
