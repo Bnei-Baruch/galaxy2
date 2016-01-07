@@ -7,6 +7,10 @@ video {
   margin-right: 4px;
 }
 
+.channel h3 {
+  text-transform: uppercase;
+}
+
 .channel .users .program {
   color: #E53935;
   font-weight: bold;
@@ -15,6 +19,10 @@ video {
 .channel .users .preview {
   color: #43A047;
   font-weight: bold;
+}
+
+md-grid-tile-header {
+  padding-top: 12px;
 }
 
 md-grid-tile-header, md-grid-tile-footer {

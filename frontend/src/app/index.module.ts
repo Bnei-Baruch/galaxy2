@@ -12,6 +12,7 @@ import { FakeUserController } from './user/fake.controller';
 import { LoginController } from '../app/components/auth/login.controller';
 import { AuthService } from '../app/components/auth/auth.service';
 import { PubSubService } from '../app/components/pubSub/pubSub.service';
+import { slotWidget } from '../app/components/channel/slot/slot.directive';
 import { largeChannelWidget } from '../app/components/channel/large/large.directive';
 import { controlChannelWidget } from '../app/components/channel/control/control.directive';
 import { ChannelService } from '../app/components/channel/channel.service';
@@ -47,6 +48,7 @@ module frontend {
     .controller('FakeUserController', FakeUserController)
     .controller('LoginController', LoginController)
     .directive('galaxyNavbar', galaxyNavbar)
+    .directive('slotWidget', slotWidget)
     .directive('largeChannelWidget', largeChannelWidget)
     .directive('controlChannelWidget', controlChannelWidget)
     ;

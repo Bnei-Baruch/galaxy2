@@ -1,23 +1,21 @@
 <md-grid-list md-cols="1" md-row-height="16:9" md-gutter="3px">
   <md-grid-tile
-    ng-style="{
-    'background': 'green'
-    }"
+    ng-style="vm.kind === 'program' ? {'background': 'red'} : {'background': 'green'}"
     md-colspan="1"
     md-rowspan="1"
-    ng-click="vm.next()">
+    ng-click="vm.trigger()">
 
-    <video class="preview" poster="data:image/gif,AAAA" autoplay></video>
+    <video ng-class="vm.kind" poster="data:image/gif,AAAA" autoplay></video>
 
-    <md-grid-tile-header layout-align="end">
-      <h3>PREVIEW</h3>
-      <label ng-if="vm.previewUser.title">{{vm.previewUser.title}}</label>
+    <md-grid-tile-header layout-align="end start">
+      <h3 ng-bind="vm.kind"></h3>
+      <label ng-if="vm.user.title">{{vm.user.title}}</label>
     </md-grid-tile-header>
 
     <md-grid-tile-footer layout-align="end">
 
       <md-icon
-        ng-if="showAudioToggle && vm.isReadyToSwitch()"
+        ng-if="vm.showAudioToggle && vm.isReady()"
         class="material-icons"
         ng-style="vm.audioEnabled ? {color: 'red'} : {color: 'white'}"
         style="position: absolute; left: 12px;"
@@ -26,7 +24,7 @@
       </md-icon>
 
       <md-icon
-        ng-if="!vm.isReadyToSwitch()"
+        ng-if="vm.kind === 'preview' && !vm.isReady()"
         aria-label="Waiting for preview..."
         ng-style="{color: 'white'}"
         class="material-icons">

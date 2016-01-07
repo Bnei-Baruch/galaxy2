@@ -302,7 +302,6 @@ export class JanusVideoRoomService {
         // Publishers are sendonly
         audioRecv: false,
         videoRecv: false,
-        // Sound disabled for testing
         audioSend: true,
         videoSend: true,
         video: 'stdres-16:9'
