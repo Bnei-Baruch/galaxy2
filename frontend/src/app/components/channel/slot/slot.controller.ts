@@ -14,8 +14,6 @@ export class SlotController {
   trigger: () => void;
   hotkey: string;
 
-  audioEnabled: boolean = false;
-
   constructor( $timeout: ng.ITimeoutService, $document: any, pubSub: PubSubService) {
     this.$timeout = $timeout;
     this.$document = $document;
@@ -25,11 +23,11 @@ export class SlotController {
   }
 
   toggleAudio() {
-    this.audioEnabled = !this.audioEnabled;
+    this.user.audioEnabled = !this.user.audioEnabled;
 
     this.pubSub.client.publish('/users/' + this.user.login, {
       message: 'toggleAudio',
-      enabled: this.audioEnabled
+      enabled: this.user.audioEnabled
     });
 
     console.debug('toggleAudio() triggered');

@@ -18,6 +18,12 @@ export class ControlChannelController extends BaseChannelController {
     }
   }
 
+  trigger(): void {
+    if (this.previewUser) {
+      this.putUserToProgram(this.previewUser);
+    }
+  }
+
   querySearch(searchText: string): IUser[] {
     var users = [];
     console.log('query search', searchText);

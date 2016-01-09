@@ -1,14 +1,14 @@
 <section class="channel md-whiteframe-z1">
   <slot-widget kind="program"
     user="vm.programUser"
-    show-audio-toggle></slot-widget>
+    show-audio-toggle="true"></slot-widget>
 
   <slot-widget kind="preview"
     user="vm.previewUser"
     is-ready="vm.isReadyToSwitch()"
     trigger="vm.trigger()"
     hotkey="vm.hotkey"
-    show-audio-toggle></slot-widget>
+    show-audio-toggle="true"></slot-widget>
 
   <md-autocomplete
     md-no-cache="true"

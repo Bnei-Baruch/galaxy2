@@ -5,7 +5,11 @@
     md-rowspan="1"
     ng-click="vm.trigger()">
 
-    <video ng-class="vm.kind" poster="data:image/gif,AAAA" autoplay></video>
+    <video ng-class="vm.kind"
+      poster="data:image/gif,AAAA"
+      autoplay
+      ng-attr-muted="vm.kind === 'program' || undefined">
+    </video>
 
     <md-grid-tile-header layout-align="end start">
       <h3 ng-bind="vm.kind"></h3>
@@ -15,12 +19,12 @@
     <md-grid-tile-footer layout-align="end">
 
       <md-icon
-        ng-if="vm.showAudioToggle && vm.isReady()"
+        ng-if="vm.showAudioToggle && vm.user"
         class="material-icons"
-        ng-style="vm.audioEnabled ? {color: 'red'} : {color: 'white'}"
+        ng-style="vm.user.audioEnabled ? {color: 'red'} : {color: 'white'}"
         style="position: absolute; left: 12px;"
         ng-click="vm.toggleAudio(); $event.stopPropagation()">
-        {{vm.audioEnabled ? 'volume_off' : 'volume_up'}}
+        {{vm.user.audioEnabled ? 'volume_off' : 'volume_up'}}
       </md-icon>
 
       <md-icon
