@@ -74,12 +74,13 @@ export class JanusVideoRoomService {
     });
 
     $(window).on('beforeunload', () => {
-      this.session.destroy();
       this.unpublishOwnFeed();
+      this.session.destroy();
       // return "Are you sure want to leave this page?";
     });
   }
 
+  // API method for javascript client to connect local media stream to Janus (sending video/audio?)
   registerLocalUser(login: string, streamReadyCallback: (stream: MediaStream) => void) {
     this.localUserLogin = login;
     this.localStreamReadyCallback = streamReadyCallback;
@@ -91,6 +92,8 @@ export class JanusVideoRoomService {
     }
   }
 
+  // API method for javascript client to register channel with specific users so that each joined
+  // or leaving user will notify the client (channel).
   registerChannel(options: IChannel) {
     var self = this;
 
@@ -113,6 +116,7 @@ export class JanusVideoRoomService {
     // for relevant channels
   }
 
+  // Internal, called once at constructor.
   initCallback() {
     this.session = new Janus({
       server: this.config.janus.serverUri,
@@ -126,6 +130,7 @@ export class JanusVideoRoomService {
     });
   }
 
+  // Internal, tries to reconnect if failed initially.
   reloadAfterTimeout(counter?: number) {
     if (counter === undefined) {
       counter = this.config.janus.reconnectTimeout;
@@ -141,6 +146,7 @@ export class JanusVideoRoomService {
     }
   }
 
+  // Internal, handles changes in publishers state and updates registered clients (channel) if needed.
   updatePublishersAndTriggerJoined(publishers) {
     var self = this;
 
@@ -156,7 +162,7 @@ export class JanusVideoRoomService {
 
       // The system has to make sure to remove publishers on time.
       if (p.display in self.publishers) {
-        console.error('This should not happen, we have not handled leave user well!')
+        console.error('This should not happen, we have not handled leave user well!');
       }
 
       // Set or override publisher
@@ -169,6 +175,8 @@ export class JanusVideoRoomService {
     });
   }
 
+  // Internal helper method to call client (channel) on user events,
+  // for example calls joinedCallback or leftCallback.
   applyOnUserChannels(login: string, func: (channel: IChannel) => void) {
     if (login in this.userChannels) {
       this.userChannels[login].forEach((c) => {
@@ -180,6 +188,7 @@ export class JanusVideoRoomService {
     }
   }
 
+  // Internal, cleans up when publisher is leaving. Call relevant channels with leftCallback.
   deletePublisherByJanusId(janusId) {
     var login = null;
     for (var key in this.publishers) {
@@ -200,6 +209,7 @@ export class JanusVideoRoomService {
     }
   }
 
+  // When current client is closed, sends self unpublish event to Janus.
   unpublishOwnFeed() {
     var body = { 'request': 'unpublish' };
     this.localHandle.send({'message': body});
@@ -208,6 +218,7 @@ export class JanusVideoRoomService {
 
   /* Local Handle Methods */
 
+  // Internal, attaches local handle to Janus service.
   attachLocalHandle() {
     var self = this;
 
@@ -254,6 +265,7 @@ export class JanusVideoRoomService {
     });
   }
 
+  // Internal
   onLocalHandleMessage(message, jsep) {
     console.debug('Got a local message', message);
 
@@ -291,6 +303,9 @@ export class JanusVideoRoomService {
     }
   }
 
+  // Internal, creates sdp offer, meaning two things already happened
+  // 1) Media stream is connected and broadcasting video.
+  // 2) Local handle is connected to Janus.
   publishLocalFeed() {
     var self = this;
 
@@ -321,6 +336,7 @@ export class JanusVideoRoomService {
 
   /* Remote Handle Methods */
 
+  // API method for clients (channel) to register to receive when remote 'login' starts streaming his MediaStream
   subscribeForStream(login: string, streamReadyCallback: (stream: MediaStream) => void) {
     var self = this;
     var handleInst = null;
@@ -375,6 +391,7 @@ export class JanusVideoRoomService {
     });
   }
 
+  // Internal
   onRemoteHandleMessage(handle, message, jsep) {
     var self = this;
 
@@ -408,6 +425,7 @@ export class JanusVideoRoomService {
     }
   }
 
+  // API for client (channel) to stop getting updates on specific remote 'login'
   unsubscribeFromStream(login: string) {
     if (login in this.remoteHandles) {
       var handleItem = this.remoteHandles[login];
@@ -422,7 +440,7 @@ export class JanusVideoRoomService {
     }
   }
 
-  // Forward stream to janus port
+  // API for client (channel) forward stream to janus port (sdi).
   forwardRemoteFeed(login: string, port: number, forwardedCallback: (login: string) => void) {
     if (!(login in this.remoteHandles)) {
       this.toastr.error(`Could not find remote handle for ${login}`);
@@ -453,6 +471,7 @@ export class JanusVideoRoomService {
 
   }
 
+  // Internal
   startSdiForwarding(login: string, port: number, callback: (forwardInfo: IFeedForwardInfo) => void) {
     var self = this;
     var handleContainer = this.remoteHandles[login];
@@ -486,6 +505,7 @@ export class JanusVideoRoomService {
     });
   }
 
+  // Internal
   stopSdiForwarding(forwardInfo: IFeedForwardInfo, callback: () => void) {
     var self = this;
 
@@ -521,6 +541,7 @@ export class JanusVideoRoomService {
 
   }
 
+  // API for client (channel) to change Title on some janus port (sdi).
   changeRemoteFeedTitle(title: string, port: number) {
     var titleApiUrl = this.config.janus.titleApiUrl
       .replace('%title%', escape(title))
