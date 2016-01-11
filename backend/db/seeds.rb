@@ -23,6 +23,9 @@ puts '--> Admins'
 puts '--> Shidur operators'
 create_user login: 'shidur', role: :operator, title: 'Shidur', channel: :hidden
 
+puts '--> E2E Test user'
+create_user login: 'e2e', role: :operator, title: 'e2e', channel: :large1
+
 puts '--> Users'
 %w(
 kaliningrad|Kaliningrad|large1

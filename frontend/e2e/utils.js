@@ -7,8 +7,8 @@ exports.login = function() {
   var password = element(by.model('vm.password'));
   var submit = element(by.tagName('button'));
 
-  login.sendKeys('kolmanv');
-  password.sendKeys('kolmanvARVUT2014');
+  login.sendKeys('e2e');
+  password.sendKeys('e2eARVUT2014');
 
   submit.click();
 
