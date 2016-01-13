@@ -7,8 +7,6 @@ export interface IChannelScope extends ng.IScope {
   users: IUser[];
   name: string;
   selfElement: ng.IAugmentedJQuery;
-  programElement: HTMLVideoElement;
-  previewElement: HTMLVideoElement;
 }
 
 /** @ngInject */
@@ -49,9 +47,11 @@ export class BaseChannelController {
   }
 
   userJoined(login: string) {
+    console.error('userJoined() not implemented!');
   }
 
   userLeft(login: string) {
+    console.error('userLeft() not implemented!');
   }
 
   mapUsersByLogin() {
@@ -73,27 +73,48 @@ export class BaseChannelController {
     var oldProgramUser = this.programUser;
     this.programUser = user;
 
+    var programElement = <HTMLMediaElement>this.$scope.selfElement.find('.program').get(0);
+
     if (user === null) {
-      this.$scope.programElement.src = null;
+      programElement.src = null;
     } else {
-      var programElement = this.$scope.selfElement.find('.program');
-      attachMediaStream(programElement.get(0), this.programUser.stream);
+      attachMediaStream(programElement, this.programUser.stream);
 
       this.forwardProgramToSDI();
 
-      this.janus.unsubscribeFromStream(oldProgramUser.login);
-      oldProgramUser.stream = null;
+      if (oldProgramUser) {
+        this.janus.unsubscribeFromStream(oldProgramUser.login);
+        oldProgramUser.stream = null;
+        console.debug('Unsubscribed from', oldProgramUser.login);
+      }
     }
   }
 
   putUserToPreview(user: IUser) {
+    if (this.previewUser === user) {
+      return;
+    }
+
+    var oldPreviewUser = this.previewUser;
     this.previewUser = user;
 
-    this.janus.subscribeForStream(user.login, (stream: MediaStream) => {
-      user.stream = stream;
-      var previewElement = this.$scope.selfElement.find('.preview');
-      attachMediaStream(previewElement.get(0), stream);
-    });
+    var previewElement = <HTMLMediaElement>this.$scope.selfElement.find('.preview').get(0);
+
+    if (user === null) {
+      previewElement.src = null;
+    } else {
+      this.janus.subscribeForStream(user.login, (stream: MediaStream) => {
+        user.stream = stream;
+        attachMediaStream(previewElement, stream);
+        console.debug('Subscribed for', user.login);
+      });
+
+      if (oldPreviewUser && oldPreviewUser !== this.programUser) {
+        this.janus.unsubscribeFromStream(oldPreviewUser.login);
+        oldPreviewUser.stream = null;
+        console.debug('Unsubscribed from', oldPreviewUser.login);
+      }
+    }
   }
 
   isReadyToSwitch() {

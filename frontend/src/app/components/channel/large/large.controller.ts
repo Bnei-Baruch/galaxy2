@@ -32,6 +32,7 @@ export class LargeChannelController extends BaseChannelController {
 
     if (this.previewUser === user) {
       var previewUser = this.getNextUser(user);
+      debugger;
       this.putUserToPreview(previewUser);
     }
   }
