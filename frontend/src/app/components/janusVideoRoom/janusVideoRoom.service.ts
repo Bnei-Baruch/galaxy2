@@ -2,10 +2,10 @@ declare var escape: any;
 declare var Janus: any;
 
 interface IChannel {
-  name: string,
-  users: string[],
-  joinedCallback: (login: string) => void,
-  leftCallback: (login: string) => void
+  name: string;
+  users: string[];
+  joinedCallback: (login: string) => void;
+  leftCallback: (login: string) => void;
 }
 
 interface IShidurState {
@@ -118,7 +118,7 @@ export class JanusVideoRoomService {
       success: () => {
         this.attachLocalHandle();
       },
-      error: (error) => {
+      error: (error: any) => {
         this.toastr.error(`Janus creation error: ${error}`);
         this.reloadAfterTimeout();
       }
