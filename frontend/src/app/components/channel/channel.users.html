@@ -8,6 +8,7 @@
         class="{{user === vm.programUser ? 'program' : (user === vm.previewUser ? 'preview' : '')}}">
       </p>
     </div>
+    <md-icon layout="column" aria-label="" ng-style="{color: '#9E9E9E'}" class="material-icons">clear</md-icon>
   </md-list-item>
 
   <md-divider></md-divider>
@@ -15,9 +16,25 @@
   <!-- Offline users -->
   <md-list-item ng-repeat="user in vm.users | filter : {joined: '!'} | orderBy : 'title'">
     <md-icon layout="column" aria-label="" ng-style="{color: '#9E9E9E'}" class="material-icons">lens</md-icon>
-    <div class="md-list-item-text" layout="column" flex="100">
+
+    <div class="md-list-item-text" layout="column" flex="50">
       <p ng-bind="user.title"></p>
     </div>
+
+    <md-button
+      ng-if="vm.allowRemoveUsers"
+      ng-click="vm.removeUser(user); $event.stopPropagation()"
+      flex="20"
+      layout-align="start"
+      layout="column"
+      aria-label="Remove"
+      class="md-icon-button launch">
+
+      <md-icon
+        ng-style="{color: '#9E9E9E'}"
+        class="material-icons">clear</md-icon>
+
+    </md-button>
   </md-list-item>
 
 </md-list>

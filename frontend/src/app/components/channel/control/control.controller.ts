@@ -5,6 +5,7 @@ import { IUser } from '../../../shidur/shidur.service';
 export class ControlChannelController extends BaseChannelController {
   users: IUser[] = [];
   usersBreakdown: { [channel: string]: IUser[]; };
+  allowRemoveUsers: boolean = true;
 
   selectedUser: IUser;
   searchText: string;
@@ -21,6 +22,30 @@ export class ControlChannelController extends BaseChannelController {
   trigger(): void {
     if (this.previewUser) {
       this.putUserToProgram(this.previewUser);
+    }
+  }
+
+  removeUser(user: IUser): void {
+    // Mute sound if the user is online
+    if (user.joined && user.audioEnabled) {
+      debugger;
+    }
+
+    // Remove user from slots if present
+    if (this.previewUser === user) {
+      this.putUserToPreview(null);
+    }
+
+    if (this.programUser === user) {
+      this.putUserToProgram(null);
+    }
+
+    // Splice users
+    for (var index in this.users) {
+      if (this.users[index] === user) {
+        this.users.splice(index, 1);
+        break;
+      }
     }
   }
 
