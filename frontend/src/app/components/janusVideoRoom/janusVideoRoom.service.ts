@@ -91,25 +91,27 @@ export class JanusVideoRoomService {
   }
 
   registerChannel(options: IChannel) {
-    var self = this;
-
     this.channels[options.name] = options;
 
-    options.users.forEach((login: string) => {
-      // Store users lookup table by login
-      if (!(login in self.userChannels)) {
-        self.userChannels[login] = [];
-      }
-
-      // Add channel to user channels list
-      var channels = self.userChannels[login];
-      if (channels.indexOf(options.name) === -1) {
-        channels.push(options.name);
-      }
-    });
+    this.updateChannelUsers(options.name, options.users);
 
     // TODO: User publishers list and call userJoined method
     // for relevant channels
+  }
+
+  updateChannelUsers(name: string, users: string[]) {
+    users.forEach((login: string) => {
+      // Store users lookup table by login
+      if (!(login in this.userChannels)) {
+        this.userChannels[login] = [];
+      }
+
+      // Add channel to user channels list
+      var channels = this.userChannels[login];
+      if (channels.indexOf(name) === -1) {
+        channels.push(name);
+      }
+    });
   }
 
   initCallback() {

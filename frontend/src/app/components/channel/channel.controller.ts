@@ -19,7 +19,6 @@ export class BaseChannelController {
   users: IUser[];
 
   usersByLogin: { [login: string]: IUser } = {};
-  onlineUsers: IUser[] = [];
 
   programForwarded: boolean = true;
 
@@ -36,7 +35,7 @@ export class BaseChannelController {
 
     this.janus.registerChannel({
       name: this.name,
-      users: this.users.map((user: IUser) => { return user.login; }),
+      users: this.getLoginsList(),
       joinedCallback: (login: string) => {
         this.userJoined(login);
       },
@@ -47,11 +46,32 @@ export class BaseChannelController {
   }
 
   userJoined(login: string) {
-    console.error('userJoined() not implemented!');
+    // TODO: The timestamp should be better taken from Janus point of view
+    var user = this.usersByLogin[login];
+    user.joined = moment();
+
+    // Put user video on preview if first user
+    if (this.previewUser === null) {
+      this.putUserToPreview(user);
+    }
   }
 
   userLeft(login: string) {
-    console.error('userLeft() not implemented!');
+    var user = this.usersByLogin[login];
+    user.joined = null;
+    user.stream = null;
+
+    console.log('User left', login);
+
+    if (this.programUser === user) {
+      this.putUserToProgram(null);
+      // TODO: Put dummy video stream to program
+    }
+
+    if (this.previewUser === user) {
+      var previewUser = this.getNextUser(user);
+      this.putUserToPreview(previewUser);
+    }
   }
 
   mapUsersByLogin() {
@@ -140,4 +160,37 @@ export class BaseChannelController {
       this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPort);
     });
   }
+
+  getNextUser(user: IUser) {
+    var onlineUsers = this.getOnlineUsers();
+    var userIndex = onlineUsers.indexOf(user);
+
+    if (userIndex === -1) {
+      return null;
+    }
+
+    var nextUser = onlineUsers[(userIndex + 1) % onlineUsers.length];
+    return nextUser;
+  }
+
+  getLoginsList() {
+    return this.users.map((user: IUser) => { return user.login; });
+  }
+
+  getOnlineUsers() {
+    var onlineUsers: IUser[] = [];
+
+    this.users.forEach((user: IUser) => {
+      if (user.joined) {
+        onlineUsers.push(user);
+      }
+    });
+
+    onlineUsers.sort((user1: IUser, user2: IUser) => {
+      return user1.joined > user2.joined ? 1 : -1;
+    });
+
+    return onlineUsers;
+  }
+
 }

@@ -16,6 +16,8 @@ export class ControlChannelController extends BaseChannelController {
       if (user.joined) {
         this.putUserToPreview(user);
       }
+
+      this.onUsersListChanged();
     }
   }
 
@@ -26,9 +28,8 @@ export class ControlChannelController extends BaseChannelController {
   }
 
   removeUser(user: IUser): void {
-    // Mute sound if the user is online
+    // TODO: Mute sound if the user is online
     if (user.joined && user.audioEnabled) {
-      debugger;
     }
 
     // Remove user from slots if present
@@ -47,6 +48,13 @@ export class ControlChannelController extends BaseChannelController {
         break;
       }
     }
+
+    this.onUsersListChanged();
+  }
+
+  onUsersListChanged() {
+    this.mapUsersByLogin();
+    this.janus.updateChannelUsers(this.name, this.getLoginsList());
   }
 
   querySearch(searchText: string): IUser[] {
