@@ -1,11 +1,42 @@
+// Library to handle communication with Janus.
+// API:
+//
+// Group methods
+// =============
+//
+// registerLocalUser(login: string, streamReadyCallback: (stream: MediaStream) => void)
+// Connect local media stream to Janus (sending video/audio?)
+//
+// Channel methods
+// ===============
+//
+// registerChannel(options: IChannel)
+// Register channel with specific users so that each joined
+// or leaving user will notify the client (channel).
+//
+// subscribeForStream(login: string, streamReadyCallback: (stream: MediaStream) => void)
+// Register to receive when remote 'login' starts streaming his MediaStream
+//
+// unsubscribeFromStream(login: string)
+// Stop getting updates on specific remote 'login'.
+//
+// SDI methods
+// ===========
+//
+// forwardRemoteFeed(login: string, port: number) returns Promise
+// Forward stream to janus port (sdi).
+//
+// changeRemoteFeedTitle(title: string, port: number)
+// Change Title on some janus port (sdi).
+
 declare var escape: any;
 declare var Janus: any;
 
 interface IChannel {
-  name: string,
-  users: string[],
-  joinedCallback: (login: string) => void,
-  leftCallback: (login: string) => void
+  name: string;
+  users: string[];
+  joinedCallback: (login: string) => void;
+  leftCallback: (login: string) => void;
 }
 
 interface IShidurState {
@@ -23,9 +54,9 @@ interface IRemoteHandle {
 }
 
 interface IFeedForwardInfo {
-  publisherId: string,
-  videoStreamId: string,
-  audioStreamId: string
+  publisherId: string;
+  videoStreamId: string;
+  audioStreamId: string;
 }
 
 /* @ngInject */
@@ -441,34 +472,60 @@ export class JanusVideoRoomService {
   }
 
   // API for client (channel) forward stream to janus port (sdi).
-  forwardRemoteFeed(login: string, port: number, forwardedCallback: (login: string) => void) {
-    if (!(login in this.remoteHandles)) {
-      this.toastr.error(`Could not find remote handle for ${login}`);
-      return;
-    }
+  forwardRemoteFeed(login: string, port: number): ng.IPromise<any> {
+    // Returns promise.
+    return this.getAndUpdateShidurState((shidurState: IShidurState) => {
+      var deffered = this.$q.defer();
+      if (!(login in this.remoteHandles)) {
+        this.toastr.error(`Could not find remote handle for ${login}`);
+        deffered.reject(`Could not find remote handle for ${login}`);
+      }
 
-    // Stop (if exists) => Start => Update state => Callback.
-    this.$http.get(this.config.backendUri + '/shidur_state').success((shidurState: IShidurState) => {
-      if (!shidurState.janus) {
-        shidurState.janus = <any>{};
-      }
-      if (!shidurState.janus.portsFeedForwardInfo) {
-        shidurState.janus.portsFeedForwardInfo = <any>{};
-      }
       var feedForwardInfo = shidurState.janus.portsFeedForwardInfo[port];
-
+      // CONTINUE HERE ... add error handling for start and stop
       this.stopSdiForwarding(feedForwardInfo, () => {
         this.startSdiForwarding(login, port, (forwardInfo: IFeedForwardInfo) => {
           shidurState.janus.portsFeedForwardInfo[port] = forwardInfo;
-          this.$http.post(this.config.backendUri + '/shidur_state', shidurState).success(() => {
-            this.$timeout(() => {
-              forwardedCallback(login);
-            });
-          });
+          deffered.resolve(shidurState);
         });
       });
+      return deffered.promise;
     });
+  }
 
+  getAndUpdateShidurState(useShidurState: (shidurState: IShidurState) => ng.IPromise<any>): ng.IPromise<any> {
+    var deffered = this.$q.defer();
+
+    this.$http.get(this.config.backendUri + '/shidur_state')
+      .error((data: string, status: number) => {
+        deffered.reject('Fetching shidur state returns error: ' + status + ' ' + data);
+      })
+      .success((shidurState: IShidurState) => {
+        if (!shidurState.janus) {
+          shidurState.janus = <any>{};
+        }
+        if (!shidurState.janus.portsFeedForwardInfo) {
+          shidurState.janus.portsFeedForwardInfo = <any>{};
+        }
+
+        // Do something with shidur state and update it.
+        useShidurState(shidurState).then(() => {
+          // Post shidur state to backend.
+          this.$http.post(this.config.backendUri + '/shidur_state', shidurState)
+            .error((data: string, status: number) => {
+              deffered.reject('Updating shidur state returns error: ' + status + ' ' + data);
+            })
+            .success(() => {
+              this.$timeout(() => {
+                deffered.resolve();
+              });
+            });
+        }, () => {
+          deffered.reject('Failed using shidur state');
+        });
+      });
+
+    return deffered.promise;
   }
 
   // Internal
@@ -535,7 +592,7 @@ export class JanusVideoRoomService {
         }
       });
     } else {
-      console.debug('No forwardInfo, assuming no stream to SDI port');
+      console.log('No forwardInfo, assuming no stream to SDI port');
       callback();
     }
 
