@@ -17,7 +17,8 @@
     "angular": "~1.4.2",
     "webrtc-adapter": "~0.2.5",
     "jquery": "~2.1.4",
-    "ng-token-auth": "~0.0.28"
+    "ng-token-auth": "~0.0.28",
+    "ng-rollbar": "~1.8.2"
   },
   "devDependencies": {
     "angular-mocks": "~1.4.2"

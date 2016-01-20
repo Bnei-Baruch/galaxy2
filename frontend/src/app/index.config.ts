@@ -1,5 +1,6 @@
 /** @ngInject */
-export function config($logProvider: ng.ILogProvider, $authProvider: any, toastrConfig: any, config: any) {
+export function config($logProvider: ng.ILogProvider, $authProvider: any, toastrConfig: any, config: any,
+                       RollbarProvider: any) {
   // enable log
   $logProvider.debugEnabled(true);
 
@@ -12,5 +13,13 @@ export function config($logProvider: ng.ILogProvider, $authProvider: any, toastr
 
   $authProvider.configure({
     apiUrl: config.backendUri,
+  });
+
+  RollbarProvider.init({
+    accessToken: "d58bebcac21349b49e3ec5ffffd137b7",
+    captureUncaught: true,
+    payload: {
+      environment: config.environment || "development"
+    }
   });
 }

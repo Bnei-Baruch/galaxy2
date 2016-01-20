@@ -10,17 +10,19 @@ export interface IGalaxyScope extends ng.IRootScopeService {
 
 /** @ngInject */
 export class AuthService {
-  $q: ng.IQService;
-  $mdDialog: IDialogService;
-  $auth: any;
-  toastr: any;
-  user: IUser;
+  $q:ng.IQService;
+  $mdDialog:IDialogService;
+  $auth:any;
+  toastr:any;
+  user:IUser;
+  Rollbar:any;
 
-  constructor($q: ng.IQService, $mdDialog: IDialogService, toastr: any, $auth: any) {
+  constructor($q:ng.IQService, $mdDialog:IDialogService, toastr:any, $auth:any, Rollbar:any) {
     this.$q = $q;
     this.$mdDialog = $mdDialog;
     this.$auth = $auth;
     this.toastr = toastr;
+    this.Rollbar = Rollbar;
   }
 
   authenticate() {
@@ -28,6 +30,7 @@ export class AuthService {
 
     this.$auth.validateUser().then((user) => {
       this.user = user;
+      this.onLogin(user);
       deferred.resolve(user);
     }).catch((resp) => {
       // User not authenticated, displaying login modal
@@ -38,6 +41,7 @@ export class AuthService {
         controllerAs: 'vm'
       }).then((user) => {
         this.user = user;
+        this.onLogin(user);
         deferred.resolve(user);
       });
     });
@@ -58,8 +62,21 @@ export class AuthService {
   }
 
   logout() {
-    return this.$auth.signOut().catch((resp) => {
-      this.toastr.error(`Unable to sign out: $(resp.errors)`);
+    return this.$auth.signOut()
+      .then(() => this.Rollbar.configure({payload: {person: null}}))
+      .catch((resp) => {
+        this.toastr.error(`Unable to sign out: $(resp.errors)`);
+      });
+  }
+
+  onLogin(user) {
+    this.Rollbar.configure({
+      payload: {
+        person: {
+          id: user.id,
+          username: user.login
+        }
+      }
     });
   }
 }
