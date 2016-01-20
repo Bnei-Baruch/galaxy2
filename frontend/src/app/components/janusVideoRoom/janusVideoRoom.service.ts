@@ -1,3 +1,5 @@
+/* TODO: define private/public methods and fields  */
+
 declare var escape: any;
 declare var Janus: any;
 
@@ -340,7 +342,7 @@ export class JanusVideoRoomService {
 
     this.session.attach({
       plugin: 'janus.plugin.videoroom',
-      success: (pluginHandle) => {
+      success: (pluginHandle: any) => {
         handleInst = pluginHandle;
 				console.debug(`Remote handle attached ${handleInst.getPlugin()}, id=${handleInst.getId()}`);
         var handleContainer: IRemoteHandle = {
@@ -355,10 +357,10 @@ export class JanusVideoRoomService {
         var listen = { 'request': 'join', 'room': self.config.janus.roomId, 'ptype': 'listener', 'feed': id };
         handleInst.send({'message': listen});
       },
-      error: (error) => {
+      error: (error: any) => {
         self.toastr.error('Error attaching plugin: ' + error);
       },
-      onmessage: (msg, jsep) => {
+      onmessage: (msg: any, jsep) => {
         self.onRemoteHandleMessage(handleInst, msg, jsep);
       },
       onlocalstream: () => {
@@ -431,7 +433,7 @@ export class JanusVideoRoomService {
   }
 
   // Forward stream to janus port
-  forwardRemoteFeed(login: string, port: number, forwardedCallback: (login: string) => void) {
+  forwardRemoteFeed(login: string, videoPort: number, audioPort: number, forwardedCallback: (login: string) => void) {
     if (!(login in this.remoteHandles)) {
       this.toastr.error(`Could not find remote handle for ${login}`);
       return;
@@ -445,39 +447,69 @@ export class JanusVideoRoomService {
       if (!shidurState.janus.portsFeedForwardInfo) {
         shidurState.janus.portsFeedForwardInfo = <any>{};
       }
-      var feedForwardInfo = shidurState.janus.portsFeedForwardInfo[port];
+      var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
 
-      this.stopSdiForwarding(feedForwardInfo, () => {
-        this.startSdiForwarding(login, port, (forwardInfo: IFeedForwardInfo) => {
-          shidurState.janus.portsFeedForwardInfo[port] = forwardInfo;
-          this.$http.post(this.config.backendUri + '/rest/shidur_state', shidurState).success(() => {
-            this.$timeout(() => {
-              forwardedCallback(login);
-            });
+      var startForwardingCallback = (forwardInfo: IFeedForwardInfo) => {
+        shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
+
+        if (audioPort) {
+          shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
+        }
+
+        this.$http.post(this.config.backendUri + '/rest/shidur_state', shidurState).success(() => {
+          this.$timeout(() => {
+            forwardedCallback(login);
           });
         });
+      };
+
+      this.stopSdiForwarding(prevForwardInfo, () => {
+        this.startSdiForwarding(login, videoPort, audioPort, startForwardingCallback);
       });
     });
 
   }
 
-  startSdiForwarding(login: string, port: number, callback: (forwardInfo: IFeedForwardInfo) => void) {
+  changeRemoteFeedTitle(title: string, port: number) {
+    var titleApiUrl = this.config.janus.titleApiUrl
+      .replace('%title%', escape(title))
+      .replace('%port%', port);
+
+    this.$http.get(titleApiUrl).error((data: any, st: any) => {
+      /* this.toastr.error(`Unable to change remote feed to ${title}`); */
+      console.error('Unable to change remote feed:', data, st);
+    });
+  }
+
+  toggleLocalAudio(enabled: boolean) {
+    var audioTracks = this.localStream.getAudioTracks();
+    audioTracks.forEach((audioTrack: MediaStreamTrack) => {
+      audioTrack.enabled = enabled;
+    });
+  }
+
+  private startSdiForwarding(login: string, videoPort: number, audioPort: number,
+      callback: (forwardInfo: IFeedForwardInfo) => void): void {
     var self = this;
     var handleContainer = this.remoteHandles[login];
     var rmid = handleContainer.handle.rfid;
 
-    var forward = {
-      'request': 'rtp_forward',
-      'publisher_id': rmid,
-      'room': self.config.janus.roomId,
-      'secret': self.config.janus.secret,
-      'host': self.config.janus.serverIp,
-      'video_port': port
+    var forward: any = {
+      request: 'rtp_forward',
+      publisher_id: rmid,
+      room: self.config.janus.roomId,
+      secret: self.config.janus.secret,
+      host: self.config.janus.serverIp,
+      video_port: videoPort
     };
+
+    if (audioPort) {
+      forward.audio_port = audioPort;
+    }
 
     this.localHandle.send({
       message: forward,
-      success: (data) => {
+      success: (data: any) => {
         var forwardInfo = <IFeedForwardInfo> {
           publisherId: data.publisher_id,
           videoStreamId: data.rtp_stream.video_stream_id,
@@ -494,34 +526,19 @@ export class JanusVideoRoomService {
     });
   }
 
-  stopSdiForwarding(forwardInfo: IFeedForwardInfo, callback: () => void) {
-    var self = this;
-
-    // Forward remote rtp stream
+  private stopSdiForwarding(forwardInfo: IFeedForwardInfo, callback: () => void): void {
     if (forwardInfo) {
       console.log(`  -- We need to stop rtp forward video ID: ${forwardInfo.videoStreamId}`);
       console.log(`  -- We need to stop rtp forward audio ID: ${forwardInfo.audioStreamId}`);
       console.log(`  -- We need to stop rtp forward publisher ID: ${forwardInfo.publisherId}`);
 
-      var stopfwVideo = {
-        'request': 'stop_rtp_forward',
-        'stream_id': forwardInfo.videoStreamId,
-        'publisher_id': forwardInfo.publisherId,
-        'room': self.config.janus.roomId,
-        'secret': self.config.janus.secret
-      };
-
-      this.localHandle.send({
-        message: stopfwVideo,
-        success: (data) => {
-          console.log('Forwarding stopped successfully for', forwardInfo);
+      // Stop video and then audio forwarding
+      this.stopStreamForwarding(forwardInfo, forwardInfo.videoStreamId, () => {
+        this.stopStreamForwarding(forwardInfo, forwardInfo.audioStreamId, () => {
           callback();
-        },
-        error: (resp) => {
-          console.error('Error stopping forwarding', forwardInfo, resp);
-          callback();
-        }
+        });
       });
+
     } else {
       console.debug('No forwardInfo, assuming no stream to SDI port');
       callback();
@@ -529,21 +546,33 @@ export class JanusVideoRoomService {
 
   }
 
-  changeRemoteFeedTitle(title: string, port: number) {
-    var titleApiUrl = this.config.janus.titleApiUrl
-      .replace('%title%', escape(title))
-      .replace('%port%', port);
+  private stopStreamForwarding(forwardInfo: IFeedForwardInfo, streamId: string, callback: () => void): void {
+    var self = this;
 
-    this.$http.get(titleApiUrl).error((data, st) => {
-      /* this.toastr.error(`Unable to change remote feed to ${title}`); */
-      console.error('Unable to change remote feed:', data, st);
+    if (!streamId) {
+      callback();
+      return;
+    }
+
+    var stopFwMessage = {
+      request: 'stop_rtp_forward',
+      stream_id: streamId,
+      publisher_id: forwardInfo.publisherId,
+      room: self.config.janus.roomId,
+      secret: self.config.janus.secret
+    };
+
+    this.localHandle.send({
+      message: stopFwMessage,
+      success: (data: any) => {
+        console.log('Forwarding stopped successfully for stream ID', streamId, forwardInfo);
+        callback();
+      },
+      error: (resp: any) => {
+        console.error('Error stopping forwarding for stream ID', streamId, forwardInfo, resp);
+        callback();
+      }
     });
   }
 
-  toggleLocalAudio(enabled: boolean) {
-    var audioTracks = this.localStream.getAudioTracks();
-    audioTracks.forEach((audioTrack: MediaStreamTrack) => {
-      audioTrack.enabled = enabled;
-    });
-  }
 }

@@ -151,13 +151,13 @@ export class BaseChannelController {
 
   forwardProgramToSDI() {
     // Forward program to SDI and change video title
-    var sdiPort = this.config.janus.sdiPorts[this.name];
+    var sdiPorts = this.config.janus.sdiPorts[this.name];
 
     this.programForwarded = false;
 
-    this.janus.forwardRemoteFeed(this.programUser.login, sdiPort, () => {
+    this.janus.forwardRemoteFeed(this.programUser.login, sdiPorts.video, sdiPorts.audio, () => {
       this.programForwarded = true;
-      this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPort);
+      this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video);
     });
   }
 
@@ -168,6 +168,7 @@ export class BaseChannelController {
     if (userIndex === -1) {
       return null;
     }
+
 
     var nextUser = onlineUsers[(userIndex + 1) % onlineUsers.length];
     return nextUser;
