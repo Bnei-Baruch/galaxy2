@@ -11,6 +11,7 @@ export function slotWidget(): ng.IDirective {
       user: '=',
       isReady: '&',
       trigger: '&',
+      toggleAudio: '&',
       hotkey: '='
     },
     templateUrl: 'app/components/channel/slot/slot.html',

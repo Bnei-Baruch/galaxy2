@@ -1,4 +1,5 @@
 import { JanusVideoRoomService } from '../janusVideoRoom/janusVideoRoom.service';
+import { PubSubService } from '../pubSub/pubSub.service';
 import { IUser } from '../../shidur/shidur.service';
 
 declare var attachMediaStream: any;
@@ -13,6 +14,7 @@ export interface IChannelScope extends ng.IScope {
 export class BaseChannelController {
   $scope: IChannelScope;
   janus: JanusVideoRoomService;
+  pubSub: PubSubService;
   config: any;
 
   name: string;
@@ -25,10 +27,13 @@ export class BaseChannelController {
   programUser: IUser = null;
   previewUser: IUser = null;
 
-  constructor($scope: IChannelScope, janus: JanusVideoRoomService, config: any) {
+  constructor($scope: IChannelScope, janus: JanusVideoRoomService, pubSub: PubSubService, config: any) {
     this.$scope = $scope;
     this.janus = janus;
     this.config = config;
+
+    // To use by children
+    this.pubSub = pubSub;
 
     // Mapping users by login for conveniency
     this.mapUsersByLogin();

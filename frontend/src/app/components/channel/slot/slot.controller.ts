@@ -1,37 +1,23 @@
 import { IUser } from '../../../shidur/shidur.service';
-import { PubSubService } from '../../pubSub/pubSub.service';
 
 /** @ngInject */
 export class SlotController {
   $timeout: ng.ITimeoutService;
   $document: any;
-  pubSub: PubSubService;
 
   kind: string;
   showAudioToggle: boolean;
   user: IUser;
   isReady: () => boolean;
   trigger: () => void;
+  toggleAudio: (user: IUser) => void;
   hotkey: string;
 
-  constructor( $timeout: ng.ITimeoutService, $document: any, pubSub: PubSubService) {
+  constructor( $timeout: ng.ITimeoutService, $document: any) {
     this.$timeout = $timeout;
     this.$document = $document;
-    this.pubSub = pubSub;
 
     this.bindHotkey();
-  }
-
-  toggleAudio() {
-    this.user.audioEnabled = !this.user.audioEnabled;
-
-    this.pubSub.client.publish('/users/' + this.user.login, {
-      message: 'toggleAudio',
-      enabled: this.user.audioEnabled
-    });
-
-    console.debug('toggleAudio() triggered');
-    return false;
   }
 
   bindHotkey() {
