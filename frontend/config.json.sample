@@ -3,16 +3,25 @@
     "serverUri": "https://galaxy-dev.kbb1.com:8889/janus",
     "serverIp": "51.254.244.44",
     "secret": "adminpwd",
-    "roomId": 4,
+    "roomId": 3,
     "sdiPorts": {
-      "large1": 10001,
-      "large2": 10002,
-      "small1": 10003,
-      "small2": 10004,
-      "control": 10005
+      "large1": {
+        "video": 10001
+      },
+      "large2": {
+        "video": 10002
+      },
+      "small1": {
+        "video": 10003
+      },
+      "small2": {
+        "video": 10004
+      },
+      "control": {
+        "video": 10005
+      }
     },
-    "reconnectTimeout": 10,
     "titleApiUrl": "https://v4g.kbb1.com:8080/title.php?title=%title%&port=%port%"
   },
-  "backendUri": "https://rt-dev.kbb1.com:5000/rest"
+  "backendUri": "https://rt-dev.kbb1.com:5001/galaxy2/backend"
 }
