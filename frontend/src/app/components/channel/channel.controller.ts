@@ -192,8 +192,10 @@ export class ChannelController {
 
     this.programForwarded = false;
 
-    this.janus.forwardRemoteFeed(this.programUser.login, sdiPort, () => {
+    this.janus.forwardRemoteFeed(this.programUser.login, sdiPort).then(() => {
       this.programForwarded = true;
+    }, () => {
+      console.log('Failed forwarding feed.');
     });
 
     this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPort);
