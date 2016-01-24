@@ -160,9 +160,11 @@ export class BaseChannelController {
 
     this.programForwarded = false;
 
-    this.janus.forwardRemoteFeed(this.programUser.login, sdiPorts.video, sdiPorts.audio, () => {
+    this.janus.forwardRemoteFeed(this.programUser.login, sdiPorts.video, sdiPorts.audio).then(() => {
       this.programForwarded = true;
       this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video);
+    }, () => {
+      console.error('Failed forwarding feed to SDI');
     });
   }
 
