@@ -14,6 +14,7 @@ import { AuthService } from '../app/components/auth/auth.service';
 import { PubSubService } from '../app/components/pubSub/pubSub.service';
 import { slotWidget } from '../app/components/channel/slot/slot.directive';
 import { largeChannelWidget } from '../app/components/channel/large/large.directive';
+import { smallChannelWidget } from '../app/components/channel/small/small.directive';
 import { controlChannelWidget } from '../app/components/channel/control/control.directive';
 import { ChannelService } from '../app/components/channel/channel.service';
 
@@ -50,6 +51,7 @@ module frontend {
     .directive('galaxyNavbar', galaxyNavbar)
     .directive('slotWidget', slotWidget)
     .directive('largeChannelWidget', largeChannelWidget)
+    .directive('smallChannelWidget', smallChannelWidget)
     .directive('controlChannelWidget', controlChannelWidget)
     ;
 }
