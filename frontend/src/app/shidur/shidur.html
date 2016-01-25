@@ -24,13 +24,16 @@
 
   <md-sidenav class="md-sidenav-right md-whiteframe-z2" md-component-id="chat">
     <md-toolbar class="md-theme-light">
-      <h1 class="md-toolbar-tools">Chat</h1>
+      <h1 class="md-toolbar-tools" layout="row" layout-align="space-between">Chat
+      <md-button ng-click="shidur.closeChat()" class="md-icon-button">
+        <md-icon
+          ng-style="{color: '#fff'}"
+          class="material-icons">clear</md-icon>
+      </md-button>
+</h1>
     </md-toolbar>
     <md-content layout-fill>
       <iframe src="https://chat1.kbb1.com/?label=galaxy2"></iframe>
-      <md-button ng-click="shidur.closeChat()" class="md-primary">
-        Close Chat
-      </md-button>
     </md-content>
   </md-sidenav>
 

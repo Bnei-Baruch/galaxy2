@@ -1,0 +1,13 @@
+md-sidenav {
+  min-width: 400px;
+  overflow: hidden;
+}
+
+md-sidenav md-content {
+  overflow: hidden;
+}
+
+md-sidenav md-content iframe {
+  height: 100%;
+  min-width: 100%;
+}
