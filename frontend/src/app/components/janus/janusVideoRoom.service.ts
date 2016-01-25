@@ -153,229 +153,12 @@ export class JanusVideoRoomService {
     });
   }
 
-  // Internal, called once at constructor.
-  initCallback() {
-    this.session = new Janus({
-      server: this.config.janus.serverUri,
-      success: () => {
-        this.attachLocalHandle();
-      },
-      error: (error: any) => {
-        this.toastr.error(`Janus creation error: ${error}`);
-        this.reloadAfterTimeout();
-      }
-    });
-  }
-
-  // Internal, tries to reconnect if failed initially.
-  reloadAfterTimeout(counter?: number) {
-    if (counter === undefined) {
-      counter = this.config.janus.reconnectTimeout;
-    }
-
-    if (counter === 0) {
-      window.location.reload();
-    } else {
-      this.toastr.info(`Reloading the page in ${counter} seconds...`);
-      this.$timeout(() => {
-        this.reloadAfterTimeout(--counter);
-      }, 1000);
-    }
-  }
-
-  // Internal, handles changes in publishers state and updates registered clients (channel) if needed.
-  updatePublishersAndTriggerJoined(publishers: any[]) {
-    var self = this;
-
-    console.log('Publishers', publishers);
-
-    // TODO: Check that when overriding publisher it's id stays the same
-    // Basically if it is not the same, meaning same user logged in for
-    // example twice and we need to override the old publisher with new.
-    publishers.forEach((p: any) => {
-
-      // TODO: When we have joined timestamp check the timestamp
-      // together with the login. Timestamp better be central.
-
-      // The system has to make sure to remove publishers on time.
-      if (p.display in self.publishers) {
-        console.error('This should not happen, we have not handled leave user well!');
-      }
-
-      // Set or override publisher
-      self.publishers[p.display] = p;
-
-      // Handle channels
-      this.applyOnUserChannels(p.display, (channel: IChannel) => {
-        channel.joinedCallback(p.display);
-      });
-    });
-  }
-
-  // Internal helper method to call client (channel) on user events,
-  // for example calls joinedCallback or leftCallback.
-  applyOnUserChannels(login: string, func: (channel: IChannel) => void) {
-    if (login in this.userChannels) {
-      this.userChannels[login].forEach((channel: string) => {
-        // Wrapping into $timeout for syncing the UI
-        this.$timeout(() => {
-          func(this.channels[channel]);
-        });
-      });
-    }
-  }
-
-  // Internal, cleans up when publisher is leaving. Call relevant channels with leftCallback.
-  deletePublisherByJanusId(janusId: string) {
-    var login = null;
-
-    for (var key in this.publishers) {
-      var publisher = this.publishers[key];
-      if (publisher.id === janusId) {
-        login = publisher.display;
-        break;
-      }
-    };
-    if (login) {
-      delete this.publishers[login];
-      this.unsubscribeFromStream(login);
-
-      // Update channels on leaving user
-      this.applyOnUserChannels(login, (channel: IChannel) => {
-        channel.leftCallback(login);
-      });
-    }
-  }
-
   // When current client is closed, sends self unpublish event to Janus.
   unpublishOwnFeed() {
     var body = { 'request': 'unpublish' };
     this.localHandle.send({'message': body});
     console.debug(`Own feed unpublished for handle ${this.localHandle}`);
   }
-
-  /* Local Handle Methods */
-
-  // Internal, attaches local handle to Janus service.
-  attachLocalHandle() {
-    var self = this;
-
-    this.session.attach({
-      plugin: 'janus.plugin.videoroom',
-      success: (pluginHandle: any) => {
-        self.localHandle = pluginHandle;
-
-        // Try joining
-        var register = {
-          request: 'join',
-          room: self.config.janus.roomId,
-          ptype: 'publisher',
-          display: self.localUserLogin
-        };
-        self.localHandle.send({'message': register});
-      },
-      error: (error: any) => {
-        self.toastr.error('Error attaching plugin: ' + error);
-      },
-      onmessage: (msg, jsep) => {
-        self.onLocalHandleMessage(msg, jsep);
-        if (jsep) {
-          console.debug('Handling SDP as well...');
-          console.debug(jsep);
-          self.localHandle.handleRemoteJsep({jsep: jsep});
-        }
-      },
-      consentDialog: (on) => {
-        console.debug('Consent dialog should be ' + (on ? 'on' : 'off') + ' now.');
-      },
-      onlocalstream: (stream: MediaStream) => {
-        console.debug('Got local stream', stream);
-        this.localStream = stream;
-
-        // Disable local audio tracks
-        this.toggleLocalAudio(false);
-
-        this.localStreamReadyCallback(stream);
-      },
-      onremotestream: (stream: MediaStream) => {
-        console.debug('Got a remote stream!', stream);
-        // This should not happen. This is local handle.
-      },
-      oncleanup: () => {
-        console.debug('Got a cleanup notification');
-      }
-    });
-  }
-
-  // Internal
-  onLocalHandleMessage(message, jsep) {
-    console.debug('Got a local message', message);
-
-    var e = message.videoroom;
-
-    switch (e) {
-      case 'joined':
-        this.joined = true;
-        // TODO: Fix following variable formatting (does not work!)
-        console.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
-
-        if (this.localUserLogin) {
-          this.publishLocalFeed();
-        } else {
-          console.debug('No local user registered. Not publishing local feed.');
-        };
-
-        if (message.publishers) {
-          this.updatePublishersAndTriggerJoined(message.publishers);
-        }
-        break;
-      case 'destroyed':
-        this.joined = false;
-        this.toastr.error('The room has been destroyed');
-        break;
-      case 'event':
-        if (message.publishers) {
-          this.updatePublishersAndTriggerJoined(message.publishers);
-        } else if (message.leaving) {
-          // Update leaving user
-          console.debug('Local handle leaving room.');
-          this.deletePublisherByJanusId(message.leaving);
-        }
-        break;
-    }
-  }
-
-  // Internal, creates sdp offer, meaning two things already happened
-  // 1) Media stream is connected and broadcasting video.
-  // 2) Local handle is connected to Janus.
-  publishLocalFeed() {
-    var self = this;
-
-    this.localHandle.createOffer({
-      media: {
-        // Publishers are sendonly
-        audioRecv: false,
-        videoRecv: false,
-        audioSend: true,
-        videoSend: true,
-        video: 'stdres-16:9'
-      },
-      success: function(jsep: any) {
-        console.debug('Got publisher SDP!');
-        console.debug(jsep);
-
-        var publish = { 'request': 'configure', 'audio': true, 'video': true };
-        self.localHandle.send({'message': publish, 'jsep': jsep});
-      },
-      error: (error) =>{
-        self.toastr.error(`WebRTC error: ${error.message}`);
-        console.error('WebRTC error... ' + JSON.stringify(error));
-      }
-    });
-  }
-
-
-  /* Remote Handle Methods */
 
   // API method for clients (channel) to register to receive when remote 'login' starts streaming his MediaStream
   subscribeForStream(login: string, streamReadyCallback: (stream: MediaStream) => void) {
@@ -411,7 +194,7 @@ export class JanusVideoRoomService {
       error: (error: any) => {
         self.toastr.error('Error attaching plugin: ' + error);
       },
-      onmessage: (msg: any, jsep) => {
+      onmessage: (msg: any, jsep: any) => {
         self.onRemoteHandleMessage(handleInst, msg, jsep);
       },
       onlocalstream: () => {
@@ -434,40 +217,6 @@ export class JanusVideoRoomService {
         console.debug('Got a cleanup notification');
       }
     });
-  }
-
-  // Internal
-  onRemoteHandleMessage(handle: any, message: any, jsep: any) {
-    var self = this;
-
-    console.debug('Got a remote message', message);
-
-    if (message.videoroom === 'attached') {
-      // TODO: Run spinner for currently attached remoteHandle.
-      console.debug('Attaching remote handle');
-      handle.rfid = message.id;
-    }
-
-    if (jsep) {
-      console.debug('Handling SDP as well...');
-      console.debug(jsep);
-
-      // Answer and attach
-      handle.createAnswer({
-        jsep: jsep,
-        media: { audioSend: false, videoSend: false },	// We want recvonly audio/video
-        success: (jsep: any) => {
-          console.debug('Got SDP!');
-          console.debug(jsep);
-          var body = { 'request': 'start', 'room': self.config.janus.roomId };
-          handle.send({'message': body, 'jsep': jsep});
-        },
-        error: (error) => {
-          console.error('WebRTC error:', error);
-          self.toastr.error('WebRTC error... ' + JSON.stringify(error));
-        }
-      });
-    }
   }
 
   // API for client (channel) to stop getting updates on specific remote 'login'
@@ -513,7 +262,258 @@ export class JanusVideoRoomService {
     });
   }
 
-  getAndUpdateShidurState(useShidurState: (shidurState: IShidurState) => ng.IPromise<any>): ng.IPromise<any> {
+  changeRemoteFeedTitle(title: string, port: number) {
+    var titleApiUrl = this.config.janus.titleApiUrl
+      .replace('%title%', escape(title))
+      .replace('%port%', port);
+
+    this.$http.get(titleApiUrl).error((data: any, st: any) => {
+      /* this.toastr.error(`Unable to change remote feed to ${title}`); */
+      console.error('Unable to change remote feed:', data, st);
+    });
+  }
+
+  toggleLocalAudio(enabled: boolean) {
+    var audioTracks = this.localStream.getAudioTracks();
+    audioTracks.forEach((audioTrack: MediaStreamTrack) => {
+      audioTrack.enabled = enabled;
+    });
+  }
+
+  // Called once at constructor
+  private initCallback(): void {
+    this.session = new Janus({
+      server: this.config.janus.serverUri,
+      success: () => {
+        this.attachLocalHandle();
+      },
+      error: (error: any) => {
+        this.toastr.error(`Janus creation error: ${error}`);
+        this.reloadAfterTimeout();
+      }
+    });
+  }
+
+  // Handles changes in publishers state and updates registered clients (channel) if needed.
+  private updatePublishersAndTriggerJoined(publishers: any[]): void {
+    var self = this;
+
+    console.log('Publishers', publishers);
+
+    // TODO: Check that when overriding publisher it's id stays the same
+    // Basically if it is not the same, meaning same user logged in for
+    // example twice and we need to override the old publisher with new.
+    publishers.forEach((p: any) => {
+
+      // TODO: When we have joined timestamp check the timestamp
+      // together with the login. Timestamp better be central.
+
+      // The system has to make sure to remove publishers on time.
+      if (p.display in self.publishers) {
+        console.error('This should not happen, we have not handled leave user well!');
+      }
+
+      // Set or override publisher
+      self.publishers[p.display] = p;
+
+      // Handle channels
+      this.applyOnUserChannels(p.display, (channel: IChannel) => {
+        channel.joinedCallback(p.display);
+      });
+    });
+  }
+
+  // Helper method to call client (channel) on user events,
+  // for example calls joinedCallback or leftCallback.
+  private applyOnUserChannels(login: string, func: (channel: IChannel) => void): void {
+    if (login in this.userChannels) {
+      this.userChannels[login].forEach((channel: string) => {
+        // Wrapping into $timeout for syncing the UI
+        this.$timeout(() => {
+          func(this.channels[channel]);
+        });
+      });
+    }
+  }
+
+  // Cleans up when publisher is leaving. Call relevant channels with leftCallback.
+  private deletePublisherByJanusId(janusId: string): void {
+    var login = null;
+
+    for (var key in this.publishers) {
+      var publisher = this.publishers[key];
+      if (publisher.id === janusId) {
+        login = publisher.display;
+        break;
+      }
+    };
+    if (login) {
+      delete this.publishers[login];
+      this.unsubscribeFromStream(login);
+
+      // Update channels on leaving user
+      this.applyOnUserChannels(login, (channel: IChannel) => {
+        channel.leftCallback(login);
+      });
+    }
+  }
+
+  /* Local Handle Methods */
+
+  // Attaches local handle to Janus service.
+  private attachLocalHandle(): void {
+    var self = this;
+
+    this.session.attach({
+      plugin: 'janus.plugin.videoroom',
+      success: (pluginHandle: any) => {
+        self.localHandle = pluginHandle;
+
+        // Try joining
+        var register = {
+          request: 'join',
+          room: self.config.janus.roomId,
+          ptype: 'publisher',
+          display: self.localUserLogin
+        };
+        self.localHandle.send({'message': register});
+      },
+      error: (error: any) => {
+        self.toastr.error('Error attaching plugin: ' + error);
+      },
+      onmessage: (msg: any, jsep: any) => {
+        self.onLocalHandleMessage(msg, jsep);
+        if (jsep) {
+          console.debug('Handling SDP as well...');
+          console.debug(jsep);
+          self.localHandle.handleRemoteJsep({jsep: jsep});
+        }
+      },
+      consentDialog: (on: boolean) => {
+        console.debug('Consent dialog should be ' + (on ? 'on' : 'off') + ' now.');
+      },
+      onlocalstream: (stream: MediaStream) => {
+        console.debug('Got local stream', stream);
+        this.localStream = stream;
+
+        // Disable local audio tracks
+        this.toggleLocalAudio(false);
+
+        this.localStreamReadyCallback(stream);
+      },
+      onremotestream: (stream: MediaStream) => {
+        console.debug('Got a remote stream!', stream);
+        // This should not happen. This is local handle.
+      },
+      oncleanup: () => {
+        console.debug('Got a cleanup notification');
+      }
+    });
+  }
+
+  private onLocalHandleMessage(message: any, jsep: any): void {
+    console.debug('Got a local message', message);
+
+    var e = message.videoroom;
+
+    switch (e) {
+      case 'joined':
+        this.joined = true;
+        // TODO: Fix following variable formatting (does not work!)
+        console.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
+
+        if (this.localUserLogin) {
+          this.publishLocalFeed();
+        } else {
+          console.debug('No local user registered. Not publishing local feed.');
+        };
+
+        if (message.publishers) {
+          this.updatePublishersAndTriggerJoined(message.publishers);
+        }
+        break;
+      case 'destroyed':
+        this.joined = false;
+        this.toastr.error('The room has been destroyed');
+        break;
+      case 'event':
+        if (message.publishers) {
+          this.updatePublishersAndTriggerJoined(message.publishers);
+        } else if (message.leaving) {
+          // Update leaving user
+          console.debug('Local handle leaving room.');
+          this.deletePublisherByJanusId(message.leaving);
+        }
+        break;
+    }
+  }
+
+  // Creates sdp offer, meaning two things already happened
+  // 1) Media stream is connected and broadcasting video.
+  // 2) Local handle is connected to Janus.
+  private publishLocalFeed(): void {
+    var self = this;
+
+    this.localHandle.createOffer({
+      media: {
+        // Publishers are sendonly
+        audioRecv: false,
+        videoRecv: false,
+        audioSend: true,
+        videoSend: true,
+        video: 'stdres-16:9'
+      },
+      success: function(jsep: any) {
+        console.debug('Got publisher SDP!');
+        console.debug(jsep);
+
+        var publish = { 'request': 'configure', 'audio': true, 'video': true };
+        self.localHandle.send({'message': publish, 'jsep': jsep});
+      },
+      error: (error: any) => {
+        self.toastr.error(`WebRTC error: ${error.message}`);
+        console.error('WebRTC error... ' + JSON.stringify(error));
+      }
+    });
+  }
+
+
+  /* Remote Handle Methods */
+
+  private onRemoteHandleMessage(handle: any, message: any, jsep: any): void {
+    var self = this;
+
+    console.debug('Got a remote message', message);
+
+    if (message.videoroom === 'attached') {
+      // TODO: Run spinner for currently attached remoteHandle.
+      console.debug('Attaching remote handle');
+      handle.rfid = message.id;
+    }
+
+    if (jsep) {
+      console.debug('Handling SDP as well...');
+      console.debug(jsep);
+
+      // Answer and attach
+      handle.createAnswer({
+        jsep: jsep,
+        media: { audioSend: false, videoSend: false },	// We want recvonly audio/video
+        success: (jsep: any) => {
+          console.debug('Got SDP!');
+          console.debug(jsep);
+          var body = { 'request': 'start', 'room': self.config.janus.roomId };
+          handle.send({'message': body, 'jsep': jsep});
+        },
+        error: (error: any) => {
+          console.error('WebRTC error:', error);
+          self.toastr.error('WebRTC error... ' + JSON.stringify(error));
+        }
+      });
+    }
+  }
+
+  private getAndUpdateShidurState(useShidurState: (shidurState: IShidurState) => ng.IPromise<any>): ng.IPromise<any> {
     var deffered = this.$q.defer();
 
     this.$http.get(this.config.backendUri + '/rest/shidur_state')
@@ -546,24 +546,6 @@ export class JanusVideoRoomService {
       });
 
     return deffered.promise;
-  }
-
-  changeRemoteFeedTitle(title: string, port: number) {
-    var titleApiUrl = this.config.janus.titleApiUrl
-      .replace('%title%', escape(title))
-      .replace('%port%', port);
-
-    this.$http.get(titleApiUrl).error((data: any, st: any) => {
-      /* this.toastr.error(`Unable to change remote feed to ${title}`); */
-      console.error('Unable to change remote feed:', data, st);
-    });
-  }
-
-  toggleLocalAudio(enabled: boolean) {
-    var audioTracks = this.localStream.getAudioTracks();
-    audioTracks.forEach((audioTrack: MediaStreamTrack) => {
-      audioTrack.enabled = enabled;
-    });
   }
 
   private startSdiForwarding(login: string, videoPort: number, audioPort: number,

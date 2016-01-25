@@ -51,34 +51,34 @@ orlando|Orlando|large2
 nuremberg|Nuremberg|large2
 afula|Afula|large1
 arad|Arad|large1
-arava|Arava|large1
-ashdod|Ashdod|large1
-ashkelon|Ashkelon|large1
-beer-sheva|Beer\ Sheva|large1
-eilat|Eilat|large1
-eilat1|Eilat1|large1
-galilgolan|Galil\ Golan|large2
-hadera|Hadera|large2
-haifa|Haifa|large2
-jerusalem|Jerusalem|large2
-karmiel|Karmiel|large2
-kfar-saba|Kfar\ Saba|large2
-kiriat-gat|Kiriat\ Gat|large2
-mizpe|Mizpe\ Ramon|large1
-moscow|Test|large1
-naharia|Naharia|large1
-nazareth|Nazareth\ Illit|large1
-netania|Netanya|large1
-nizana|Pithat\ Nitzana|large1
-raanana|Raanana|large2
-rehovot|Rehovot|large2
-revadim|Revadim|large2
-rishon|Rishon\ Lezion|large2
-shidur|Shidur|large2
-tel-aviv|Tel\ Aviv|large2
-tveria|Tveria|large2
-yokneam|Yokneam|large2
-zichron|Zichron|large2).each {|x|
+arava|Arava|small1
+ashdod|Ashdod|small1
+ashkelon|Ashkelon|small1
+beer-sheva|Beer\ Sheva|small1
+eilat|Eilat|small1
+eilat1|Eilat1|small1
+galilgolan|Galil\ Golan|small2
+hadera|Hadera|small2
+haifa|Haifa|small2
+jerusalem|Jerusalem|small2
+karmiel|Karmiel|small2
+kfar-saba|Kfar\ Saba|small2
+kiriat-gat|Kiriat\ Gat|small2
+mizpe|Mizpe\ Ramon|small1
+moscow|Test|small1
+naharia|Naharia|small1
+nazareth|Nazareth\ Illit|small1
+netania|Netanya|small1
+nizana|Pithat\ Nitzana|small1
+raanana|Raanana|small2
+rehovot|Rehovot|small2
+revadim|Revadim|small2
+rishon|Rishon\ Lezion|small2
+shidur|Shidur|small2
+tel-aviv|Tel\ Aviv|small2
+tveria|Tveria|small2
+yokneam|Yokneam|small2
+zichron|Zichron|small2).each {|x|
     login, title, channel = x.split('|')
     create_user(login: login, title: title, channel: channel.to_sym)
 }

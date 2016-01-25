@@ -160,6 +160,7 @@ GEM
       mini_portile (~> 0.6.0)
     normalize-rails (3.0.3)
     orm_adapter (0.5.0)
+    pg (0.18.4)
     pry (0.10.3)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
@@ -271,6 +272,7 @@ DEPENDENCIES
   faye-rails
   jbuilder (~> 2.0)
   jquery-rails
+  pg
   pry
   quiet_assets
   rack-cors
