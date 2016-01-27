@@ -1,4 +1,4 @@
-/* TODO: define private/public methods and fields  */
+import { JanusService } from './janus.service';
 
 /**
  * Library to handle communication with Janus.
@@ -35,7 +35,6 @@
  */
 
 declare var escape: any;
-declare var Janus: any;
 
 interface IChannel {
   name: string;
@@ -72,7 +71,7 @@ export class JanusVideoRoomService {
   config: any;
   toastr: any;
 
-  session: any;
+  janus: any;
   remoteHandles: { (login: string): IRemoteHandle } = <any>{};
   localHandle: any;
   channels: { (key: string): IChannel } = <any>{};
@@ -88,30 +87,26 @@ export class JanusVideoRoomService {
   localStream: MediaStream;
   localStreamReadyCallback: (stream: MediaStream) => void;
 
-  constructor($q: ng.IQService, $timeout: ng.ITimeoutService, $http: ng.IHttpService, toastr: any, config: any) {
+  constructor($q: ng.IQService,
+      $rootScope: ng.IRootScopeService,
+      $timeout: ng.ITimeoutService,
+      $http: ng.IHttpService,
+      janus: JanusService,
+      toastr: any, config: any) {
     this.$q = $q;
     this.$timeout = $timeout;
     this.$http = $http;
     this.config = config;
     this.toastr = toastr;
+    this.janus = janus;
     this.joined = false;
 
-    if (!Janus.isWebrtcSupported()) {
-      toastr.error('No WebRTC support... ');
-      return;
-    }
-
-    Janus.init({
-      debug: true,
-      callback: () => {
-        this.initCallback();
-      }
+    $rootScope.$on('janus.initialized', () => {
+      this.attachLocalHandle();
     });
 
-    $(window).on('beforeunload', () => {
+    $rootScope.$on('janus.destroy', () => {
       this.unpublishOwnFeed();
-      this.session.destroy();
-      // return "Are you sure want to leave this page?";
     });
   }
 
@@ -174,7 +169,7 @@ export class JanusVideoRoomService {
       return;
     }
 
-    this.session.attach({
+    this.janus.session.attach({
       plugin: 'janus.plugin.videoroom',
       success: (pluginHandle: any) => {
         handleInst = pluginHandle;
@@ -280,20 +275,6 @@ export class JanusVideoRoomService {
     });
   }
 
-  // Called once at constructor
-  private initCallback(): void {
-    this.session = new Janus({
-      server: this.config.janus.serverUri,
-      success: () => {
-        this.attachLocalHandle();
-      },
-      error: (error: any) => {
-        this.toastr.error(`Janus creation error: ${error}`);
-        this.reloadAfterTimeout();
-      }
-    });
-  }
-
   // Handles changes in publishers state and updates registered clients (channel) if needed.
   private updatePublishersAndTriggerJoined(publishers: any[]): void {
     var self = this;
@@ -364,7 +345,7 @@ export class JanusVideoRoomService {
   private attachLocalHandle(): void {
     var self = this;
 
-    this.session.attach({
+    this.janus.session.attach({
       plugin: 'janus.plugin.videoroom',
       success: (pluginHandle: any) => {
         self.localHandle = pluginHandle;

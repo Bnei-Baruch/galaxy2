@@ -1,4 +1,5 @@
-import { JanusVideoRoomService } from '../janusVideoRoom/janusVideoRoom.service';
+import { JanusVideoRoomService } from '../janus/janusVideoRoom.service';
+import { JanusStreamingService } from '../janus/janusStreaming.service';
 import { PubSubService } from '../pubSub/pubSub.service';
 import { IUser } from '../../shidur/shidur.service';
 
@@ -13,7 +14,8 @@ export interface IChannelScope extends ng.IScope {
 /** @ngInject */
 export class BaseChannelController {
   $scope: IChannelScope;
-  janus: JanusVideoRoomService;
+  videoRoom: JanusVideoRoomService;
+  streaming: JanusStreamingService;
   pubSub: PubSubService;
   config: any;
 
@@ -27,9 +29,15 @@ export class BaseChannelController {
   programUser: IUser = null;
   previewUser: IUser = null;
 
-  constructor($scope: IChannelScope, janus: JanusVideoRoomService, pubSub: PubSubService, config: any) {
+  constructor($scope: IChannelScope,
+      videoRoom: JanusVideoRoomService,
+      streaming: JanusStreamingService,
+      pubSub: PubSubService,
+      config: any) {
+
     this.$scope = $scope;
-    this.janus = janus;
+    this.videoRoom = videoRoom;
+    this.streaming = streaming;
     this.config = config;
 
     // To use by children
@@ -38,7 +46,7 @@ export class BaseChannelController {
     // Mapping users by login for conveniency
     this.mapUsersByLogin();
 
-    this.janus.registerChannel({
+    this.videoRoom.registerChannel({
       name: this.name,
       users: this.getLoginsList(),
       joinedCallback: (login: string) => {
@@ -54,11 +62,6 @@ export class BaseChannelController {
     // TODO: The timestamp should be better taken from Janus point of view
     var user = this.usersByLogin[login];
     user.joined = moment();
-
-    // Put user video on preview if first user
-    if (this.previewUser === null) {
-      this.putUserToPreview(user);
-    }
   }
 
   userLeft(login: string) {
@@ -67,16 +70,6 @@ export class BaseChannelController {
     user.stream = null;
 
     console.log('User left', login);
-
-    if (this.programUser === user) {
-      this.putUserToProgram(null);
-      // TODO: Put dummy video stream to program
-    }
-
-    if (this.previewUser === user) {
-      var previewUser = this.getNextUser(user);
-      this.putUserToPreview(previewUser);
-    }
   }
 
   mapUsersByLogin() {
@@ -98,7 +91,7 @@ export class BaseChannelController {
     var oldProgramUser = this.programUser;
     this.programUser = user;
 
-    var programElement = <HTMLMediaElement>this.$scope.selfElement.find('.program').get(0);
+    var programElement = this.getMediaElement('.program');
 
     if (user === null) {
       programElement.src = null;
@@ -108,7 +101,7 @@ export class BaseChannelController {
       this.forwardProgramToSDI();
 
       if (oldProgramUser) {
-        this.janus.unsubscribeFromStream(oldProgramUser.login);
+        this.videoRoom.unsubscribeFromStream(oldProgramUser.login);
         oldProgramUser.stream = null;
         console.debug('Unsubscribed from', oldProgramUser.login);
       }
@@ -123,19 +116,19 @@ export class BaseChannelController {
     var oldPreviewUser = this.previewUser;
     this.previewUser = user;
 
-    var previewElement = <HTMLMediaElement>this.$scope.selfElement.find('.preview').get(0);
+    var previewElement = this.getMediaElement('.preview');
 
     if (user === null) {
       previewElement.src = null;
     } else {
-      this.janus.subscribeForStream(user.login, (stream: MediaStream) => {
+      this.videoRoom.subscribeForStream(user.login, (stream: MediaStream) => {
         user.stream = stream;
         attachMediaStream(previewElement, stream);
         console.debug('Subscribed for', user.login);
       });
 
       if (oldPreviewUser && oldPreviewUser !== this.programUser) {
-        this.janus.unsubscribeFromStream(oldPreviewUser.login);
+        this.videoRoom.unsubscribeFromStream(oldPreviewUser.login);
         oldPreviewUser.stream = null;
         console.debug('Unsubscribed from', oldPreviewUser.login);
       }
@@ -160,9 +153,9 @@ export class BaseChannelController {
 
     this.programForwarded = false;
 
-    this.janus.forwardRemoteFeed(this.programUser.login, sdiPorts.video, sdiPorts.audio).then(() => {
+    this.videoRoom.forwardRemoteFeed(this.programUser.login, sdiPorts.video, sdiPorts.audio).then(() => {
       this.programForwarded = true;
-      this.janus.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video);
+      this.videoRoom.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video);
     }, () => {
       console.error('Failed forwarding feed to SDI');
     });
@@ -201,4 +194,8 @@ export class BaseChannelController {
     return onlineUsers;
   }
 
+  getMediaElement(cssSelector: string) {
+    var element = <HTMLMediaElement>this.$scope.selfElement.find(cssSelector).get(0);
+    return element;
+  }
 }

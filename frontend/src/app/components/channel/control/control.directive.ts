@@ -11,7 +11,7 @@ export function controlChannelWidget(): ng.IDirective {
       usersBreakdown: '=',
       hotkey: '@'
     },
-    link: ($scope: IChannelScope, el, attrs, ctrl) => {
+    link: ($scope: IChannelScope, el: ng.IAugmentedJQuery, attrs: ng.IAttributes, ctrl) => {
       $scope.selfElement = el;
     },
     templateUrl: 'app/components/channel/control/control.html',

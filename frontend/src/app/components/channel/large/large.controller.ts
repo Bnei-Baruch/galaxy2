@@ -1,7 +1,7 @@
-import { BaseChannelController } from '../channel.controller';
+import { SingleUserChannelController } from '../channel.single.controller';
 
 /** @ngInject */
-export class LargeChannelController extends BaseChannelController {
+export class LargeChannelController extends SingleUserChannelController {
   next() {
     if (this.isReadyToSwitch()) {
       this.putUserToProgram(this.previewUser);

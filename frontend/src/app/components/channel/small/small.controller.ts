@@ -1,13 +1,30 @@
 import { BaseChannelController } from '../channel.controller';
 
+declare var attachMediaStream: any;
+
 /** @ngInject */
 export class SmallChannelController extends BaseChannelController {
-  next() {
-    if (this.isReadyToSwitch()) {
-      this.putUserToProgram(this.previewUser);
-      var nextUser = this.getNextUser(this.previewUser);
-      this.putUserToPreview(nextUser);
+  firstJoined: boolean = false;
+
+  userJoined(login: string) {
+    super.userJoined(login);
+
+    if (!this.firstJoined) {
+      this.firstJoined = true;
+
+      var channelConfig = this.config.janus.sdiPorts[this.name];
+      var previewElement = this.getMediaElement('.preview');
+
+      this.streaming
+        .attachStreamingHandle(channelConfig.streamIds.preview)
+        .then((stream: MediaStream) => {
+          attachMediaStream(previewElement, stream);
+        });
     }
+  }
+
+  userLeft(login: string) {
+    super.userLeft(login);
   }
 
 }

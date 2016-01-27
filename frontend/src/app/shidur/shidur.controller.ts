@@ -33,7 +33,7 @@ export class ShidurController {
   }
 
   closeChat() {
-    this.$mdSidenav('chat').close()
+    this.$mdSidenav('chat').close();
   }
 
 }

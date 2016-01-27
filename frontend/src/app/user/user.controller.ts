@@ -1,6 +1,6 @@
 import { AuthService } from '../components/auth/auth.service';
 import { PubSubService } from '../components/pubSub/pubSub.service';
-import { JanusVideoRoomService } from '../components/janusVideoRoom/janusVideoRoom.service';
+import { JanusVideoRoomService } from '../components/janus/janusVideoRoom.service';
 
 declare var attachMediaStream: any;
 

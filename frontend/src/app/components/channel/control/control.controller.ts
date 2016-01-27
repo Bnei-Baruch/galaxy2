@@ -1,8 +1,8 @@
-import { BaseChannelController } from '../channel.controller';
+import { SingleUserChannelController } from '../channel.single.controller';
 import { IUser } from '../../../shidur/shidur.service';
 
 /** @ngInject */
-export class ControlChannelController extends BaseChannelController {
+export class ControlChannelController extends SingleUserChannelController {
   users: IUser[] = [];
   usersBreakdown: { [channel: string]: IUser[]; };
   allowRemoveUsers: boolean = true;
@@ -112,7 +112,7 @@ export class ControlChannelController extends BaseChannelController {
 
   private onUsersListChanged(): void {
     this.mapUsersByLogin();
-    this.janus.updateChannelUsers(this.name, this.getLoginsList());
+    this.videoRoom.updateChannelUsers(this.name, this.getLoginsList());
   }
 
 }

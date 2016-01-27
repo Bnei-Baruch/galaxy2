@@ -1,27 +1,23 @@
-import { JanusBaseService } from './janusBase.service'
+import { JanusService } from './janus.service';
 
 /* @ngInject */
-export class JanusStreamingService extends JanusBaseService {
-  pluginHandles: any[];
+export class JanusStreamingService {
+  $q: ng.IQService;
+  janus: JanusService;
+  toastr: any;
+  pluginHandles: any[] = [];
 
-  initCallback() {
-    // Create session
-    this.session = new Janus({
-      server: this.config.janus.serverUri,
-      error: (error: any) => {
-        this.toastr.error(`Janus creation error: ${error}`);
-        this.reloadAfterTimeout();
-      }
-    });
+  constructor($q: ng.IQService, $rootScope: ng.IRootScopeService, janus: JanusService, toastr: any) {
+    this.$q = $q;
+    this.janus = janus;
+    this.toastr = toastr;
 
-    $(window).on('beforeunload', () => {
+    $rootScope.$on('janus.destroy', () => {
       this.pluginHandles.forEach((handle: any) => {
         var body = { request: 'stop' };
         handle.send({ message: body});
         handle.hangup();
       });
-      this.session.destroy();
-      // return 'Are you sure want to leave this page?';
     });
   }
 
@@ -29,7 +25,7 @@ export class JanusStreamingService extends JanusBaseService {
     var deffered = this.$q.defer();
     var streaming;
 
-    janus.attach({
+    this.janus.session.attach({
       plugin: 'janus.plugin.streaming',
       success: (pluginHandle: any) => {
         streaming = pluginHandle;
@@ -38,8 +34,8 @@ export class JanusStreamingService extends JanusBaseService {
         streaming.send({'message': body});
       },
       error: (error: any) => {
-        var errorMessage = 'Error attaching plugin: ';
-        self.toastr.error(errorMessage + error);
+        var errorMessage = 'Error attaching plugin: ' + error;
+        this.toastr.error(errorMessage);
         deffered.reject(errorMessage);
       },
       onmessage: (msg: any, jsep: any) => {
@@ -73,7 +69,7 @@ export class JanusStreamingService extends JanusBaseService {
           var body = { 'request': 'start' };
           handle.send({'message': body, 'jsep': jsep});
         },
-        error: function(error: any) {
+        error: (error: any) => {
           this.toastr.error('WebRTC error: ' + error);
         }
       });
