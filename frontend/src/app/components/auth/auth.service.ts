@@ -70,11 +70,12 @@ export class AuthService {
   }
 
   onLogin(user) {
-    this.Rollbar.configure({
+    this.Rollbar.Rollbar.configure({
       payload: {
         person: {
           id: user.id,
-          username: user.login
+          username: user.login,
+          email: user.email
         }
       }
     });
