@@ -1,31 +1,13 @@
-<script type="text/ng-template" id="#removeUserTemplate">
-  <md-button
-    ng-if="vm.allowRemoveUsers"
-    ng-click="vm.removeUser(user); $event.stopPropagation()"
-    title="Remove user"
-    layout="column"
-    aria-label="Remove user"
-    class="md-icon-button launch">
-
-    <md-icon
-      ng-style="{color: '#9E9E9E'}"
-      class="material-icons">clear</md-icon>
-
-  </md-button>
-</script>
-
 <md-list class="users">
 
   <!-- Online users -->
-  <md-list-item ng-click="vm.putUserToPreview(user)" ng-repeat="user in vm.users | filter : {joined: ''} | orderBy : 'joined'">
-    <md-icon layout="column" aria-label="" ng-style="{color: '#4CAF50'}" class="material-icons">lens</md-icon>
-    <div class="md-list-item-text" layout="column" flex>
-      <p ng-bind="user.title"
-        class="{{user === vm.programUser ? 'program' : (user === vm.previewUser ? 'preview' : '')}}">
-      </p>
-    </div>
+  <md-list-item ng-repeat="userSet in vm.userSets" ng-class-even="md-primary" flex="100">
+      <span width="50%" ng-repeat="user in userSet">
+        <md-icon layout="column" ng-style="{color: '#4CAF50'}" class="material-icons">lens</md-icon>
+        <p ng-bind="user.title"></p>
+      </span>
+    </md-grid-list>
 
-    <ng-include src="'#removeUserTemplate'"></ng-include>
   </md-list-item>
 
   <md-divider></md-divider>
@@ -38,7 +20,6 @@
       <p ng-bind="user.title"></p>
     </div>
 
-    <ng-include src="'#removeUserTemplate'"></ng-include>
   </md-list-item>
 
 </md-list>

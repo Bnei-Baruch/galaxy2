@@ -83,36 +83,12 @@ export class ControlChannelController extends SingleUserChannelController {
     return false;
   }
 
-  querySearch(searchText: string): IUser[] {
-    var users = [];
-    console.log('query search', searchText);
-
-    searchText = searchText || '';
-    var lowercaseText = searchText.trim().toLowerCase();
-
-    var pickedLogins = this.users.map((user: IUser) => { return user.login; });
-
-    for (var channel in this.usersBreakdown) {
-      if (this.usersBreakdown.hasOwnProperty(channel) && channel !== 'hidden') {
-        var channelUsers = this.usersBreakdown[channel].filter((user: IUser) => {
-          if (pickedLogins.indexOf(user.login) !== -1) {
-            return false;
-          }
-          var titleLogin = (user.login + user.title).toLowerCase();
-          return titleLogin.indexOf(lowercaseText) !== -1;
-        });
-        users = users.concat(channelUsers);
-      }
-    }
-
-    return users;
-  }
-
   getAllUsers() {
     var allUsers: IUser[] = [];
 
     for (var channel in this.usersBreakdown) {
       if (this.usersBreakdown.hasOwnProperty(channel) && channel !== 'hidden') {
+        // allUsers.push.apply(allUsers, this.usersBreakdown[channel]);
         allUsers = allUsers.concat(this.usersBreakdown[channel]);
       }
     }
