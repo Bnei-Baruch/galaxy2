@@ -12,14 +12,9 @@ export class SmallChannelController extends BaseChannelController {
     if (!this.firstJoined) {
       this.firstJoined = true;
 
-      var channelConfig = this.config.janus.sdiPorts[this.name];
-      var previewElement = this.getMediaElement('.preview');
-
-      this.streaming
-        .attachStreamingHandle(channelConfig.streamIds.preview)
-        .then((stream: MediaStream) => {
-          attachMediaStream(previewElement, stream);
-        });
+      var streamIds = this.config.janus.sdiPorts[this.name].streamIds;
+      this.attachStreamingHandle('.program', streamIds.program);
+      this.attachStreamingHandle('.preview', streamIds.preview);
     }
   }
 
@@ -27,4 +22,13 @@ export class SmallChannelController extends BaseChannelController {
     super.userLeft(login);
   }
 
+  private attachStreamingHandle(cssSelector: string, streamId: string) {
+    var slotElement = this.getMediaElement(cssSelector);
+
+    this.streaming
+      .attachStreamingHandle(streamId)
+      .then((stream: MediaStream) => {
+        attachMediaStream(slotElement, stream);
+      });
+  }
 }

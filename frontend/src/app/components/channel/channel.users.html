@@ -17,7 +17,7 @@
 <md-list class="users">
 
   <!-- Online users -->
-  <md-list-item ng-click="vm.putUserToPreview(user)" ng-repeat="user in vm.users | filter : {joined: ''} | orderBy : 'joined'">
+  <md-list-item ng-click="vm.putUserToPreview(user)" ng-repeat="user in vm.users | filter : {joined: '', disabled: '!'} | orderBy : 'joined'">
     <md-icon layout="column" aria-label="" ng-style="{color: '#4CAF50'}" class="material-icons">lens</md-icon>
     <div class="md-list-item-text" layout="column" flex>
       <p ng-bind="user.title"
@@ -25,13 +25,26 @@
       </p>
     </div>
 
+    <md-button
+      ng-click="vm.disableUser(user); $event.stopPropagation()"
+      title="Temporarily disable user"
+      layout="column"
+      aria-label="Disable user"
+      class="md-icon-button block">
+
+      <md-icon
+        ng-style="{color: '#9E9E9E'}"
+        class="material-icons">block</md-icon>
+
+    </md-button>
+
     <ng-include src="'#removeUserTemplate'"></ng-include>
   </md-list-item>
 
   <md-divider></md-divider>
 
   <!-- Offline users -->
-  <md-list-item ng-repeat="user in vm.users | filter : {joined: '!'} | orderBy : 'title'">
+  <md-list-item ng-repeat="user in vm.users | filter : {joined: '!', disabled: '!'} | orderBy : 'title'">
     <md-icon layout="column" aria-label="" ng-style="{color: '#9E9E9E'}" class="material-icons">lens</md-icon>
 
     <div class="md-list-item-text" layout="column" flex>

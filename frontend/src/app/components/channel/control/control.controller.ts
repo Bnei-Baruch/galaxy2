@@ -43,6 +43,10 @@ export class ControlChannelController extends SingleUserChannelController {
   }
 
   removeUser(user: IUser): void {
+    if (user.disabled) {
+      user.disabled = false;
+    }
+
     if (user.joined && user.audioEnabled) {
       this.muteUser(user);
     }
@@ -102,6 +106,18 @@ export class ControlChannelController extends SingleUserChannelController {
     }
 
     return users;
+  }
+
+  getAllUsers() {
+    var allUsers: IUser[] = [];
+
+    for (var channel in this.usersBreakdown) {
+      if (this.usersBreakdown.hasOwnProperty(channel) && channel !== 'hidden') {
+        allUsers = allUsers.concat(this.usersBreakdown[channel]);
+      }
+    }
+
+    return allUsers;
   }
 
   private muteUser(user: IUser): void {

@@ -135,6 +135,10 @@ export class BaseChannelController {
     }
   }
 
+  disableUser(user: IUser) {
+    user.disabled = true;
+  }
+
   isReadyToSwitch() {
     if (!this.previewUser || !this.programForwarded) {
       return false;

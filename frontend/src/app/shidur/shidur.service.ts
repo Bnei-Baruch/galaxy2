@@ -6,6 +6,7 @@ export interface IUser {
   joined?: moment.Moment;
   stream?: MediaStream;
   audioEnabled?: boolean;
+  disabled?: boolean;
 }
 
 export interface IUsers {
