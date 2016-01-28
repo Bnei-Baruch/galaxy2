@@ -14,6 +14,9 @@ export function slotWidget(): ng.IDirective {
       toggleAudio: '&',
       hotkey: '='
     },
+    link: ($scope: any, el: ng.IAugmentedJQuery) => {
+      $scope.selfElement = el;
+    },
     templateUrl: 'app/components/channel/slot/slot.html',
     controller: SlotController,
     controllerAs: 'vm',

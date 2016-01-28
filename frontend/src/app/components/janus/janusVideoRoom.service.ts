@@ -230,7 +230,7 @@ export class JanusVideoRoomService {
   }
 
   // Forward stream to janus port
-  forwardRemoteFeed(login: string, videoPort: number, audioPort: number): ng.IPromise<any> {
+  forwardRemoteFeed(login: string, videoPort: number, audioPort?: number): ng.IPromise<any> {
     return this.getAndUpdateShidurState((shidurState: IShidurState) => {
       var deffered = this.$q.defer();
 
@@ -247,7 +247,8 @@ export class JanusVideoRoomService {
         if (audioPort) {
           shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
         }
-        deffered.resolve(shidurState);
+
+        deffered.resolve();
       };
 
       this.stopSdiForwarding(prevForwardInfo, () => {

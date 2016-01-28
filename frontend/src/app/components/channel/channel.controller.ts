@@ -14,6 +14,7 @@ export interface IChannelScope extends ng.IScope {
 /** @ngInject */
 export class BaseChannelController {
   $scope: IChannelScope;
+  $q: ng.IQService;
   videoRoom: JanusVideoRoomService;
   streaming: JanusStreamingService;
   pubSub: PubSubService;
@@ -30,12 +31,14 @@ export class BaseChannelController {
   previewUser: IUser = null;
 
   constructor($scope: IChannelScope,
+      $q: ng.IQService,
       videoRoom: JanusVideoRoomService,
       streaming: JanusStreamingService,
       pubSub: PubSubService,
       config: any) {
 
     this.$scope = $scope;
+    this.$q = $q;
     this.videoRoom = videoRoom;
     this.streaming = streaming;
     this.config = config;

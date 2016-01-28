@@ -13,11 +13,20 @@ export class SlotController {
   toggleAudio: (user: IUser) => void;
   hotkey: string;
 
-  constructor( $timeout: ng.ITimeoutService, $document: any) {
+  constructor($scope: any,
+      $timeout: ng.ITimeoutService,
+      $document: any,
+      $mdDialog: angular.material.IDialogService) {
     this.$timeout = $timeout;
     this.$document = $document;
 
     this.bindHotkey();
+
+    $scope.selfElement.bind('contextmenu', () => {
+      $mdDialog.show({
+        templateUrl: 'app/components/auth/channel/slot/slot.zoomIn.html',
+      });
+    });
   }
 
   bindHotkey() {
