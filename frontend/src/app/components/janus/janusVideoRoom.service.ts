@@ -26,7 +26,7 @@ import { JanusService } from './janus.service';
  * SDI methods
  * ===========
  *
- * forwardRemoteFeed(login: string, port: number) returns Promise
+ * forwardRemoteFeeds(logins: string[], videoPorts: number[], audioPorts: number[]) returns Promise
  * Forward stream to janus port (sdi).
  *
  * changeRemoteFeedTitle(title: string, port: number)
@@ -229,33 +229,50 @@ export class JanusVideoRoomService {
     }
   }
 
-  // Forward stream to janus port
-  forwardRemoteFeed(login: string, videoPort: number, audioPort?: number): ng.IPromise<any> {
+  // Forward streams to janus ports
+  forwardRemoteFeeds(logins: string[], videoPorts: number[], audioPorts?: number[]): ng.IPromise<any> {
     return this.getAndUpdateShidurState((shidurState: IShidurState) => {
       var deffered = this.$q.defer();
 
-      if (!(login in this.remoteHandles)) {
-        this.toastr.error(`Could not find remote handle for ${login}`);
-        deffered.reject(`Could not find remote handle for ${login}`);
-      }
-
-      // Stop (if exists) => Start => Update state => Callback.
-      var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
-
-      var startForwardingCallback = (forwardInfo: IFeedForwardInfo) => {
-        shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
-        if (audioPort) {
-          shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
-        }
-
-        deffered.resolve();
-      };
-
-      this.stopSdiForwarding(prevForwardInfo, () => {
-        this.startSdiForwarding(login, videoPort, audioPort, startForwardingCallback);
+      var forwardPromises = logins.map((login: string, index: number) => {
+        var audioPort = (audioPorts || [])[index];
+        return this.stopAndStartSdiForwarding(shidurState, login, videoPorts[index], audioPort);
       });
+
+      this.$q.all(forwardPromises).then(() => {
+        deffered.resolve(shidurState);
+      });
+
       return deffered.promise;
     });
+  }
+
+  stopAndStartSdiForwarding(shidurState: IShidurState, login: string, videoPort: number, audioPort: number): ng.IPromise<any> {
+    var deffered = this.$q.defer();
+
+    /*if (!(login in this.remoteHandles)) {
+      this.toastr.error(`Could not find remote handle for ${login}`);
+      deffered.reject(`Could not find remote handle for ${login}`);
+    }*/
+
+    // Stop (if exists) => Start => Update state => Callback.
+    var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
+
+    var startForwardingCallback = (forwardInfo: IFeedForwardInfo) => {
+      shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
+
+      if (audioPort) {
+        shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
+      }
+
+      deffered.resolve();
+    };
+
+    this.stopSdiForwarding(prevForwardInfo, () => {
+      this.startSdiForwarding(login, videoPort, audioPort, startForwardingCallback);
+    });
+
+    return deffered.promise;
   }
 
   changeRemoteFeedTitle(title: string, port: number) {
@@ -533,12 +550,10 @@ export class JanusVideoRoomService {
   private startSdiForwarding(login: string, videoPort: number, audioPort: number,
       callback: (forwardInfo: IFeedForwardInfo) => void): void {
     var self = this;
-    var handleContainer = this.remoteHandles[login];
-    var rmid = handleContainer.handle.rfid;
 
     var forward: any = {
       request: 'rtp_forward',
-      publisher_id: rmid,
+      publisher_id: this.publishers[login].id,
       room: self.config.janus.roomId,
       secret: self.config.janus.secret,
       host: self.config.janus.serverIp,

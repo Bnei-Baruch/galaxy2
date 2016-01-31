@@ -25,7 +25,10 @@ export class BaseChannelController {
 
   usersByLogin: { [login: string]: IUser } = {};
 
-  programForwarded: boolean = true;
+  isForwarded: { program: boolean, preview: boolean } = {
+    program: true,
+    preview: false
+  };
 
   programUser: IUser = null;
   previewUser: IUser = null;
@@ -143,7 +146,7 @@ export class BaseChannelController {
   }
 
   isReadyToSwitch() {
-    if (!this.previewUser || !this.programForwarded) {
+    if (!this.previewUser || !this.isForwarded.program) {
       return false;
     }
 
@@ -158,10 +161,18 @@ export class BaseChannelController {
     // Forward program to SDI and change video title
     var sdiPorts = this.config.janus.sdiPorts[this.name];
 
-    this.programForwarded = false;
+    this.isForwarded.program = false;
 
-    this.videoRoom.forwardRemoteFeed(this.programUser.login, sdiPorts.video, sdiPorts.audio).then(() => {
-      this.programForwarded = true;
+    var audioPorts;
+
+    if (sdiPorts.audio) {
+      audioPorts = [sdiPorts.audio];
+    } else {
+      audioPorts = undefined;
+    }
+
+    this.videoRoom.forwardRemoteFeeds([this.programUser.login], [sdiPorts.video], audioPorts).then(() => {
+      this.isForwarded.program = true;
       this.videoRoom.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video);
     }, () => {
       console.error('Failed forwarding feed to SDI');

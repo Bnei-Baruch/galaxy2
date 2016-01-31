@@ -6,10 +6,11 @@ declare var attachMediaStream: any;
 /** @ngInject */
 export class SmallChannelController extends BaseChannelController {
   firstJoined: boolean = false;
-  previewForwarded: boolean = false;
 
-  programUserSetIndex: number = null;
-  previewUserSetIndex: number = null;
+  userSetIndex: { program: number, preview: number } = {
+    program: null,
+    preview: null
+  };
 
   userSetSize: number = 4;
   userSets: IUser[][];
@@ -35,49 +36,60 @@ export class SmallChannelController extends BaseChannelController {
 
   next() {
     if (this.isReadyToSwitch()) {
-      this.putUserSetToProgram(this.previewUserSetIndex);
-      var nextUserSetIndex = (this.previewUserSetIndex + 1) % this.userSetSize;
+      this.putUserSetToProgram(this.userSetIndex.preview);
+      var nextUserSetIndex = (this.userSetIndex.preview + 1) % this.userSets.length;
       this.putUserSetToPreview(nextUserSetIndex);
     }
   }
 
   putUserSetToProgram(index: number) {
+    this.putUserSetToSlot(index, true);
   }
 
   putUserSetToPreview(index: number) {
-    if (index === this.previewUserSetIndex) {
+    this.putUserSetToSlot(index, false);
+  }
+
+  isReadyToSwitch() {
+    if (this.userSetIndex.preview === null || !this.isForwarded.program) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private putUserSetToSlot(index: number, program: boolean) {
+    var slotName = program ? 'program' : 'preview';
+
+    if (index === this.userSetIndex[slotName]) {
       return;
     }
 
-    this.previewUserSetIndex = index;
+    this.userSetIndex[slotName] = index;
+    this.isForwarded[slotName] = false;
 
-    this.previewForwarded = false;
     var userSet = this.userSets[index];
-    var sdiPorts = this.config.janus.sdiPorts[this.name].video;
+    var videoPorts = this.config.janus.sdiPorts[this.name].video[slotName];
 
-    var forwardPromises = userSet.map((user: IUser, index: number) => {
-      return this.videoRoom.forwardRemoteFeed(user.login, sdiPorts[index]);
+    var logins = userSet.map((user: IUser) => {
+      return user.login;
     });
 
-    this.$q.all(forwardPromises).then((forwardResults: any[]) => {
-      this.previewForwarded = true;
+    this.videoRoom.forwardRemoteFeeds(logins, videoPorts).then(() => {
+      this.isForwarded[slotName] = true;
 
       // Forwarding succeeded, changing titles
-      forwardResults.forEach((forwardResult: any, forwardResultIndex: number) => {
-        var user = userSet[forwardResultIndex];
-        var videoPort = sdiPorts.video[forwardResultIndex];
-        this.videoRoom.changeRemoteFeedTitle(user.title, videoPort);
+      userSet.forEach((user: IUser, userIndex: number) => {
+        this.videoRoom.changeRemoteFeedTitle(user.title, videoPorts[userIndex]);
       });
     });
-
   }
 
   private constructUserSets(): void {
     this.userSets = [];
 
     var userSet: IUser[] = [];
-    // var onlineUsers = this.getOnlineUsers();
-    var onlineUsers = this.users;
+    var onlineUsers = this.getOnlineUsers();
     onlineUsers.forEach((user: IUser, index: number) => {
       userSet.push(user);
       if (userSet.length === this.userSetSize || index === onlineUsers.length - 1) {
