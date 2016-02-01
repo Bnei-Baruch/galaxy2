@@ -150,8 +150,8 @@ export class JanusVideoRoomService {
 
   // When current client is closed, sends self unpublish event to Janus.
   unpublishOwnFeed() {
-    var body = { 'request': 'unpublish' };
-    this.localHandle.send({'message': body});
+    var body = {request: 'unpublish'};
+    this.localHandle.send({message: body});
     console.debug(`Own feed unpublished for handle ${this.localHandle}`);
   }
 
@@ -235,12 +235,18 @@ export class JanusVideoRoomService {
    */
   forwardRemoteFeeds(logins: string[], videoPorts: number[], audioPorts?: number[]): ng.IPromise<any> {
     return this.getAndUpdateShidurState((shidurState: IShidurState) => {
+      var deffered = this.$q.defer();
+
       var forwardPromises = logins.map((login: string, index: number) => {
         var audioPort = (audioPorts || [])[index];
         return this.stopAndStartSdiForwarding(shidurState, login, videoPorts[index], audioPort);
       });
 
-      return forwardPromises;
+      this.$q.all(forwardPromises).then(() => {
+        deffered.resolve(shidurState);
+      });
+
+      return deffered.promise;
     });
   }
 
@@ -257,7 +263,7 @@ export class JanusVideoRoomService {
         deffered.reject(error);
       }
 
-      if (prevForwardInfo.publisherId === this.publishers[login].id) {
+      if (prevForwardInfo && prevForwardInfo.publisherId === this.publishers[login].id) {
         console.debug('User already forwarded to SDI:', login);
         deffered.resolve();
       }
@@ -303,8 +309,6 @@ export class JanusVideoRoomService {
   // Handles changes in publishers state and updates registered clients (channel) if needed.
   private updatePublishersAndTriggerJoined(publishers: any[]): void {
     var self = this;
-
-    console.log('Publishers', publishers);
 
     // TODO: Check that when overriding publisher it's id stays the same
     // Basically if it is not the same, meaning same user logged in for

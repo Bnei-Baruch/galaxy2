@@ -18,6 +18,7 @@ export class BaseChannelController {
   videoRoom: JanusVideoRoomService;
   streaming: JanusStreamingService;
   pubSub: PubSubService;
+  toastr: any;
   config: any;
 
   name: string;
@@ -38,12 +39,13 @@ export class BaseChannelController {
       videoRoom: JanusVideoRoomService,
       streaming: JanusStreamingService,
       pubSub: PubSubService,
-      config: any) {
+      toastr: any, config: any) {
 
     this.$scope = $scope;
     this.$q = $q;
     this.videoRoom = videoRoom;
     this.streaming = streaming;
+    this.toastr = toastr;
     this.config = config;
 
     // To use by children
@@ -171,13 +173,13 @@ export class BaseChannelController {
       audioPorts = undefined;
     }
 
-    var forwardPromises = this.videoRoom.forwardRemoteFeeds([this.programUser.login], [sdiPorts.video], audioPorts);
-
-    forwardPromises[0].then(() => {
+    this.videoRoom.forwardRemoteFeeds([this.programUser.login], [sdiPorts.video], audioPorts).then(() => {
       this.isForwarded.program = true;
       this.videoRoom.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video);
     }, () => {
-      console.error('Failed forwarding feed to SDI');
+      var error = 'Failed forwarding feed to SDI';
+      this.toastr.error(error);
+      console.error(error);
     });
   }
 

@@ -40,8 +40,8 @@ export class SmallChannelController extends BaseChannelController {
     super.userLeft(login);
     this.constructUserSets();
 
-    this.reforwardSlotOnUserRemoval(changedUserSetIndex, program = false);
-    this.reforwardSlotOnUserRemoval(changedUserSetIndex, program = true);
+    this.reforwardSlotOnUserRemoval(changedUserSetIndex, false);
+    this.reforwardSlotOnUserRemoval(changedUserSetIndex, true);
   }
 
   next() {
@@ -69,7 +69,7 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   private reforwardSlotOnUserRemoval(changedUserSetIndex: number, program: boolean): void {
-    var slotName = this.getSlotName();
+    var slotName = this.getSlotName(program);
 
     if (this.userSetIndex[slotName] > this.userSets.length) {
       // User set removed
@@ -81,7 +81,7 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   private putUserSetToSlot(index: number, program: boolean) {
-    var slotName = this.getSlotName();
+    var slotName = this.getSlotName(program);
 
     if (index === this.userSetIndex[slotName]) {
       return;
@@ -104,16 +104,12 @@ export class SmallChannelController extends BaseChannelController {
       logins[userIndex] = user.login;
     });
 
-    var forwardPromises = this.videoRoom.forwardRemoteFeeds(logins, videoPorts);
+    this.videoRoom.forwardRemoteFeeds(logins, videoPorts).then(() => {
+      this.isForwarded[slotName] = true;
 
-    forwardPromises.forEach((forwardPromise: ng.IPromise<any>) => {
-      forwardPromise.then(() => {
-        this.isForwarded[slotName] = true;
-
-        // Forwarding succeeded, changing titles
-        logins.forEach((login: string, loginIndex: number) => {
-          this.videoRoom.changeRemoteFeedTitle(login || '', videoPorts[loginIndex]);
-        });
+      // Forwarding succeeded, changing titles
+      logins.forEach((login: string, loginIndex: number) => {
+        this.videoRoom.changeRemoteFeedTitle(login || '', videoPorts[loginIndex]);
       });
     });
   }
@@ -127,7 +123,7 @@ export class SmallChannelController extends BaseChannelController {
     var user = this.usersByLogin[login];
 
     this.userSets.forEach((userSet: IUser[], userSetIndex: number) => {
-      if (user in userSet) {
+      if (userSet.indexOf(user) !== -1) {
         return userSetIndex;
       }
     });
