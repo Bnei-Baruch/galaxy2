@@ -15,8 +15,9 @@ export function slotWidget($mdDialog: angular.material.IDialogService): ng.IDire
       hotkey: '='
     },
     link: (scope: ng.IScope, slotEl: ng.IAugmentedJQuery) => {
+      var sourceMedia = <HTMLMediaElement>slotEl.find('video').get(0);
+
       var cloneSourceVideo = (scope: ng.IScope, dialogEl: ng.IAugmentedJQuery) => {
-        var sourceMedia = <HTMLMediaElement>slotEl.find('video').get(0);
         var targetMedia = <HTMLMediaElement>dialogEl.find('video').get(0);
         targetMedia.src = sourceMedia.src;
       };
@@ -29,12 +30,15 @@ export function slotWidget($mdDialog: angular.material.IDialogService): ng.IDire
       slotEl.bind('contextmenu', (e: any) => {
         scope.$apply(() => {
           e.preventDefault();
-          $mdDialog.show(<any>{
-            clickOutsideToClose: true,
-            templateUrl: 'app/components/channel/slot/slot.zoomIn.html',
-            onShowing: cloneSourceVideo,
-            onRemoving: stopTargetVideo
-          });
+
+          if (!sourceMedia.paused && !sourceMedia.ended) {
+            $mdDialog.show(<any>{
+              clickOutsideToClose: true,
+              templateUrl: 'app/components/channel/slot/slot.zoomIn.html',
+              onShowing: cloneSourceVideo,
+              onRemoving: stopTargetVideo
+            });
+          }
         });
       });
     },
