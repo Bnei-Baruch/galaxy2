@@ -104,6 +104,7 @@ export class SmallChannelController extends BaseChannelController {
       logins[userIndex] = user.login;
     });
 
+    // TODO: move to base controller
     this.videoRoom.forwardRemoteFeeds(logins, videoPorts).then(() => {
       this.isForwarded[slotName] = true;
 
@@ -111,6 +112,10 @@ export class SmallChannelController extends BaseChannelController {
       logins.forEach((login: string, loginIndex: number) => {
         this.videoRoom.changeRemoteFeedTitle(login || '', videoPorts[loginIndex]);
       });
+    }, () => {
+      var error = 'Failed forwarding feed to SDI';
+      this.toastr.error(error);
+      console.error(error);
     });
   }
 
