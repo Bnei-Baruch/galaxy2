@@ -171,7 +171,9 @@ export class BaseChannelController {
       audioPorts = undefined;
     }
 
-    this.videoRoom.forwardRemoteFeeds([this.programUser.login], [sdiPorts.video], audioPorts).then(() => {
+    var forwardPromises = this.videoRoom.forwardRemoteFeeds([this.programUser.login], [sdiPorts.video], audioPorts);
+
+    forwardPromises[0].then(() => {
       this.isForwarded.program = true;
       this.videoRoom.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video);
     }, () => {

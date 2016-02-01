@@ -26,12 +26,22 @@ export class SmallChannelController extends BaseChannelController {
       this.attachStreamingHandle('.preview', streamIds.preview);
     }
 
+    // Re-forward preview user set to SDI in case of change
     this.constructUserSets();
+
+    if (this.userSetIndex.preview === this.userSets.length - 1) {
+      this.putUserSetToPreview(this.userSetIndex.preview);
+    }
   }
 
   userLeft(login: string) {
+    var changedUserSetIndex = this.getUserSetIndexForUser(login);
+
     super.userLeft(login);
     this.constructUserSets();
+
+    this.reforwardSlotOnUserRemoval(changedUserSetIndex, program = false);
+    this.reforwardSlotOnUserRemoval(changedUserSetIndex, program = true);
   }
 
   next() {
@@ -58,31 +68,71 @@ export class SmallChannelController extends BaseChannelController {
     return true;
   }
 
+  private reforwardSlotOnUserRemoval(changedUserSetIndex: number, program: boolean): void {
+    var slotName = this.getSlotName();
+
+    if (this.userSetIndex[slotName] > this.userSets.length) {
+      // User set removed
+      this.putUserSetToSlot(null, program);
+    } else if (changedUserSetIndex === this.userSetIndex[slotName]) {
+      // Slot user set changed
+      this.putUserSetToSlot(changedUserSetIndex, program);
+    }
+  }
+
   private putUserSetToSlot(index: number, program: boolean) {
-    var slotName = program ? 'program' : 'preview';
+    var slotName = this.getSlotName();
 
     if (index === this.userSetIndex[slotName]) {
       return;
     }
 
+    var userSet: IUser[] = [];
+
+    if (index !== null) {
+      userSet = this.userSets[index];
+    }
+
     this.userSetIndex[slotName] = index;
     this.isForwarded[slotName] = false;
 
-    var userSet = this.userSets[index];
     var videoPorts = this.config.janus.sdiPorts[this.name].video[slotName];
 
-    var logins = userSet.map((user: IUser) => {
-      return user.login;
+    var logins: string[] = new Array(this.userSetSize);
+
+    userSet.forEach((user: IUser, userIndex: number) => {
+      logins[userIndex] = user.login;
     });
 
-    this.videoRoom.forwardRemoteFeeds(logins, videoPorts).then(() => {
-      this.isForwarded[slotName] = true;
+    var forwardPromises = this.videoRoom.forwardRemoteFeeds(logins, videoPorts);
 
-      // Forwarding succeeded, changing titles
-      userSet.forEach((user: IUser, userIndex: number) => {
-        this.videoRoom.changeRemoteFeedTitle(user.title, videoPorts[userIndex]);
+    forwardPromises.forEach((forwardPromise: ng.IPromise<any>) => {
+      forwardPromise.then(() => {
+        this.isForwarded[slotName] = true;
+
+        // Forwarding succeeded, changing titles
+        logins.forEach((login: string, loginIndex: number) => {
+          this.videoRoom.changeRemoteFeedTitle(login || '', videoPorts[loginIndex]);
+        });
       });
     });
+  }
+
+  private getSlotName(program: boolean): string {
+    var slotName = program ? 'program' : 'preview';
+    return slotName;
+  }
+
+  private getUserSetIndexForUser(login: string): number {
+    var user = this.usersByLogin[login];
+
+    this.userSets.forEach((userSet: IUser[], userSetIndex: number) => {
+      if (user in userSet) {
+        return userSetIndex;
+      }
+    });
+
+    return null;
   }
 
   private constructUserSets(): void {

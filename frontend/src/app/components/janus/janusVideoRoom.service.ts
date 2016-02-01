@@ -229,34 +229,39 @@ export class JanusVideoRoomService {
     }
   }
 
-  // Forward streams to janus ports
+  /**
+   * Forward streams to janus ports
+   * @returns List of promises for every video port provided
+   */
   forwardRemoteFeeds(logins: string[], videoPorts: number[], audioPorts?: number[]): ng.IPromise<any> {
     return this.getAndUpdateShidurState((shidurState: IShidurState) => {
-      var deffered = this.$q.defer();
-
       var forwardPromises = logins.map((login: string, index: number) => {
         var audioPort = (audioPorts || [])[index];
         return this.stopAndStartSdiForwarding(shidurState, login, videoPorts[index], audioPort);
       });
 
-      this.$q.all(forwardPromises).then(() => {
-        deffered.resolve(shidurState);
-      });
-
-      return deffered.promise;
+      return forwardPromises;
     });
   }
 
   stopAndStartSdiForwarding(shidurState: IShidurState, login: string, videoPort: number, audioPort: number): ng.IPromise<any> {
     var deffered = this.$q.defer();
 
-    /*if (!(login in this.remoteHandles)) {
-      this.toastr.error(`Could not find remote handle for ${login}`);
-      deffered.reject(`Could not find remote handle for ${login}`);
-    }*/
-
     // Stop (if exists) => Start => Update state => Callback.
     var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
+
+    if (login !== undefined) {
+      if (!(login in this.publishers)) {
+        var error = `Could not find publisher with login ${login}`;
+        this.toastr.error(error);
+        deffered.reject(error);
+      }
+
+      if (prevForwardInfo.publisherId === this.publishers[login].id) {
+        console.debug('User already forwarded to SDI:', login);
+        deffered.resolve();
+      }
+    }
 
     var startForwardingCallback = (forwardInfo: IFeedForwardInfo) => {
       shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
@@ -269,7 +274,9 @@ export class JanusVideoRoomService {
     };
 
     this.stopSdiForwarding(prevForwardInfo, () => {
-      this.startSdiForwarding(login, videoPort, audioPort, startForwardingCallback);
+      if (login !== undefined) {
+        this.startSdiForwarding(login, videoPort, audioPort, startForwardingCallback);
+      }
     });
 
     return deffered.promise;
