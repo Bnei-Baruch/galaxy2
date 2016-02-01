@@ -14,13 +14,26 @@ export function slotWidget($mdDialog: angular.material.IDialogService): ng.IDire
       toggleAudio: '&',
       hotkey: '='
     },
-    link: (scope: ng.IScope, el: ng.IAugmentedJQuery) => {
-      el.bind('contextmenu', (e: any) => {
+    link: (scope: ng.IScope, slotEl: ng.IAugmentedJQuery) => {
+      var cloneSourceVideo = (scope: ng.IScope, dialogEl: ng.IAugmentedJQuery) => {
+        var sourceMedia = <HTMLMediaElement>slotEl.find('video').get(0);
+        var targetMedia = <HTMLMediaElement>dialogEl.find('video').get(0);
+        targetMedia.src = sourceMedia.src;
+      };
+
+      var stopTargetVideo = (scope: ng.IScope, dialogEl: ng.IAugmentedJQuery) => {
+        var targetMedia = <HTMLMediaElement>dialogEl.find('video').get(0);
+        targetMedia.src = null;
+      };
+
+      slotEl.bind('contextmenu', (e: any) => {
         scope.$apply(() => {
           e.preventDefault();
-          $mdDialog.show({
+          $mdDialog.show(<any>{
             clickOutsideToClose: true,
             templateUrl: 'app/components/channel/slot/slot.zoomIn.html',
+            onShowing: cloneSourceVideo,
+            onRemoving: stopTargetVideo
           });
         });
       });
