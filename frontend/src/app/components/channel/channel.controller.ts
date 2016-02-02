@@ -70,6 +70,7 @@ export class BaseChannelController {
     // TODO: The timestamp should be better taken from Janus point of view
     var user = this.usersByLogin[login];
     user.joined = moment();
+    user.disabled = false;
   }
 
   userLeft(login: string) {
@@ -145,6 +146,11 @@ export class BaseChannelController {
 
   disableUser(user: IUser) {
     user.disabled = true;
+
+    // Remove user from preview if present
+    if (this.previewUser === user) {
+      this.putUserToPreview(null);
+    }
   }
 
   isReadyToSwitch() {
@@ -173,9 +179,9 @@ export class BaseChannelController {
       audioPorts = undefined;
     }
 
-    this.videoRoom.forwardRemoteFeeds([this.programUser.login], [sdiPorts.video], audioPorts).then(() => {
+    this.videoRoom.forwardRemoteFeeds([this.programUser.login], [sdiPorts.video.program], audioPorts).then(() => {
       this.isForwarded.program = true;
-      this.videoRoom.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video);
+      this.videoRoom.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video.program);
     }, () => {
       var error = 'Failed forwarding feed to SDI';
       this.toastr.error(error);
@@ -204,7 +210,7 @@ export class BaseChannelController {
     var onlineUsers: IUser[] = [];
 
     this.users.forEach((user: IUser) => {
-      if (user.joined) {
+      if (user.joined && !user.disabled) {
         onlineUsers.push(user);
       }
     });

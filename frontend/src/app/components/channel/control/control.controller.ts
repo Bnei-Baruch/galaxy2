@@ -51,13 +51,9 @@ export class ControlChannelController extends SingleUserChannelController {
       this.muteUser(user);
     }
 
-    // Remove user from slots if present
+    // Remove user from preview if present
     if (this.previewUser === user) {
       this.putUserToPreview(null);
-    }
-
-    if (this.programUser === user) {
-      this.putUserToProgram(null);
     }
 
     // Splice users
