@@ -24,7 +24,8 @@ exports.config = {
   //     browser.driver.manage().window().maximize();
   // },
 
-  baseUrl: 'https://localhost:3004',
+  port: 3010,
+  baseUrl: 'https://localhost:3010',
 
   // Spec patterns are relative to the current working directory when
   // protractor is called.
