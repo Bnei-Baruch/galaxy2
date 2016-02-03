@@ -25,10 +25,7 @@
     },
     "titleApiUrl": "https://v4g.kbb1.com:8080/title.php?title=%title%&port=%port%"
   },
-<<<<<<< HEAD
-  "backendUri": "https://rt-dev.kbb1.com:5001/galaxy2/backend"
-=======
   "backendUri": "https://rt-dev.kbb1.com:5000/rest",
   "rollbarToken": "rollbar-access-token-comes-here"
->>>>>>> 59e77d1a9af6dae519fc68dd8e21a88624f4c827
+  "chatUri": "https://chat1.kbb1.com/?label=galaxy2"
 }
