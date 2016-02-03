@@ -1,0 +1,41 @@
+<section class="channel md-whiteframe-z1">
+  <slot-widget kind="program"
+    user="vm.programUser"
+    toggle-audio="vm.toggleAudio(vm.programUser)"
+    show-audio-toggle="true"></slot-widget>
+
+  <slot-widget kind="preview"
+    user="vm.previewUser"
+    is-ready="vm.isReadyToSwitch()"
+    toggle-audio="vm.toggleAudio(vm.previewUser)"
+    show-audio-toggle="true"
+    trigger="vm.trigger()"></slot-widget>
+
+  <md-autocomplete
+    md-no-cache="true"
+    md-selected-item="vm.selectedUser"
+    md-search-text="vm.searchText"
+    md-selected-item-change="vm.pickUser(user)"
+    md-items="user in vm.querySearch(vm.searchText) | orderBy : ['joined', 'title']"
+    md-item-text="user.title"
+    md-min-length="0"
+    placeholder="Pick a user"
+    md-menu-class="autocomplete-custom-template">
+    <md-item-template>
+      <span layout="row">
+        <md-icon
+          flex="20"
+          aria-label="{{ user.title }}"
+          ng-style="user.joined ? {color: '#4CAF50'} : {color: '#9E9E9E'}"
+          class="material-icons">
+          lens
+        </md-icon>
+        <span flex="80" ng-bind="user.title"></span>
+      </span>
+    </md-item-template>
+  </md-autocomplete>
+
+  <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"></ng-include>
+
+</section>
+

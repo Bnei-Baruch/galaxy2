@@ -11,7 +11,10 @@ import { UserController } from './user/user.controller';
 import { FakeUserController } from './user/fake.controller';
 import { LoginController } from '../app/components/auth/login.controller';
 import { AuthService } from '../app/components/auth/auth.service';
-import { channelWidget } from '../app/components/channel/channel.directive';
+import { PubSubService } from '../app/components/pubSub/pubSub.service';
+import { slotWidget } from '../app/components/channel/slot/slot.directive';
+import { largeChannelWidget } from '../app/components/channel/large/large.directive';
+import { controlChannelWidget } from '../app/components/channel/control/control.directive';
 import { ChannelService } from '../app/components/channel/channel.service';
 
 module frontend {
@@ -40,11 +43,14 @@ module frontend {
     .service('shidur', ShidurService)
     .service('channel', ChannelService)
     .service('authService', AuthService)
+    .service('pubSub', PubSubService)
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
     .controller('FakeUserController', FakeUserController)
     .controller('LoginController', LoginController)
     .directive('galaxyNavbar', galaxyNavbar)
-    .directive('channelWidget', channelWidget)
+    .directive('slotWidget', slotWidget)
+    .directive('largeChannelWidget', largeChannelWidget)
+    .directive('controlChannelWidget', controlChannelWidget)
     ;
 }

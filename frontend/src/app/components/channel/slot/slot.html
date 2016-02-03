@@ -1,0 +1,41 @@
+<md-grid-list md-cols="1" md-row-height="16:9" md-gutter="3px">
+  <md-grid-tile
+    ng-style="kind === 'program' ? {'background': 'red'} : {'background': 'green'}"
+    md-colspan="1"
+    md-rowspan="1"
+    ng-click="trigger()">
+
+    <video ng-class="kind"
+      poster="data:image/gif,AAAA"
+      autoplay
+      ng-attr-muted="kind === 'program' || undefined">
+    </video>
+
+    <md-grid-tile-header layout-align="end start">
+      <h3 ng-bind="kind"></h3>
+      <label ng-if="user.title">{{user.title}}</label>
+    </md-grid-tile-header>
+
+    <md-grid-tile-footer layout-align="end">
+
+      <md-icon
+        ng-if="showAudioToggle && user"
+        class="material-icons"
+        ng-style="user.audioEnabled ? {color: 'red'} : {color: 'white'}"
+        style="position: absolute; left: 12px;"
+        ng-click="toggleAudio(); $event.stopPropagation()">
+        {{user.audioEnabled ? 'volume_off' : 'volume_up'}}
+      </md-icon>
+
+      <md-icon
+        ng-if="kind === 'preview' && !isReady()"
+        aria-label="Waiting for preview..."
+        ng-style="{color: 'white'}"
+        class="material-icons">
+        schedule
+      </md-icon>&nbsp;
+
+    </md-grid-tile-footer>
+
+  </md-grid-tile>
+</md-grid-list>

@@ -1,33 +1,38 @@
-// Library to handle communication with Janus.
-// API:
-//
-// Group methods
-// =============
-//
-// registerLocalUser(login: string, streamReadyCallback: (stream: MediaStream) => void)
-// Connect local media stream to Janus (sending video/audio?)
-//
-// Channel methods
-// ===============
-//
-// registerChannel(options: IChannel)
-// Register channel with specific users so that each joined
-// or leaving user will notify the client (channel).
-//
-// subscribeForStream(login: string, streamReadyCallback: (stream: MediaStream) => void)
-// Register to receive when remote 'login' starts streaming his MediaStream
-//
-// unsubscribeFromStream(login: string)
-// Stop getting updates on specific remote 'login'.
-//
-// SDI methods
-// ===========
-//
-// forwardRemoteFeed(login: string, port: number) returns Promise
-// Forward stream to janus port (sdi).
-//
-// changeRemoteFeedTitle(title: string, port: number)
-// Change Title on some janus port (sdi).
+/* TODO: define private/public methods and fields  */
+
+/**
+ * Library to handle communication with Janus.
+ * API:
+ *
+ * Group methods
+ * =============
+ *
+ * registerLocalUser(login: string, streamReadyCallback: (stream: MediaStream) => void)
+ * Connect local media stream to Janus (sending video/audio?)
+ *
+ * Channel methods
+ * ===============
+ *
+ * registerChannel(options: IChannel)
+ * Register channel with specific users so that each joined
+ * or leaving user will notify the client (channel).
+ *
+ * subscribeForStream(login: string, streamReadyCallback: (stream: MediaStream) => void)
+ * Register to receive when remote 'login' starts streaming his MediaStream
+ *
+ * unsubscribeFromStream(login: string)
+ * Stop getting updates on specific remote 'login'.
+ *
+ * SDI methods
+ * ===========
+ *
+ * forwardRemoteFeed(login: string, port: number) returns Promise
+ * Forward stream to janus port (sdi).
+ *
+ * changeRemoteFeedTitle(title: string, port: number)
+ * Change Title on some janus port (sdi).
+ *
+ */
 
 declare var escape: any;
 declare var Janus: any;
@@ -71,7 +76,6 @@ export class JanusVideoRoomService {
   remoteHandles: { (login: string): IRemoteHandle } = <any>{};
   localHandle: any;
   channels: { (key: string): IChannel } = <any>{};
-  portsFeedForwardInfo: { (key: number): IFeedForwardInfo } = <any> {};
 
   // Reverse map of logins to channels names
   userChannels: { (login: string): string[] } = <any>{};
@@ -126,25 +130,27 @@ export class JanusVideoRoomService {
   // API method for javascript client to register channel with specific users so that each joined
   // or leaving user will notify the client (channel).
   registerChannel(options: IChannel) {
-    var self = this;
-
     this.channels[options.name] = options;
 
-    options.users.forEach((login: string) => {
-      // Store users lookup table by login
-      if (!(login in self.userChannels)) {
-        self.userChannels[login] = [];
-      }
-
-      // Add channel to user channels list
-      var channels = self.userChannels[login];
-      if (channels.indexOf(options.name) === -1) {
-        channels.push(options.name);
-      }
-    });
+    this.updateChannelUsers(options.name, options.users);
 
     // TODO: User publishers list and call userJoined method
     // for relevant channels
+  }
+
+  updateChannelUsers(name: string, users: string[]) {
+    users.forEach((login: string) => {
+      // Store users lookup table by login
+      if (!(login in this.userChannels)) {
+        this.userChannels[login] = [];
+      }
+
+      // Add channel to user channels list
+      var channels = this.userChannels[login];
+      if (channels.indexOf(name) === -1) {
+        channels.push(name);
+      }
+    });
   }
 
   // Internal, called once at constructor.
@@ -154,7 +160,7 @@ export class JanusVideoRoomService {
       success: () => {
         this.attachLocalHandle();
       },
-      error: (error) => {
+      error: (error: any) => {
         this.toastr.error(`Janus creation error: ${error}`);
         this.reloadAfterTimeout();
       }
@@ -178,7 +184,7 @@ export class JanusVideoRoomService {
   }
 
   // Internal, handles changes in publishers state and updates registered clients (channel) if needed.
-  updatePublishersAndTriggerJoined(publishers) {
+  updatePublishersAndTriggerJoined(publishers: any[]) {
     var self = this;
 
     console.log('Publishers', publishers);
@@ -186,7 +192,7 @@ export class JanusVideoRoomService {
     // TODO: Check that when overriding publisher it's id stays the same
     // Basically if it is not the same, meaning same user logged in for
     // example twice and we need to override the old publisher with new.
-    publishers.forEach((p) => {
+    publishers.forEach((p: any) => {
 
       // TODO: When we have joined timestamp check the timestamp
       // together with the login. Timestamp better be central.
@@ -200,7 +206,7 @@ export class JanusVideoRoomService {
       self.publishers[p.display] = p;
 
       // Handle channels
-      this.applyOnUserChannels(p.display, (channel) => {
+      this.applyOnUserChannels(p.display, (channel: IChannel) => {
         channel.joinedCallback(p.display);
       });
     });
@@ -210,18 +216,19 @@ export class JanusVideoRoomService {
   // for example calls joinedCallback or leftCallback.
   applyOnUserChannels(login: string, func: (channel: IChannel) => void) {
     if (login in this.userChannels) {
-      this.userChannels[login].forEach((c) => {
+      this.userChannels[login].forEach((channel: string) => {
         // Wrapping into $timeout for syncing the UI
         this.$timeout(() => {
-          func(this.channels[c]);
+          func(this.channels[channel]);
         });
       });
     }
   }
 
   // Internal, cleans up when publisher is leaving. Call relevant channels with leftCallback.
-  deletePublisherByJanusId(janusId) {
+  deletePublisherByJanusId(janusId: string) {
     var login = null;
+
     for (var key in this.publishers) {
       var publisher = this.publishers[key];
       if (publisher.id === janusId) {
@@ -234,7 +241,7 @@ export class JanusVideoRoomService {
       this.unsubscribeFromStream(login);
 
       // Update channels on leaving user
-      this.applyOnUserChannels(login, (channel) => {
+      this.applyOnUserChannels(login, (channel: IChannel) => {
         channel.leftCallback(login);
       });
     }
@@ -255,7 +262,7 @@ export class JanusVideoRoomService {
 
     this.session.attach({
       plugin: 'janus.plugin.videoroom',
-      success: (pluginHandle) => {
+      success: (pluginHandle: any) => {
         self.localHandle = pluginHandle;
 
         // Try joining
@@ -267,7 +274,7 @@ export class JanusVideoRoomService {
         };
         self.localHandle.send({'message': register});
       },
-      error: (error) => {
+      error: (error: any) => {
         self.toastr.error('Error attaching plugin: ' + error);
       },
       onmessage: (msg, jsep) => {
@@ -281,12 +288,16 @@ export class JanusVideoRoomService {
       consentDialog: (on) => {
         console.debug('Consent dialog should be ' + (on ? 'on' : 'off') + ' now.');
       },
-      onlocalstream: (stream) => {
+      onlocalstream: (stream: MediaStream) => {
         console.debug('Got local stream', stream);
         this.localStream = stream;
+
+        // Disable local audio tracks
+        this.toggleLocalAudio(false);
+
         this.localStreamReadyCallback(stream);
       },
-      onremotestream: (stream) => {
+      onremotestream: (stream: MediaStream) => {
         console.debug('Got a remote stream!', stream);
         // This should not happen. This is local handle.
       },
@@ -345,12 +356,11 @@ export class JanusVideoRoomService {
         // Publishers are sendonly
         audioRecv: false,
         videoRecv: false,
-        // Sound disabled for testing
-        audioSend: false,
+        audioSend: true,
         videoSend: true,
         video: 'stdres-16:9'
       },
-      success: function(jsep) {
+      success: function(jsep: any) {
         console.debug('Got publisher SDP!');
         console.debug(jsep);
 
@@ -369,17 +379,21 @@ export class JanusVideoRoomService {
 
   // API method for clients (channel) to register to receive when remote 'login' starts streaming his MediaStream
   subscribeForStream(login: string, streamReadyCallback: (stream: MediaStream) => void) {
+    // TODO: implement timeout
+
     var self = this;
     var handleInst = null;
 
     if (login in this.remoteHandles) {
-      this.remoteHandles[login].count++;
+      var loginHandle = this.remoteHandles[login];
+      loginHandle.count++;
+      streamReadyCallback(loginHandle.stream);
       return;
     }
 
     this.session.attach({
       plugin: 'janus.plugin.videoroom',
-      success: (pluginHandle) => {
+      success: (pluginHandle: any) => {
         handleInst = pluginHandle;
 				console.debug(`Remote handle attached ${handleInst.getPlugin()}, id=${handleInst.getId()}`);
         var handleContainer: IRemoteHandle = {
@@ -394,16 +408,16 @@ export class JanusVideoRoomService {
         var listen = { 'request': 'join', 'room': self.config.janus.roomId, 'ptype': 'listener', 'feed': id };
         handleInst.send({'message': listen});
       },
-      error: (error) => {
+      error: (error: any) => {
         self.toastr.error('Error attaching plugin: ' + error);
       },
-      onmessage: (msg, jsep) => {
+      onmessage: (msg: any, jsep) => {
         self.onRemoteHandleMessage(handleInst, msg, jsep);
       },
       onlocalstream: () => {
         // The subscriber stream is recvonly, we don't expect anything here
       },
-      onremotestream: (stream) => {
+      onremotestream: (stream: MediaStream) => {
         console.debug('Got a remote stream!', stream);
 				console.debug(`Remote feed:`, handleInst);
         if (!(login in self.remoteHandles)) {
@@ -423,7 +437,7 @@ export class JanusVideoRoomService {
   }
 
   // Internal
-  onRemoteHandleMessage(handle, message, jsep) {
+  onRemoteHandleMessage(handle: any, message: any, jsep: any) {
     var self = this;
 
     console.debug('Got a remote message', message);
@@ -434,7 +448,7 @@ export class JanusVideoRoomService {
       handle.rfid = message.id;
     }
 
-    if(jsep) {
+    if (jsep) {
       console.debug('Handling SDP as well...');
       console.debug(jsep);
 
@@ -442,7 +456,7 @@ export class JanusVideoRoomService {
       handle.createAnswer({
         jsep: jsep,
         media: { audioSend: false, videoSend: false },	// We want recvonly audio/video
-        success: (jsep) => {
+        success: (jsep: any) => {
           console.debug('Got SDP!');
           console.debug(jsep);
           var body = { 'request': 'start', 'room': self.config.janus.roomId };
@@ -471,23 +485,29 @@ export class JanusVideoRoomService {
     }
   }
 
-  // API for client (channel) forward stream to janus port (sdi).
-  forwardRemoteFeed(login: string, port: number): ng.IPromise<any> {
-    // Returns promise.
+  // Forward stream to janus port
+  forwardRemoteFeed(login: string, videoPort: number, audioPort: number): ng.IPromise<any> {
     return this.getAndUpdateShidurState((shidurState: IShidurState) => {
       var deffered = this.$q.defer();
+
       if (!(login in this.remoteHandles)) {
         this.toastr.error(`Could not find remote handle for ${login}`);
         deffered.reject(`Could not find remote handle for ${login}`);
       }
 
-      var feedForwardInfo = shidurState.janus.portsFeedForwardInfo[port];
-      // CONTINUE HERE ... add error handling for start and stop
-      this.stopSdiForwarding(feedForwardInfo, () => {
-        this.startSdiForwarding(login, port, (forwardInfo: IFeedForwardInfo) => {
-          shidurState.janus.portsFeedForwardInfo[port] = forwardInfo;
-          deffered.resolve(shidurState);
-        });
+      // Stop (if exists) => Start => Update state => Callback.
+      var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
+
+      var startForwardingCallback = (forwardInfo: IFeedForwardInfo) => {
+        shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
+        if (audioPort) {
+          shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
+        }
+        deffered.resolve(shidurState);
+      };
+
+      this.stopSdiForwarding(prevForwardInfo, () => {
+        this.startSdiForwarding(login, videoPort, audioPort, startForwardingCallback);
       });
       return deffered.promise;
     });
@@ -496,7 +516,7 @@ export class JanusVideoRoomService {
   getAndUpdateShidurState(useShidurState: (shidurState: IShidurState) => ng.IPromise<any>): ng.IPromise<any> {
     var deffered = this.$q.defer();
 
-    this.$http.get(this.config.backendUri + '/shidur_state')
+    this.$http.get(this.config.backendUri + '/rest/shidur_state')
       .error((data: string, status: number) => {
         deffered.reject('Fetching shidur state returns error: ' + status + ' ' + data);
       })
@@ -511,9 +531,9 @@ export class JanusVideoRoomService {
         // Do something with shidur state and update it.
         useShidurState(shidurState).then(() => {
           // Post shidur state to backend.
-          this.$http.post(this.config.backendUri + '/shidur_state', shidurState)
+          this.$http.post(this.config.backendUri + '/rest/shidur_state', shidurState)
             .error((data: string, status: number) => {
-              deffered.reject('Updating shidur state returns error: ' + status + ' ' + data);
+              deffered.reject(`Updating shidur state returns error: ${status} ${data}`);
             })
             .success(() => {
               this.$timeout(() => {
@@ -528,24 +548,46 @@ export class JanusVideoRoomService {
     return deffered.promise;
   }
 
-  // Internal
-  startSdiForwarding(login: string, port: number, callback: (forwardInfo: IFeedForwardInfo) => void) {
+  changeRemoteFeedTitle(title: string, port: number) {
+    var titleApiUrl = this.config.janus.titleApiUrl
+      .replace('%title%', escape(title))
+      .replace('%port%', port);
+
+    this.$http.get(titleApiUrl).error((data: any, st: any) => {
+      /* this.toastr.error(`Unable to change remote feed to ${title}`); */
+      console.error('Unable to change remote feed:', data, st);
+    });
+  }
+
+  toggleLocalAudio(enabled: boolean) {
+    var audioTracks = this.localStream.getAudioTracks();
+    audioTracks.forEach((audioTrack: MediaStreamTrack) => {
+      audioTrack.enabled = enabled;
+    });
+  }
+
+  private startSdiForwarding(login: string, videoPort: number, audioPort: number,
+      callback: (forwardInfo: IFeedForwardInfo) => void): void {
     var self = this;
     var handleContainer = this.remoteHandles[login];
     var rmid = handleContainer.handle.rfid;
 
-    var forward = {
-      'request': 'rtp_forward',
-      'publisher_id': rmid,
-      'room': self.config.janus.roomId,
-      'secret': self.config.janus.secret,
-      'host': self.config.janus.serverIp,
-      'video_port': port
+    var forward: any = {
+      request: 'rtp_forward',
+      publisher_id: rmid,
+      room: self.config.janus.roomId,
+      secret: self.config.janus.secret,
+      host: self.config.janus.serverIp,
+      video_port: videoPort
     };
+
+    if (audioPort) {
+      forward.audio_port = audioPort;
+    }
 
     this.localHandle.send({
       message: forward,
-      success: (data) => {
+      success: (data: any) => {
         var forwardInfo = <IFeedForwardInfo> {
           publisherId: data.publisher_id,
           videoStreamId: data.rtp_stream.video_stream_id,
@@ -562,35 +604,19 @@ export class JanusVideoRoomService {
     });
   }
 
-  // Internal
-  stopSdiForwarding(forwardInfo: IFeedForwardInfo, callback: () => void) {
-    var self = this;
-
-    // Forward remote rtp stream
+  private stopSdiForwarding(forwardInfo: IFeedForwardInfo, callback: () => void): void {
     if (forwardInfo) {
       console.log(`  -- We need to stop rtp forward video ID: ${forwardInfo.videoStreamId}`);
       console.log(`  -- We need to stop rtp forward audio ID: ${forwardInfo.audioStreamId}`);
       console.log(`  -- We need to stop rtp forward publisher ID: ${forwardInfo.publisherId}`);
 
-      var stopfwVideo = {
-        'request': 'stop_rtp_forward',
-        'stream_id': forwardInfo.videoStreamId,
-        'publisher_id': forwardInfo.publisherId,
-        'room': self.config.janus.roomId,
-        'secret': self.config.janus.secret
-      };
-
-      this.localHandle.send({
-        message: stopfwVideo,
-        success: (data) => {
-          console.log('Forwarding stopped successfully for', forwardInfo);
+      // Stop video and then audio forwarding
+      this.stopStreamForwarding(forwardInfo, forwardInfo.videoStreamId, () => {
+        this.stopStreamForwarding(forwardInfo, forwardInfo.audioStreamId, () => {
           callback();
-        },
-        error: (resp) => {
-          console.error('Error stopping forwarding', forwardInfo, resp);
-          callback();
-        }
+        });
       });
+
     } else {
       console.log('No forwardInfo, assuming no stream to SDI port');
       callback();
@@ -598,15 +624,33 @@ export class JanusVideoRoomService {
 
   }
 
-  // API for client (channel) to change Title on some janus port (sdi).
-  changeRemoteFeedTitle(title: string, port: number) {
-    var titleApiUrl = this.config.janus.titleApiUrl
-      .replace('%title%', escape(title))
-      .replace('%port%', port);
+  private stopStreamForwarding(forwardInfo: IFeedForwardInfo, streamId: string, callback: () => void): void {
+    var self = this;
 
-    this.$http.get(titleApiUrl).error((data, st) => {
-      /* this.toastr.error(`Unable to change remote feed to ${title}`); */
-      console.error('Unable to change remote feed:', data, st);
+    if (!streamId) {
+      callback();
+      return;
+    }
+
+    var stopFwMessage = {
+      request: 'stop_rtp_forward',
+      stream_id: streamId,
+      publisher_id: forwardInfo.publisherId,
+      room: self.config.janus.roomId,
+      secret: self.config.janus.secret
+    };
+
+    this.localHandle.send({
+      message: stopFwMessage,
+      success: (data: any) => {
+        console.log('Forwarding stopped successfully for stream ID', streamId, forwardInfo);
+        callback();
+      },
+      error: (resp: any) => {
+        console.error('Error stopping forwarding for stream ID', streamId, forwardInfo, resp);
+        callback();
+      }
     });
   }
+
 }

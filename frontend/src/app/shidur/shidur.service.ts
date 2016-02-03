@@ -5,6 +5,7 @@ export interface IUser {
   role: string;
   joined?: moment.Moment;
   stream?: MediaStream;
+  audioEnabled?: boolean;
 }
 
 export interface IUsers {
@@ -26,7 +27,7 @@ export class ShidurService {
   public getUsers() {
     var deferred = this.$q.defer();
 
-    this.$http.get(this.config.backendUri + '/users').success((users) => {
+    this.$http.get(this.config.backendUri + '/rest/users').success((users) => {
       deferred.resolve(users);
     });
 
