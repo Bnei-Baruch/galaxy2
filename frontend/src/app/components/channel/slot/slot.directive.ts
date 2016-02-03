@@ -1,5 +1,3 @@
-import { SlotController } from './slot.controller';
-
 /** @ngInject */
 export function slotWidget(): ng.IDirective {
 
@@ -14,10 +12,7 @@ export function slotWidget(): ng.IDirective {
       toggleAudio: '&',
       hotkey: '='
     },
-    templateUrl: 'app/components/channel/slot/slot.html',
-    controller: SlotController,
-    controllerAs: 'vm',
-    bindToController: true
+    templateUrl: 'app/components/channel/slot/slot.html'
   };
 
 }
