@@ -30,7 +30,8 @@ module frontend {
     'ui.router',
     'ngMaterial',
     'toastr',
-    'ng-token-auth'
+    'ng-token-auth',
+    'tandibar/ng-rollbar'
   ];
 
   angular.module('frontend', dependencies)
