@@ -9,9 +9,9 @@ export class UserController {
   janus: JanusVideoRoomService;
 
   /* @ngInject */
-  constructor (janus: JanusVideoRoomService, toastr: any, authService: AuthService, pubSub: PubSubService) {
+  constructor (videoRoom: JanusVideoRoomService, toastr: any, authService: AuthService, pubSub: PubSubService) {
     this.toastr = toastr;
-    this.janus = janus;
+    this.janus = videoRoom;
 
     pubSub.client.subscribe('/users/' + authService.user.login, (message: any) => {
       this.onMessage(message);
