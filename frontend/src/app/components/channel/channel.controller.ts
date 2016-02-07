@@ -4,6 +4,7 @@ import { IUser } from '../../shidur/shidur.service';
 /** @ngInject */
 export class BaseChannelController {
   name: string;
+  hotkey: string;
   users: IUser[];
 
   usersByLogin: { [login: string]: IUser } = {};
@@ -18,12 +19,16 @@ export class BaseChannelController {
     preview: null
   };
 
+  $timeout: ng.ITimeoutService;
+  $document: any;
   videoRoom: JanusVideoRoomService;
   toastr: any;
   config: any;
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
+    this.$document = $injector.get('$document');
+    this.$timeout = $injector.get('$timeout');
     this.videoRoom = $injector.get('videoRoom');
     this.toastr = $injector.get('toastr');
     this.config = $injector.get('config');
@@ -65,6 +70,10 @@ export class BaseChannelController {
     console.log('User left', login);
   }
 
+  trigger() {
+    console.error('trigger() not implemented!');
+  }
+
   mapUsersByLogin() {
     if (typeof this.users === 'undefined') {
       this.users = [];
@@ -74,6 +83,18 @@ export class BaseChannelController {
     this.users.forEach((user: IUser) => {
       this.usersByLogin[user.login] = user;
     });
+  }
+
+  bindHotkey() {
+    if (this.hotkey) {
+      this.$document.bind('keydown', (e: KeyboardEvent) => {
+        if (e.keyCode === this.hotkey.charCodeAt(0)) {
+          this.$timeout(() => {
+            this.trigger();
+          });
+        }
+      });
+    }
   }
 
   getLoginsList() {

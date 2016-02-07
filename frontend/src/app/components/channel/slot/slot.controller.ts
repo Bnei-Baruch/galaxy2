@@ -1,38 +1,35 @@
-import { IUser } from '../../../shidur/shidur.service';
-
 /** @ngInject */
 export class SlotController {
-  $timeout: ng.ITimeoutService;
-  $document: any;
 
-  kind: string;
-  showAudioToggle: boolean;
-  user: IUser;
-  isReady: () => boolean;
-  trigger: () => void;
-  toggleAudio: (user: IUser) => void;
-  hotkey: string;
-
-  constructor($scope: any,
-      $timeout: ng.ITimeoutService,
-      $document: any,
-      $mdDialog: angular.material.IDialogService) {
-    this.$timeout = $timeout;
-    this.$document = $document;
-
-    this.bindHotkey();
+  constructor(private $mdDialog: angular.material.IDialogService) {
   }
 
-  bindHotkey() {
-    if (this.hotkey) {
-      this.$document.bind('keydown', (e: KeyboardEvent) => {
-        if (e.keyCode === this.hotkey.charCodeAt(0)) {
-          this.$timeout(() => {
-            this.trigger();
+  onLink(scope: ng.IScope, element: ng.IAugmentedJQuery) {
+    var sourceMedia = <HTMLMediaElement>element.find('video').get(0);
+
+    var cloneSourceVideo = (scope: ng.IScope, dialogEl: ng.IAugmentedJQuery) => {
+      var targetMedia = <HTMLMediaElement>dialogEl.find('video').get(0);
+      targetMedia.src = sourceMedia.src;
+    };
+
+    var stopTargetVideo = (scope: ng.IScope, dialogEl: ng.IAugmentedJQuery) => {
+      var targetMedia = <HTMLMediaElement>dialogEl.find('video').get(0);
+      targetMedia.src = null;
+    };
+
+    element.bind('contextmenu', (e: any) => {
+      scope.$apply(() => {
+        e.preventDefault();
+
+        if (!sourceMedia.paused && !sourceMedia.ended) {
+          this.$mdDialog.show(<any>{
+            clickOutsideToClose: true,
+            templateUrl: 'app/components/channel/slot/slot.zoomIn.html',
+            onShowing: cloneSourceVideo,
+            onRemoving: stopTargetVideo
           });
         }
       });
-    }
+    });
   }
-
 }

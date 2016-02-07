@@ -33,7 +33,7 @@ export class ControlChannelController extends SingleUserChannelController {
   putUserToPreview(user: IUser) {
     // Mute user if not on program or preview
     if (this.previewUser && this.programUser !== this.previewUser) {
-      this.muteUser(this.previewUser);
+      this.muteRemoteUser(this.previewUser);
     }
 
     super.putUserToPreview(user);
@@ -43,7 +43,7 @@ export class ControlChannelController extends SingleUserChannelController {
     if (this.previewUser) {
 
       if (this.programUser) {
-        this.muteUser(this.programUser);
+        this.muteRemoteUser(this.programUser);
       }
 
       this.putUserToProgram(this.previewUser);
@@ -56,7 +56,7 @@ export class ControlChannelController extends SingleUserChannelController {
     }
 
     if (user.joined && user.audioEnabled) {
-      this.muteUser(user);
+      this.muteRemoteUser(user);
     }
 
     // Remove user from preview if present
@@ -65,11 +65,9 @@ export class ControlChannelController extends SingleUserChannelController {
     }
 
     // Splice users
-    for (var index in this.users) {
-      if (this.users[index] === user) {
-        this.users.splice(index, 1);
-        break;
-      }
+    var userIndex = this.users.indexOf(user);
+    if (userIndex !== -1) {
+      this.users.splice(userIndex, 1);
     }
 
     this.onUsersListChanged();
@@ -100,7 +98,7 @@ export class ControlChannelController extends SingleUserChannelController {
     return allUsers;
   }
 
-  private muteUser(user: IUser): void {
+  private muteRemoteUser(user: IUser): void {
     if (user.audioEnabled) {
       this.toggleAudio(user);
     }
