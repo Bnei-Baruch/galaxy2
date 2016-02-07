@@ -15,10 +15,9 @@ import { LoginController } from '../app/components/auth/login.controller';
 import { AuthService } from '../app/components/auth/auth.service';
 import { PubSubService } from '../app/components/pubSub/pubSub.service';
 import { slotWidget } from '../app/components/channel/slot/slot.directive';
-import { largeChannelWidget } from '../app/components/channel/large/large.directive';
-import { smallChannelWidget } from '../app/components/channel/small/small.directive';
-import { controlChannelWidget } from '../app/components/channel/control/control.directive';
-import { ChannelService } from '../app/components/channel/channel.service';
+import { LargeChannelWidget } from '../app/components/channel/large/large.directive';
+import { SmallChannelWidget } from '../app/components/channel/small/small.directive';
+import { ControlChannelWidget } from '../app/components/channel/control/control.directive';
 
 module frontend {
   'use strict';
@@ -46,7 +45,6 @@ module frontend {
     .service('videoRoom', JanusVideoRoomService)
     .service('streaming', JanusStreamingService)
     .service('shidur', ShidurService)
-    .service('channel', ChannelService)
     .service('authService', AuthService)
     .service('pubSub', PubSubService)
     .controller('ShidurController', ShidurController)
@@ -55,8 +53,8 @@ module frontend {
     .controller('LoginController', LoginController)
     .directive('galaxyNavbar', galaxyNavbar)
     .directive('slotWidget', slotWidget)
-    .directive('largeChannelWidget', largeChannelWidget)
-    .directive('smallChannelWidget', smallChannelWidget)
-    .directive('controlChannelWidget', controlChannelWidget)
+    .directive('largeChannelWidget', () => new LargeChannelWidget())
+    .directive('smallChannelWidget', () => new SmallChannelWidget())
+    .directive('controlChannelWidget', () => new ControlChannelWidget())
     ;
 }

@@ -25,29 +25,31 @@ export class JanusStreamingService {
     var deffered = this.$q.defer();
     var streaming;
 
-    this.janus.session.attach({
-      plugin: 'janus.plugin.streaming',
-      success: (pluginHandle: any) => {
-        streaming = pluginHandle;
-        this.pluginHandles.push(streaming);
-        var body = { request: 'watch', id: streamId };
-        streaming.send({'message': body});
-      },
-      error: (error: any) => {
-        var errorMessage = 'Error attaching plugin: ' + error;
-        this.toastr.error(errorMessage);
-        deffered.reject(errorMessage);
-      },
-      onmessage: (msg: any, jsep: any) => {
-        this.onStreamingMessage(streaming, msg, jsep);
-      },
-      onremotestream: (stream: MediaStream) => {
-        console.debug('Got a remote stream!', stream);
-        deffered.resolve(stream);
-      },
-      oncleanup: () => {
-        console.debug('Got a cleanup notification');
-      }
+    this.janus.waitForInitialization().then(() => {
+      this.janus.session.attach({
+        plugin: 'janus.plugin.streaming',
+        success: (pluginHandle: any) => {
+          streaming = pluginHandle;
+          this.pluginHandles.push(streaming);
+          var body = { request: 'watch', id: streamId };
+          streaming.send({'message': body});
+        },
+        error: (error: any) => {
+          var errorMessage = 'Error attaching plugin: ' + error;
+          this.toastr.error(errorMessage);
+          deffered.reject(errorMessage);
+        },
+        onmessage: (msg: any, jsep: any) => {
+          this.onStreamingMessage(streaming, msg, jsep);
+        },
+        onremotestream: (stream: MediaStream) => {
+          console.debug('Got a remote stream!', stream);
+          deffered.resolve(stream);
+        },
+        oncleanup: () => {
+          console.debug('Got a cleanup notification');
+        }
+      });
     });
 
     return deffered.promise;

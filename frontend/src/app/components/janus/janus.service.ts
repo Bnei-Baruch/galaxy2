@@ -9,6 +9,8 @@ export class JanusService {
   toastr: any;
   session: any;
 
+  initialized: boolean = false;
+
   constructor($q: ng.IQService, $rootScope: ng.IRootScopeService, $timeout: ng.ITimeoutService, toastr: any, config: any) {
     this.$q = $q;
     this.$rootScope = $rootScope;
@@ -16,10 +18,15 @@ export class JanusService {
     this.config = config;
     this.toastr = toastr;
 
+
     if (!Janus.isWebrtcSupported()) {
       toastr.error('No WebRTC support... ');
       return;
     }
+
+    $rootScope.$on('janus.initialized', () => {
+      this.initialized = true;
+    });
 
     Janus.init({
       debug: true,
@@ -28,6 +35,20 @@ export class JanusService {
       }
     });
 
+  }
+
+  waitForInitialization() {
+    var deffered = this.$q.defer();
+
+    if (this.initialized) {
+      deffered.resolve();
+    } else {
+      this.$rootScope.$on('janus.initialized', () => {
+        deffered.resolve();
+      });
+    }
+
+    return deffered.promise;
   }
 
   // Called once at constructor

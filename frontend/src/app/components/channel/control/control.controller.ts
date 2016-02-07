@@ -1,14 +1,22 @@
-import { SingleUserChannelController } from '../channel.single.controller';
 import { IUser } from '../../../shidur/shidur.service';
+import { PubSubService } from '../../pubSub/pubSub.service';
+import { SingleUserChannelController } from '../channel.singleUser.controller';
 
 /** @ngInject */
 export class ControlChannelController extends SingleUserChannelController {
+  pubSub: PubSubService;
+
   users: IUser[] = [];
   usersBreakdown: { [channel: string]: IUser[]; };
   allowRemoveUsers: boolean = true;
 
   selectedUser: IUser;
   searchText: string;
+
+  constructor($injector: any) {
+    super($injector);
+    this.pubSub = $injector.get('pubSub');
+  }
 
   pickUser(user: IUser): void {
     if (user !== undefined) {

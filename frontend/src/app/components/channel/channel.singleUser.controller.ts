@@ -1,7 +1,13 @@
 import { BaseChannelController } from './channel.controller';
+import { IUser } from '../../shidur/shidur.service';
+
+declare var attachMediaStream: any;
 
 /** @ngInject */
 export class SingleUserChannelController extends BaseChannelController {
+  programUser: IUser = null;
+  previewUser: IUser = null;
+
   userJoined(login: string) {
     super.userJoined(login);
 
@@ -36,12 +42,10 @@ export class SingleUserChannelController extends BaseChannelController {
     var oldProgramUser = this.programUser;
     this.programUser = user;
 
-    var programElement = this.getMediaElement('.program');
-
     if (user === null) {
-      programElement.src = null;
+      this.slotElement.program.src = null;
     } else {
-      attachMediaStream(programElement, this.programUser.stream);
+      attachMediaStream(this.slotElement.program, this.programUser.stream);
 
       this.forwardProgramToSDI();
 
@@ -61,14 +65,12 @@ export class SingleUserChannelController extends BaseChannelController {
     var oldPreviewUser = this.previewUser;
     this.previewUser = user;
 
-    var previewElement = this.getMediaElement('.preview');
-
     if (user === null) {
-      previewElement.src = null;
+      this.slotElement.preview.src = null;
     } else {
       this.videoRoom.subscribeForStream(user.login, (stream: MediaStream) => {
         user.stream = stream;
-        attachMediaStream(previewElement, stream);
+        attachMediaStream(this.slotElement.preview, stream);
         console.debug('Subscribed for', user.login);
       });
 

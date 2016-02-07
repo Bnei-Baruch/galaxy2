@@ -1,11 +1,12 @@
 import { IUser } from '../../../shidur/shidur.service';
+import { JanusStreamingService } from '../../janus/janusStreaming.service';
 import { BaseChannelController } from '../channel.controller';
 
 declare var attachMediaStream: any;
 
 /** @ngInject */
 export class SmallChannelController extends BaseChannelController {
-  firstJoined: boolean = false;
+  streaming: JanusStreamingService;
 
   userSetIndex: { program: number, preview: number } = {
     program: null,
@@ -15,16 +16,21 @@ export class SmallChannelController extends BaseChannelController {
   userSetSize: number = 4;
   userSets: IUser[][];
 
+  constructor($injector: any) {
+    super($injector);
+    this.streaming = $injector.get('streaming');
+  }
+
+  onLink(scope: ng.IScope, element: ng.IAugmentedJQuery) {
+    super.onLink(scope, element);
+
+    var streamIds = this.config.janus.sdiPorts[this.name].streamIds;
+    this.attachStreamingHandle(this.slotElement.program, streamIds.program);
+    this.attachStreamingHandle(this.slotElement.preview, streamIds.preview);
+  }
+
   userJoined(login: string) {
     super.userJoined(login);
-
-    if (!this.firstJoined) {
-      this.firstJoined = true;
-
-      var streamIds = this.config.janus.sdiPorts[this.name].streamIds;
-      this.attachStreamingHandle('.program', streamIds.program);
-      this.attachStreamingHandle('.preview', streamIds.preview);
-    }
 
     // Re-forward preview user set to SDI in case of change
     this.constructUserSets();
@@ -150,9 +156,7 @@ export class SmallChannelController extends BaseChannelController {
     });
   }
 
-  private attachStreamingHandle(cssSelector: string, streamId: string) {
-    var slotElement = this.getMediaElement(cssSelector);
-
+  private attachStreamingHandle(slotElement: HTMLMediaElement, streamId: string) {
     this.streaming
       .attachStreamingHandle(streamId)
       .then((stream: MediaStream) => {

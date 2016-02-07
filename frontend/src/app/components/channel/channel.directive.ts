@@ -1,22 +1,18 @@
-import { ChannelController, IChannelScope } from './channel.controller';
-
 /** @ngInject */
-export function channelWidget(): ng.IDirective {
-
-  return {
-    restrict: 'E',
-    scope: {
-      name: '@',
-      hotkey: '@',
-      users: '='
-    },
-    link: ($scope: IChannelScope, el, attrs, ctrl) => {
-      $scope.selfElement = el;
-    },
-    templateUrl: 'app/components/channel/channel.html',
-    controller: ChannelController,
-    controllerAs: 'vm',
-    bindToController: true
+export class ChannelWidget implements ng.IDirective {
+  restrict = 'E';
+  templateUrl = 'app/components/channel/channel.html';
+  controllerAs = 'vm';
+  bindToController = true;
+  scope = {
+    name: '@',
+    hotkey: '@',
+    users: '=',
+    usersBreakdown: '='
   };
+
+  link($scope?: ng.IScope, el?: ng.IAugmentedJQuery, attrs?: ng.IAttributes, ctrl?: any) {
+    ctrl.onLink($scope, el, attrs);
+  }
 
 }

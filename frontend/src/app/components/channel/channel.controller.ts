@@ -1,26 +1,8 @@
 import { JanusVideoRoomService } from '../janus/janusVideoRoom.service';
-import { JanusStreamingService } from '../janus/janusStreaming.service';
-import { PubSubService } from '../pubSub/pubSub.service';
 import { IUser } from '../../shidur/shidur.service';
-
-declare var attachMediaStream: any;
-
-export interface IChannelScope extends ng.IScope {
-  users: IUser[];
-  name: string;
-  selfElement: ng.IAugmentedJQuery;
-}
 
 /** @ngInject */
 export class BaseChannelController {
-  $scope: IChannelScope;
-  $q: ng.IQService;
-  videoRoom: JanusVideoRoomService;
-  streaming: JanusStreamingService;
-  pubSub: PubSubService;
-  toastr: any;
-  config: any;
-
   name: string;
   users: IUser[];
 
@@ -31,25 +13,20 @@ export class BaseChannelController {
     preview: false
   };
 
-  programUser: IUser = null;
-  previewUser: IUser = null;
+  slotElement: { program: HTMLMediaElement, preview: HTMLMediaElement } = {
+    program: null,
+    preview: null
+  };
 
-  constructor($scope: IChannelScope,
-      $q: ng.IQService,
-      videoRoom: JanusVideoRoomService,
-      streaming: JanusStreamingService,
-      pubSub: PubSubService,
-      toastr: any, config: any) {
+  videoRoom: JanusVideoRoomService;
+  toastr: any;
+  config: any;
 
-    this.$scope = $scope;
-    this.$q = $q;
-    this.videoRoom = videoRoom;
-    this.streaming = streaming;
-    this.toastr = toastr;
-    this.config = config;
-
-    // To use by children
-    this.pubSub = pubSub;
+  // Using $injector manually to allow easier constructor overloads
+  constructor($injector: any) {
+    this.videoRoom = $injector.get('videoRoom');
+    this.toastr = $injector.get('toastr');
+    this.config = $injector.get('config');
 
     // Mapping users by login for conveniency
     this.mapUsersByLogin();
@@ -64,6 +41,13 @@ export class BaseChannelController {
         this.userLeft(login);
       }
     });
+  }
+
+  onLink(scope: ng.IScope, element: ng.IAugmentedJQuery) {
+    // Can't use classes to find elements because ng-class is not ready yet
+    var mediaElements = element.find('video');
+    this.slotElement.program = <HTMLMediaElement>mediaElements.get(0);
+    this.slotElement.preview = <HTMLMediaElement>mediaElements.get(1);
   }
 
   userJoined(login: string) {
@@ -110,10 +94,5 @@ export class BaseChannelController {
     });
 
     return onlineUsers;
-  }
-
-  getMediaElement(cssSelector: string) {
-    var element = <HTMLMediaElement>this.$scope.selfElement.find(cssSelector).get(0);
-    return element;
   }
 }
