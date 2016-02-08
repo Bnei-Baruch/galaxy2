@@ -13,11 +13,15 @@ export interface IChannelScope extends ng.IScope {
 /** @ngInject */
 export class BaseChannelController {
   $scope: IChannelScope;
+  $timeout: ng.ITimeoutService;
+  $document: any;
   janus: JanusVideoRoomService;
   pubSub: PubSubService;
+  toastr: any;
   config: any;
 
   name: string;
+  hotkey: string;
   users: IUser[];
 
   usersByLogin: { [login: string]: IUser } = {};
@@ -27,9 +31,17 @@ export class BaseChannelController {
   programUser: IUser = null;
   previewUser: IUser = null;
 
-  constructor($scope: IChannelScope, janus: JanusVideoRoomService, pubSub: PubSubService, config: any) {
+  constructor($scope: IChannelScope,
+      $timeout: ng.ITimeoutService,
+      $document: any,
+      janus: JanusVideoRoomService,
+      pubSub: PubSubService,
+      toastr: any, config: any) {
     this.$scope = $scope;
+    this.$timeout = $timeout;
+    this.$document = $document;
     this.janus = janus;
+    this.toastr = toastr;
     this.config = config;
 
     // To use by children
@@ -37,6 +49,8 @@ export class BaseChannelController {
 
     // Mapping users by login for conveniency
     this.mapUsersByLogin();
+
+    this.bindHotkey();
 
     this.janus.registerChannel({
       name: this.name,
@@ -77,6 +91,10 @@ export class BaseChannelController {
       var previewUser = this.getNextUser(user);
       this.putUserToPreview(previewUser);
     }
+  }
+
+  trigger() {
+    console.error('trigger() not implemented!');
   }
 
   mapUsersByLogin() {
@@ -182,6 +200,18 @@ export class BaseChannelController {
 
     var nextUser = onlineUsers[(userIndex + 1) % onlineUsers.length];
     return nextUser;
+  }
+
+  bindHotkey() {
+    if (this.hotkey) {
+      this.$document.bind('keydown', (e: KeyboardEvent) => {
+        if (e.keyCode === this.hotkey.charCodeAt(0)) {
+          this.$timeout(() => {
+            this.trigger();
+          });
+        }
+      });
+    }
   }
 
   getLoginsList() {

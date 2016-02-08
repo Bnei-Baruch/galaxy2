@@ -4,8 +4,6 @@ var path = require('path');
 var gulp = require('gulp');
 var conf = require('./common');
 
-var protractorConf = require('../protractor.conf.js');
-
 var browserSync = require('browser-sync');
 var browserSyncSpa = require('browser-sync-spa');
 
@@ -13,7 +11,7 @@ var util = require('util');
 
 var proxyMiddleware = require('http-proxy-middleware');
 
-function browserSyncInit(baseDir, browser, port) {
+function browserSyncInit(baseDir, browser) {
   var routes = null;
   if(baseDir === conf.paths.src || (util.isArray(baseDir) && baseDir.indexOf(conf.paths.src) !== -1)) {
     routes = {
@@ -42,8 +40,8 @@ function browserSyncInit(baseDir, browser, port) {
     browser: browser === undefined ? 'default' : browser
   };
 
-  if (port) {
-    options.port = port;
+  if (conf.argv.port) {
+    options.port = conf.argv.port;
   }
 
   browserSync.instance = browserSync.init(options);
@@ -62,7 +60,7 @@ gulp.task('serve:dist', ['config', 'build'], function () {
 });
 
 gulp.task('serve:e2e', ['config:e2e', 'inject'], function () {
-  browserSyncInit([conf.paths.tmp + '/serve', conf.paths.src], [], protractorConf.config.port);
+  browserSyncInit([conf.paths.tmp + '/serve', conf.paths.src], []);
 });
 
 gulp.task('serve:e2e-dist', ['config:e2e', 'build'], function () {
