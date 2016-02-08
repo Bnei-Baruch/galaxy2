@@ -119,7 +119,7 @@ export class SmallChannelController extends BaseChannelController {
 
     var videoPorts = this.config.janus.sdiPorts[this.name].video[slotName];
 
-    var logins: string[] = new Array(this.userSetSize);
+    var logins: string[] = Array.apply(null, Array(this.userSetSize));
 
     userSet.forEach((user: IUser, userIndex: number) => {
       logins[userIndex] = user.login;
@@ -131,7 +131,15 @@ export class SmallChannelController extends BaseChannelController {
 
       // Forwarding succeeded, changing titles
       logins.forEach((login: string, loginIndex: number) => {
-        this.videoRoom.changeRemoteFeedTitle(login || '', videoPorts[loginIndex]);
+        var title: string;
+
+        if (this.usersByLogin[login]) {
+          title = this.usersByLogin[login].title;
+        } else {
+          title = '';
+        }
+
+        this.videoRoom.changeRemoteFeedTitle(title, videoPorts[loginIndex]);
       });
     }, () => {
       var error = 'Failed forwarding feed to SDI';

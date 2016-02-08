@@ -283,6 +283,8 @@ export class JanusVideoRoomService {
     this.stopSdiForwarding(prevForwardInfo, () => {
       if (login) {
         this.startSdiForwarding(login, videoPort, audioPort, startForwardingCallback);
+      } else {
+        deffered.resolve();
       }
     });
 

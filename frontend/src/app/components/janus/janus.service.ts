@@ -18,7 +18,6 @@ export class JanusService {
     this.config = config;
     this.toastr = toastr;
 
-
     if (!Janus.isWebrtcSupported()) {
       toastr.error('No WebRTC support... ');
       return;
