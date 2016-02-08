@@ -2,3 +2,4 @@
 *.swo
 *.swn
 *~
+backend/Gemfile.lock
