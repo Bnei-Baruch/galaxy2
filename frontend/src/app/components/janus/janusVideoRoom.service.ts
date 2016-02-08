@@ -65,13 +65,8 @@ interface IFeedForwardInfo {
 
 /* @ngInject */
 export class JanusVideoRoomService {
-  $q: ng.IQService;
-  $timeout: ng.ITimeoutService;
-  $http: ng.IHttpService;
-  config: any;
-  toastr: any;
+  localHandleAttached: ng.IPromise<any>;
 
-  janus: any;
   remoteHandles: { (login: string): IRemoteHandle } = <any>{};
   localHandle: any;
   channels: { (key: string): IChannel } = <any>{};
@@ -87,22 +82,18 @@ export class JanusVideoRoomService {
   localStream: MediaStream;
   localStreamReadyCallback: (stream: MediaStream) => void;
 
-  constructor($q: ng.IQService,
-      $rootScope: ng.IRootScopeService,
-      $timeout: ng.ITimeoutService,
-      $http: ng.IHttpService,
-      janus: JanusService,
-      toastr: any, config: any) {
-    this.$q = $q;
-    this.$timeout = $timeout;
-    this.$http = $http;
-    this.config = config;
-    this.toastr = toastr;
-    this.janus = janus;
+  constructor(private $q: ng.IQService,
+      private $rootScope: ng.IRootScopeService,
+      private $timeout: ng.ITimeoutService,
+      private $http: ng.IHttpService,
+      private janus: JanusService,
+      private toastr: any,
+      private config: any) {
+
     this.joined = false;
 
-    $rootScope.$on('janus.initialized', () => {
-      this.attachLocalHandle();
+    janus.initialized.then(() => {
+      this.localHandleAttached = this.attachLocalHandle();
     });
 
     $rootScope.$on('janus.destroy', () => {
@@ -115,12 +106,15 @@ export class JanusVideoRoomService {
     this.localUserLogin = login;
     this.localStreamReadyCallback = streamReadyCallback;
 
-    if (this.localStream) {
-      streamReadyCallback(this.localStream);
-    } else if (this.localHandle) {
-      console.debug('Local handle present for', login, ', publishing local feed');
-      this.publishLocalFeed();
-    }
+    this.localHandleAttached.then(() => {
+      if (this.localStream) {
+        streamReadyCallback(this.localStream);
+      } else {
+        console.debug('Local handle present for', login, ', publishing local feed');
+        this.publishLocalFeed();
+      }
+
+    });
   }
 
   // API method for javascript client to register channel with specific users so that each joined
@@ -374,32 +368,35 @@ export class JanusVideoRoomService {
   /* Local Handle Methods */
 
   // Attaches local handle to Janus service.
-  private attachLocalHandle(): void {
-    var self = this;
+  private attachLocalHandle(): ng.IPromise<any> {
+    var deffered = this.$q.defer();
 
     this.janus.session.attach({
       plugin: 'janus.plugin.videoroom',
       success: (pluginHandle: any) => {
-        self.localHandle = pluginHandle;
+        this.localHandle = pluginHandle;
 
         // Try joining
         var register = {
           request: 'join',
-          room: self.config.janus.roomId,
+          room: this.config.janus.roomId,
           ptype: 'publisher',
-          display: self.localUserLogin
+          display: this.localUserLogin
         };
-        self.localHandle.send({'message': register});
+        this.localHandle.send({'message': register});
+
+        deffered.resolve();
       },
       error: (error: any) => {
-        self.toastr.error('Error attaching plugin: ' + error);
+        this.toastr.error('Error attaching plugin: ' + error);
+        deffered.reject();
       },
       onmessage: (msg: any, jsep: any) => {
-        self.onLocalHandleMessage(msg, jsep);
+        this.onLocalHandleMessage(msg, jsep);
         if (jsep) {
           console.debug('Handling SDP as well...');
           console.debug(jsep);
-          self.localHandle.handleRemoteJsep({jsep: jsep});
+          this.localHandle.handleRemoteJsep({jsep: jsep});
         }
       },
       consentDialog: (on: boolean) => {
@@ -422,6 +419,8 @@ export class JanusVideoRoomService {
         console.debug('Got a cleanup notification');
       }
     });
+
+    return deffered.promise;
   }
 
   private onLocalHandleMessage(message: any, jsep: any): void {

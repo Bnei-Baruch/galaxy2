@@ -25,7 +25,7 @@ export class JanusStreamingService {
     var deffered = this.$q.defer();
     var streaming;
 
-    this.janus.waitForInitialization().then(() => {
+    this.janus.initialized.then(() => {
       this.janus.session.attach({
         plugin: 'janus.plugin.streaming',
         success: (pluginHandle: any) => {
