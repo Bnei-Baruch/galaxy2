@@ -19,13 +19,15 @@ export class FakeUserController {
     // this.fakeUsers = ['afula', 'arad', 'guadalajara', 'dnepropetrovsk', 'krasnodar', 'krasnoyarsk'];
 
     $timeout(() => {
-      this.fakeUsers.forEach((login: string) => {
+      this.fakeUsers.forEach((login: string, userIndex: number) => {
         var mediaElement = <HTMLMediaElement>document.querySelector(`video[data-login="${login}"]`);
-        var videoRoom = new JanusVideoRoomService($q, $rootScope, $timeout, $http, janus, toastr, config);
-        videoRoom.registerLocalUser(login, (stream: MediaStream) => {
-          console.debug('Attaching media stream for the fake user', login);
-          attachMediaStream(mediaElement, stream);
-        });
+        $timeout(() => {
+          var videoRoom = new JanusVideoRoomService($q, $rootScope, $timeout, $http, janus, toastr, config);
+          videoRoom.registerLocalUser(login, (stream: MediaStream) => {
+            console.debug('Attaching media stream for the fake user', login);
+            attachMediaStream(mediaElement, stream);
+          });
+        }, userIndex * 500);
       });
     });
   }
