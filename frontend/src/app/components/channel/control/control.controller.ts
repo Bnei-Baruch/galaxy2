@@ -4,6 +4,7 @@ import { SingleUserChannelController } from '../channel.singleUser.controller';
 
 /** @ngInject */
 export class ControlChannelController extends SingleUserChannelController {
+  $rootScope: ng.IScope;
   pubSub: PubSubService;
 
   users: IUser[] = [];
@@ -15,6 +16,7 @@ export class ControlChannelController extends SingleUserChannelController {
 
   constructor($injector: any) {
     super($injector);
+    this.$rootScope = $injector.get('$rootScope');
     this.pubSub = $injector.get('pubSub');
   }
 
@@ -40,7 +42,7 @@ export class ControlChannelController extends SingleUserChannelController {
   }
 
   trigger(): void {
-    if (this.previewUser) {
+    if (this.previewUser && !this.previewUser.disabled) {
 
       if (this.programUser) {
         this.muteRemoteUser(this.programUser);
@@ -53,6 +55,7 @@ export class ControlChannelController extends SingleUserChannelController {
   removeUser(user: IUser): void {
     if (user.disabled) {
       user.disabled = false;
+      this.$rootScope.$broadcast('channel.userEnabled', user.login);
     }
 
     if (user.joined && user.audioEnabled) {

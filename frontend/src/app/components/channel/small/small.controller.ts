@@ -27,17 +27,17 @@ export class SmallChannelController extends BaseChannelController {
     var streamIds = this.config.janus.sdiPorts[this.name].streamIds;
     this.attachStreamingHandle(this.slotElement.program, streamIds.program);
     this.attachStreamingHandle(this.slotElement.preview, streamIds.preview);
+
+    scope.$on('channel.userEnabled', (e: ng.IAngularEvent, login: string) => {
+      if (this.usersByLogin[login]) {
+        this.acceptUser(login);
+      }
+    });
   }
 
   userJoined(login: string) {
     super.userJoined(login);
-
-    // Re-forward preview user set to SDI in case of change
-    this.constructUserSets();
-
-    if (this.userSetIndex.preview === this.userSets.length - 1) {
-      this.putUserSetToPreview(this.userSetIndex.preview);
-    }
+    this.acceptUser(login);
   }
 
   userLeft(login: string) {
@@ -50,7 +50,7 @@ export class SmallChannelController extends BaseChannelController {
     this.reforwardSlotOnUserRemoval(changedUserSetIndex, true);
   }
 
-  next() {
+  trigger() {
     if (this.isReadyToSwitch()) {
       this.putUserSetToProgram(this.userSetIndex.preview);
       var nextUserSetIndex = (this.userSetIndex.preview + 1) % this.userSets.length;
@@ -66,12 +66,27 @@ export class SmallChannelController extends BaseChannelController {
     this.putUserSetToSlot(index, false);
   }
 
+  disableUser(user: IUser) {
+    super.disableUser(user);
+
+    this.constructUserSets();
+  }
+
   isReadyToSwitch() {
     if (this.userSetIndex.preview === null || !this.isForwarded.program) {
       return false;
     }
 
     return true;
+  }
+
+  private acceptUser(login: string) {
+    // Re-forward preview user set to SDI in case of change
+    this.constructUserSets();
+
+    if (this.userSetIndex.preview === this.userSets.length - 1) {
+      this.putUserSetToPreview(this.userSetIndex.preview);
+    }
   }
 
   private reforwardSlotOnUserRemoval(changedUserSetIndex: number, program: boolean): void {

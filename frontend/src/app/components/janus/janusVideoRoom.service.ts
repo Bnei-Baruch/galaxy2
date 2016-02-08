@@ -118,6 +118,7 @@ export class JanusVideoRoomService {
     if (this.localStream) {
       streamReadyCallback(this.localStream);
     } else if (this.localHandle) {
+      console.debug('Local handle present for', login, ', publishing local feed');
       this.publishLocalFeed();
     }
   }
@@ -280,7 +281,7 @@ export class JanusVideoRoomService {
     };
 
     this.stopSdiForwarding(prevForwardInfo, () => {
-      if (login !== undefined) {
+      if (login) {
         this.startSdiForwarding(login, videoPort, audioPort, startForwardingCallback);
       }
     });
@@ -577,6 +578,9 @@ export class JanusVideoRoomService {
 
     this.localHandle.send({
       message: forward,
+      error: (error: any) => {
+        console.error(error);
+      },
       success: (data: any) => {
         var forwardInfo = <IFeedForwardInfo> {
           publisherId: data.publisher_id,

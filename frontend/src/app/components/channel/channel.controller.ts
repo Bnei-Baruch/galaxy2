@@ -74,6 +74,10 @@ export class BaseChannelController {
     console.error('trigger() not implemented!');
   }
 
+  disableUser(user: IUser) {
+    user.disabled = true;
+  }
+
   mapUsersByLogin() {
     if (typeof this.users === 'undefined') {
       this.users = [];

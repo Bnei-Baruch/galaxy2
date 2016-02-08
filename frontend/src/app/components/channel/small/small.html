@@ -5,8 +5,7 @@
   <slot-widget kind="preview"
     users="vm.userSets[vm.previewUserSetIndex]"
     is-ready="vm.isReadyToSwitch()"
-    trigger="vm.next()"
-    hotkey="vm.hotkey"></slot-widget>
+    trigger="vm.trigger()"></slot-widget>
 
   <ng-include ng-init="vm = vm" src="'app/components/channel/small/small.users.html'"></ng-include>
 </section>

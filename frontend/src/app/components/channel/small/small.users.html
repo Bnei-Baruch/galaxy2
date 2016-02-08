@@ -1,5 +1,7 @@
 <md-list class="users">
 
+  <!-- TODO: move styles to channel.scss -->
+
   <!-- Online users -->
   <md-list-item ng-click="vm.putUserSetToPreview($index)" ng-repeat="userSet in vm.userSets">
     <div layout="row" layout-wrap flex="100">
@@ -7,8 +9,24 @@
         <md-icon layout="column" ng-style="{color: '#4CAF50', fontSize: 12, marginRight: '8px'}" class="material-icons">lens</md-icon>
         <div layout="column"
           ng-bind="user.title"
+          layout-align="center start"
           class="{{$parent.$index === vm.userSetIndex.program ? 'program' : ($parent.$index === vm.userSetIndex.preview ? 'preview' : '')}}"
+          ng-style="{fontSize: 14}"
           flex></div>
+
+    <md-button
+      ng-click="vm.disableUser(user); $event.stopPropagation()"
+      title="Temporarily disable user"
+      layout="column"
+      aria-label="Disable user"
+      class="md-icon-button block">
+
+      <md-icon
+        ng-style="{color: '#9E9E9E', fontSize: 12, right: '0px'}"
+        class="material-icons">block</md-icon>
+
+    </md-button>
+
       </div>
     </div>
     <md-divider></md-divider>

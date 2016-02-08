@@ -83,7 +83,7 @@ export class SingleUserChannelController extends BaseChannelController {
   }
 
   disableUser(user: IUser) {
-    user.disabled = true;
+    super.disableUser(user);
 
     // Remove user from preview if present
     if (this.previewUser === user) {
