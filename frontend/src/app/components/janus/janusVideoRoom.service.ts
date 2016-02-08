@@ -92,9 +92,7 @@ export class JanusVideoRoomService {
 
     this.joined = false;
 
-    janus.initialized.then(() => {
-      this.localHandleAttached = this.attachLocalHandle();
-    });
+    this.localHandleAttached = this.attachLocalHandle();
 
     $rootScope.$on('janus.destroy', () => {
       this.unpublishOwnFeed();
@@ -371,53 +369,57 @@ export class JanusVideoRoomService {
   private attachLocalHandle(): ng.IPromise<any> {
     var deffered = this.$q.defer();
 
-    this.janus.session.attach({
-      plugin: 'janus.plugin.videoroom',
-      success: (pluginHandle: any) => {
-        this.localHandle = pluginHandle;
+    this.janus.initialized.then(() => {
 
-        // Try joining
-        var register = {
+      this.janus.session.attach({
+        plugin: 'janus.plugin.videoroom',
+        success: (pluginHandle: any) => {
+          this.localHandle = pluginHandle;
+
+          // Try joining
+          var register = {
           request: 'join',
-          room: this.config.janus.roomId,
-          ptype: 'publisher',
-          display: this.localUserLogin
-        };
-        this.localHandle.send({'message': register});
+        room: this.config.janus.roomId,
+        ptype: 'publisher',
+        display: this.localUserLogin
+          };
+          this.localHandle.send({'message': register});
 
-        deffered.resolve();
-      },
-      error: (error: any) => {
-        this.toastr.error('Error attaching plugin: ' + error);
-        deffered.reject();
-      },
-      onmessage: (msg: any, jsep: any) => {
-        this.onLocalHandleMessage(msg, jsep);
-        if (jsep) {
-          console.debug('Handling SDP as well...');
-          console.debug(jsep);
-          this.localHandle.handleRemoteJsep({jsep: jsep});
+          deffered.resolve();
+        },
+        error: (error: any) => {
+          this.toastr.error('Error attaching plugin: ' + error);
+          deffered.reject();
+        },
+        onmessage: (msg: any, jsep: any) => {
+          this.onLocalHandleMessage(msg, jsep);
+          if (jsep) {
+            console.debug('Handling SDP as well...');
+            console.debug(jsep);
+            this.localHandle.handleRemoteJsep({jsep: jsep});
+          }
+        },
+        consentDialog: (on: boolean) => {
+          console.debug('Consent dialog should be ' + (on ? 'on' : 'off') + ' now.');
+        },
+        onlocalstream: (stream: MediaStream) => {
+          console.debug('Got local stream', stream);
+          this.localStream = stream;
+
+          // Disable local audio tracks
+          this.toggleLocalAudio(false);
+
+          this.localStreamReadyCallback(stream);
+        },
+        onremotestream: (stream: MediaStream) => {
+          console.debug('Got a remote stream!', stream);
+          // This should not happen. This is local handle.
+        },
+        oncleanup: () => {
+          console.debug('Got a cleanup notification');
         }
-      },
-      consentDialog: (on: boolean) => {
-        console.debug('Consent dialog should be ' + (on ? 'on' : 'off') + ' now.');
-      },
-      onlocalstream: (stream: MediaStream) => {
-        console.debug('Got local stream', stream);
-        this.localStream = stream;
+      });
 
-        // Disable local audio tracks
-        this.toggleLocalAudio(false);
-
-        this.localStreamReadyCallback(stream);
-      },
-      onremotestream: (stream: MediaStream) => {
-        console.debug('Got a remote stream!', stream);
-        // This should not happen. This is local handle.
-      },
-      oncleanup: () => {
-        console.debug('Got a cleanup notification');
-      }
     });
 
     return deffered.promise;
