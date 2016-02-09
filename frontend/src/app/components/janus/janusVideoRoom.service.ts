@@ -276,6 +276,7 @@ export class JanusVideoRoomService {
       if (login) {
         this.startSdiForwarding(login, videoPort, audioPort, startForwardingCallback);
       } else {
+        delete shidurState.janus.portsFeedForwardInfo[videoPort];
         deffered.resolve();
       }
     });
@@ -544,6 +545,7 @@ export class JanusVideoRoomService {
 
         // Do something with shidur state and update it.
         useShidurState(shidurState).then(() => {
+
           // Post shidur state to backend.
           this.$http.post(this.config.backendUri + '/rest/shidur_state', shidurState)
             .error((data: string, status: number) => {

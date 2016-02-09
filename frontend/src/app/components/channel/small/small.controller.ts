@@ -6,6 +6,7 @@ declare var attachMediaStream: any;
 
 /** @ngInject */
 export class SmallChannelController extends BaseChannelController {
+  $q: ng.IQService;
   streaming: JanusStreamingService;
 
   userSetIndex: { program: number, preview: number } = {
@@ -18,6 +19,7 @@ export class SmallChannelController extends BaseChannelController {
 
   constructor($injector: any) {
     super($injector);
+    this.$q = $injector.get('$q');
     this.streaming = $injector.get('streaming');
   }
 
@@ -46,24 +48,26 @@ export class SmallChannelController extends BaseChannelController {
     super.userLeft(login);
     this.constructUserSets();
 
-    this.reforwardSlotOnUserRemoval(changedUserSetIndex, false);
-    this.reforwardSlotOnUserRemoval(changedUserSetIndex, true);
+    this.reforwardSlotOnUserRemoval(changedUserSetIndex, false).then(() => {
+      this.reforwardSlotOnUserRemoval(changedUserSetIndex, true);
+    });
   }
 
   trigger() {
     if (this.isReadyToSwitch()) {
-      this.putUserSetToProgram(this.userSetIndex.preview);
-      var nextUserSetIndex = (this.userSetIndex.preview + 1) % this.userSets.length;
-      this.putUserSetToPreview(nextUserSetIndex);
+      this.putUserSetToProgram(this.userSetIndex.preview).then(() => {
+        var nextUserSetIndex = (this.userSetIndex.preview + 1) % this.userSets.length;
+        this.putUserSetToPreview(nextUserSetIndex);
+      });
     }
   }
 
-  putUserSetToProgram(index: number) {
-    this.putUserSetToSlot(index, true);
+  putUserSetToProgram(index: number): ng.IPromise<any> {
+    return this.putUserSetToSlot(index, true);
   }
 
-  putUserSetToPreview(index: number) {
-    this.putUserSetToSlot(index, false);
+  putUserSetToPreview(index: number): ng.IPromise<any> {
+    return this.putUserSetToSlot(index, false);
   }
 
   disableUser(user: IUser) {
@@ -89,23 +93,29 @@ export class SmallChannelController extends BaseChannelController {
     }
   }
 
-  private reforwardSlotOnUserRemoval(changedUserSetIndex: number, program: boolean): void {
+  private reforwardSlotOnUserRemoval(changedUserSetIndex: number, program: boolean): ng.IPromise<any> {
     var slotName = this.getSlotName(program);
+    var deffered = this.$q.defer();
 
     if (this.userSetIndex[slotName] > this.userSets.length) {
       // User set removed
-      this.putUserSetToSlot(null, program);
+      return this.putUserSetToSlot(null, program);
     } else if (changedUserSetIndex === this.userSetIndex[slotName]) {
       // Slot user set changed
-      this.putUserSetToSlot(changedUserSetIndex, program);
+      return this.putUserSetToSlot(changedUserSetIndex, program);
     }
+
+    deffered.resolve();
+    return deffered.promise;
   }
 
-  private putUserSetToSlot(index: number, program: boolean) {
+  private putUserSetToSlot(index: number, program: boolean): ng.IPromise<any> {
+    var deffered = this.$q.defer();
+
     var slotName = this.getSlotName(program);
 
     if (index === this.userSetIndex[slotName]) {
-      return;
+      deffered.resolve();
     }
 
     var userSet: IUser[] = [];
@@ -140,12 +150,17 @@ export class SmallChannelController extends BaseChannelController {
         }
 
         this.videoRoom.changeRemoteFeedTitle(title, videoPorts[loginIndex]);
+
+        deffered.resolve();
       });
     }, () => {
       var error = 'Failed forwarding feed to SDI';
       this.toastr.error(error);
       console.error(error);
+      deffered.reject();
     });
+
+    return deffered.promise;
   }
 
   private getSlotName(program: boolean): string {
