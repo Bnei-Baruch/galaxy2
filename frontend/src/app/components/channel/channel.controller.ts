@@ -53,6 +53,8 @@ export class BaseChannelController {
     var mediaElements = element.find('video');
     this.slotElement.program = <HTMLMediaElement>mediaElements.get(0);
     this.slotElement.preview = <HTMLMediaElement>mediaElements.get(1);
+
+    this.bindHotkey();
   }
 
   userJoined(login: string) {
