@@ -40,7 +40,7 @@ function browserSyncInit(baseDir, browser) {
     server: server,
     ghostMode: false,
     https: true,
-    port: 12000,
+    // port: 12000,
     browser: browser
   });
 }
