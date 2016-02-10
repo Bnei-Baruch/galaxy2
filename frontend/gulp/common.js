@@ -9,11 +9,6 @@
 var gutil = require('gulp-util');
 
 exports.argv = require('yargs').argv;
-if ('port' in exports.argv) {
-  console.log('Using base port', exports.argv.port);
-} else {
-  throw "Port not defined, please specify --port=9876";
-}
 
 /**
  *  The main paths of your project handle these with care
