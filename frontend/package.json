@@ -17,6 +17,7 @@
     "gulp-angular-templatecache": "~1.8.0",
     "gulp-autoprefixer": "~3.0.2",
     "gulp-eslint": "~1.0.0",
+    "gulp-fail": "^1.0.1",
     "gulp-filter": "~3.0.1",
     "gulp-flatten": "~0.2.0",
     "gulp-inject": "~3.0.0",
@@ -52,7 +53,8 @@
     "uglify-save-license": "~0.4.1",
     "webpack-stream": "~2.1.1",
     "wiredep": "~2.2.2",
-    "wrench": "~1.5.8"
+    "wrench": "~1.5.8",
+    "yargs": "^3.32.0"
   },
   "engines": {
     "node": ">=0.10.0"

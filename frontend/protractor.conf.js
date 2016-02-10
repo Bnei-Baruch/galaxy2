@@ -1,6 +1,7 @@
 'use strict';
 
 var paths = require('./.yo-rc.json')['generator-gulp-angular'].props.paths;
+var conf = require('./gulp/common');
 
 // An example configuration file.
 exports.config = {
@@ -24,7 +25,7 @@ exports.config = {
   //     browser.driver.manage().window().maximize();
   // },
 
-  baseUrl: 'https://localhost:3004',
+  baseUrl: 'https://localhost:' + conf.argv.port,
 
   // Spec patterns are relative to the current working directory when
   // protractor is called.

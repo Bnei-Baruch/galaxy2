@@ -12,8 +12,6 @@ var util = require('util');
 var proxyMiddleware = require('http-proxy-middleware');
 
 function browserSyncInit(baseDir, browser) {
-  browser = browser === undefined ? 'default' : browser;
-
   var routes = null;
   if(baseDir === conf.paths.src || (util.isArray(baseDir) && baseDir.indexOf(conf.paths.src) !== -1)) {
     routes = {
@@ -35,12 +33,18 @@ function browserSyncInit(baseDir, browser) {
    */
   // server.middleware = proxyMiddleware('/users', {target: 'http://jsonplaceholder.typicode.com', proxyHost: 'jsonplaceholder.typicode.com'});
 
-  browserSync.instance = browserSync.init({
+  var options = {
     startPath: '/',
     server: server,
     https: true,
-    browser: browser
-  });
+    browser: browser === undefined ? 'default' : browser
+  };
+
+  if (conf.argv.port) {
+    options.port = conf.argv.port;
+  }
+
+  browserSync.instance = browserSync.init(options);
 }
 
 browserSync.use(browserSyncSpa({
