@@ -15,7 +15,7 @@ export class SmallChannelController extends BaseChannelController {
   };
 
   userSetSize: number = 4;
-  userSets: IUser[][];
+  userSets: IUser[][] = [];
 
   constructor($injector: any) {
     super($injector);
@@ -43,14 +43,8 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   userLeft(login: string) {
-    var changedUserSetIndex = this.getUserSetIndexForUser(login);
-
     super.userLeft(login);
-    this.constructUserSets();
-
-    this.reforwardSlotOnUserRemoval(changedUserSetIndex, false).then(() => {
-      this.reforwardSlotOnUserRemoval(changedUserSetIndex, true);
-    });
+    this.withdrawUser(login);
   }
 
   trigger() {
@@ -73,7 +67,7 @@ export class SmallChannelController extends BaseChannelController {
   disableUser(user: IUser) {
     super.disableUser(user);
 
-    this.constructUserSets();
+    this.withdrawUser(user.login);
   }
 
   isReadyToSwitch() {
@@ -85,14 +79,30 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   private acceptUser(login: string) {
-    // Re-forward preview user set to SDI in case of change
-    this.constructUserSets();
+    this.addUserToUserSets(this.usersByLogin[login]);
 
+    // Forwarding commented out until concurrency issues solved
+    /*
+    // Re-forward preview user set to SDI in case of change
     if (this.userSetIndex.preview === this.userSets.length - 1) {
       this.putUserSetToPreview(this.userSetIndex.preview);
     }
+    */
   }
 
+  private withdrawUser(login: string) {
+    this.removeUserFromUserSets(this.usersByLogin[login]);
+
+    // Forwarding commented out until concurrency issues solved
+    /*
+    // TODO: Handle HTTP errors and rollback to old state in case of an error
+    this.reforwardSlotOnUserRemoval(changedUserSetIndex, false).then(() => {
+      this.reforwardSlotOnUserRemoval(changedUserSetIndex, true);
+    });
+    */
+  }
+
+  /*
   private reforwardSlotOnUserRemoval(changedUserSetIndex: number, program: boolean): ng.IPromise<any> {
     var slotName = this.getSlotName(program);
     var deffered = this.$q.defer();
@@ -107,8 +117,9 @@ export class SmallChannelController extends BaseChannelController {
 
     deffered.resolve();
     return deffered.promise;
-  }
+  } */
 
+  // TODO: Handle HTTP errors and rollback to old state in case of an error
   private putUserSetToSlot(index: number, program: boolean): ng.IPromise<any> {
     var deffered = this.$q.defer();
 
@@ -168,30 +179,51 @@ export class SmallChannelController extends BaseChannelController {
     return slotName;
   }
 
-  private getUserSetIndexForUser(login: string): number {
-    var user = this.usersByLogin[login];
+  private addUserToUserSets(user: IUser): void {
+    var lastUserSet = this.userSets[this.userSets.length - 1];
 
-    this.userSets.forEach((userSet: IUser[], userSetIndex: number) => {
-      if (userSet.indexOf(user) !== -1) {
-        return userSetIndex;
-      }
-    });
-
-    return null;
+    if (lastUserSet && lastUserSet.length < this.userSetSize) {
+      lastUserSet.push(user);
+    } else {
+      var userSet: IUser[] = [user];
+      this.userSets.push(userSet);
+    }
   }
 
-  private constructUserSets(): void {
-    this.userSets = [];
+  private removeUserFromUserSets(user: IUser): number {
+    var result: number = null;
 
-    var userSet: IUser[] = [];
-    var onlineUsers = this.getOnlineUsers();
-    onlineUsers.forEach((user: IUser, index: number) => {
-      userSet.push(user);
-      if (userSet.length === this.userSetSize || index === onlineUsers.length - 1) {
-        this.userSets.push(userSet);
-        userSet = [];
+    for (var userSetIndex = 0; userSetIndex < this.userSets.length; userSetIndex++) {
+      var userSet = this.userSets[userSetIndex];
+      var userIndex = userSet.indexOf(user);
+
+      if (userIndex !== -1) {
+        this.spliceUserSet(userIndex, userSetIndex);
+
+        // Append the last user from the last composite
+        if (this.userSets.length > userSetIndex + 1) {
+          var lastUserSetIndex = this.userSets.length - 1;
+          var lastUserSet = this.userSets[lastUserSetIndex];
+          var lastUserIndex = lastUserSet.length - 1;
+
+          userSet.push(lastUserSet[lastUserIndex]);
+          this.spliceUserSet(lastUserIndex, lastUserSetIndex);
+        }
+
+        result = userSetIndex;
       }
-    });
+    }
+
+    return result;
+  }
+
+  private spliceUserSet (spliceUserIndex: number, spliceUserSetIndex: number) {
+    var spliceUserSet = this.userSets[spliceUserSetIndex];
+    spliceUserSet.splice(spliceUserIndex, 1);
+
+    if (!spliceUserSet.length) {
+      this.userSets.splice(spliceUserSetIndex, 1);
+    }
   }
 
   private attachStreamingHandle(slotElement: HTMLMediaElement, streamId: string) {

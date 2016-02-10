@@ -34,6 +34,7 @@ export class SingleUserChannelController extends BaseChannelController {
     }
   }
 
+  // TODO: Handle HTTP errors and rollback to old user in case of an error
   putUserToProgram(user: IUser) {
     if (this.programUser === user) {
       return;
@@ -57,6 +58,7 @@ export class SingleUserChannelController extends BaseChannelController {
     }
   }
 
+  // TODO: Handle HTTP errors and rollback to old user in case of an error
   putUserToPreview(user: IUser) {
     if (this.previewUser === user) {
       return;
@@ -103,6 +105,7 @@ export class SingleUserChannelController extends BaseChannelController {
     return true;
   }
 
+  // TODO: Handle HTTP errors and rollback to old state in case of an error
   forwardProgramToSDI() {
     // Forward program to SDI and change video title
     var sdiPorts = this.config.janus.sdiPorts[this.name];

@@ -27,7 +27,7 @@ export class FakeUserController {
             console.debug('Attaching media stream for the fake user', login);
             attachMediaStream(mediaElement, stream);
           });
-        }, userIndex * 500);
+        }, userIndex * 200);
       });
     });
   }

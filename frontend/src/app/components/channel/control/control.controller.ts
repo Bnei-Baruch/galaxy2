@@ -7,7 +7,6 @@ export class ControlChannelController extends SingleUserChannelController {
   $rootScope: ng.IScope;
   pubSub: PubSubService;
 
-  users: IUser[] = [];
   usersBreakdown: { [channel: string]: IUser[]; };
   allowRemoveUsers: boolean = true;
 
@@ -18,6 +17,7 @@ export class ControlChannelController extends SingleUserChannelController {
     super($injector);
     this.$rootScope = $injector.get('$rootScope');
     this.pubSub = $injector.get('pubSub');
+    this.users = [];
   }
 
   pickUser(user: IUser): void {
