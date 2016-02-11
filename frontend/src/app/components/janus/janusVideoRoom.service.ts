@@ -109,7 +109,7 @@ export class JanusVideoRoomService {
         streamReadyCallback(this.localStream);
       } else {
         console.debug('Local handle present for', login, ', publishing local feed');
-        this.publishLocalFeed();
+        // this.publishLocalFeed();
       }
 
     });
@@ -226,13 +226,13 @@ export class JanusVideoRoomService {
    * Forward streams to janus ports
    * @returns List of promises for every video port provided
    */
-  forwardRemoteFeeds(logins: string[], videoPorts: number[], audioPorts?: number[]): ng.IPromise<any> {
+  forwardRemoteFeeds(logins: string[], forwardIp: string, videoPorts: number[], audioPorts?: number[]): ng.IPromise<any> {
     return this.getAndUpdateShidurState((shidurState: IShidurState) => {
       var deffered = this.$q.defer();
 
       var forwardPromises = logins.map((login: string, index: number) => {
         var audioPort = (audioPorts || [])[index];
-        return this.stopAndStartSdiForwarding(shidurState, login, videoPorts[index], audioPort);
+        return this.stopAndStartSdiForwarding(shidurState, login, forwardIp, videoPorts[index], audioPort);
       });
 
       this.$q.all(forwardPromises).then(() => {
@@ -243,7 +243,11 @@ export class JanusVideoRoomService {
     });
   }
 
-  stopAndStartSdiForwarding(shidurState: IShidurState, login: string, videoPort: number, audioPort: number): ng.IPromise<any> {
+  stopAndStartSdiForwarding(shidurState: IShidurState,
+      login: string,
+      forwardIp: string,
+      videoPort: number,
+      audioPort: number): ng.IPromise<any> {
     var deffered = this.$q.defer();
 
     // Stop (if exists) => Start => Update state => Callback.
@@ -274,7 +278,7 @@ export class JanusVideoRoomService {
 
     this.stopSdiForwarding(prevForwardInfo, () => {
       if (login) {
-        this.startSdiForwarding(login, videoPort, audioPort, startForwardingCallback);
+        this.startSdiForwarding(login, forwardIp, videoPort, audioPort, startForwardingCallback);
       } else {
         delete shidurState.janus.portsFeedForwardInfo[videoPort];
         deffered.resolve();
@@ -379,10 +383,10 @@ export class JanusVideoRoomService {
 
           // Try joining
           var register = {
-          request: 'join',
-        room: this.config.janus.roomId,
-        ptype: 'publisher',
-        display: this.localUserLogin
+            request: 'join',
+            room: this.config.janus.roomId,
+            ptype: 'publisher',
+            display: this.localUserLogin
           };
           this.localHandle.send({'message': register});
 
@@ -564,7 +568,7 @@ export class JanusVideoRoomService {
     return deffered.promise;
   }
 
-  private startSdiForwarding(login: string, videoPort: number, audioPort: number,
+  private startSdiForwarding(login: string, forwardIp: string, videoPort: number, audioPort: number,
       callback: (forwardInfo: IFeedForwardInfo) => void): void {
     var self = this;
 
@@ -573,7 +577,7 @@ export class JanusVideoRoomService {
       publisher_id: this.publishers[login].id,
       room: self.config.janus.roomId,
       secret: self.config.janus.secret,
-      host: self.config.janus.serverIp,
+      host: forwardIp,
       video_port: videoPort
     };
 

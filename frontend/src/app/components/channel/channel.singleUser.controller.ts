@@ -120,7 +120,11 @@ export class SingleUserChannelController extends BaseChannelController {
       audioPorts = undefined;
     }
 
-    this.videoRoom.forwardRemoteFeeds([this.programUser.login], [sdiPorts.video.program], audioPorts).then(() => {
+    this.videoRoom.forwardRemoteFeeds([this.programUser.login],
+        sdiPorts.forwardIp,
+        [sdiPorts.video.program],
+        audioPorts).then(() => {
+
       this.isForwarded.program = true;
       this.videoRoom.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video.program);
     }, () => {

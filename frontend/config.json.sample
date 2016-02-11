@@ -2,21 +2,23 @@
   "environment": "development"
   "janus": {
     "serverUri": "https://galaxy-dev.kbb1.com:8889/janus",
-    "serverIp": "51.254.244.44",
     "secret": "adminpwd",
     "roomId": 3,
     "sdiPorts": {
       "large1": {
+        "forwardIp": "51.254.244.44",
         "video": {
           "program": 10001
         }
       },
       "large2": {
+        "forwardIp": "51.254.244.44",
         "video": {
           "program": 10002
         }
       },
       "small1": {
+        "forwardIp": "127.0.0.1",
         "streamIds": {
           "program": 33,
           "preview": 31
@@ -27,6 +29,7 @@
         }
       },
       "small2": {
+        "forwardIp": "127.0.0.1",
         "streamIds": {
           "program": 34,
           "preview": 32
@@ -37,6 +40,7 @@
         }
       },
       "control": {
+        "forwardIp": "51.254.244.44",
         "video": {
           "program": 10005
         },

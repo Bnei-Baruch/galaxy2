@@ -138,7 +138,8 @@ export class SmallChannelController extends BaseChannelController {
     this.userSetIndex[slotName] = index;
     this.isForwarded[slotName] = false;
 
-    var videoPorts = this.config.janus.sdiPorts[this.name].video[slotName];
+    var portsConfig = this.config.janus.sdiPorts[this.name];
+    var videoPorts = portsConfig.video[slotName];
 
     var logins: string[] = Array.apply(null, Array(this.userSetSize));
 
@@ -147,7 +148,7 @@ export class SmallChannelController extends BaseChannelController {
     });
 
     // TODO: move to base controller
-    this.videoRoom.forwardRemoteFeeds(logins, videoPorts).then(() => {
+    this.videoRoom.forwardRemoteFeeds(logins, portsConfig.forwardIp, videoPorts).then(() => {
       this.isForwarded[slotName] = true;
 
       // Forwarding succeeded, changing titles
