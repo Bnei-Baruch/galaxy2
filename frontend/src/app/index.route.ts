@@ -30,5 +30,15 @@ export function routerConfig($stateProvider: ng.ui.IStateProvider, $urlRouterPro
         requireLogin: true,
         minRole: 'admin'
       }
+    })
+    .state('admin', {
+      url: '/admin',
+      templateUrl: 'app/admin/admin.html',
+      controller: 'AdminController',
+      controllerAs: 'admin',
+      data: {
+        requireLogin: true,
+        minRole: 'admin'
+      }
     });
 }
