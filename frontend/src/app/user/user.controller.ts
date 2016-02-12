@@ -17,6 +17,10 @@ export class UserController {
       this.onMessage(message);
     });
 
+    pubSub.client.subscribe('/admin', (message: any) => {
+      this.onAdminMessage(message);
+    });
+
     var mediaElement = <HTMLMediaElement>document.querySelector('#localVideo');
     this.janus.registerLocalUser(authService.user.login, (stream: MediaStream) => {
       attachMediaStream(mediaElement, stream);
@@ -28,5 +32,13 @@ export class UserController {
       this.janus.toggleLocalAudio(message.enabled);
     }
   }
+
+  onAdminMessage(message: any) {
+    if (message.message === 'reload') {
+      this.toastr.info('Got a reload message from admin, reloading...');
+      window.location.reload();
+    }
+  }
+
 }
 

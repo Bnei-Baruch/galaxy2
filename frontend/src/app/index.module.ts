@@ -9,6 +9,7 @@ import { ShidurController } from './shidur/shidur.controller';
 import { ShidurService } from './shidur/shidur.service';
 import { UserController } from './user/user.controller';
 import { FakeUserController } from './user/fake.controller';
+import { AdminController } from './admin/admin.controller';
 import { LoginController } from '../app/components/auth/login.controller';
 import { AuthService } from '../app/components/auth/auth.service';
 import { PubSubService } from '../app/components/pubSub/pubSub.service';
@@ -46,6 +47,7 @@ module frontend {
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
     .controller('FakeUserController', FakeUserController)
+    .controller('AdminController', AdminController)
     .controller('LoginController', LoginController)
     .directive('galaxyNavbar', galaxyNavbar)
     .directive('slotWidget', slotWidget)
