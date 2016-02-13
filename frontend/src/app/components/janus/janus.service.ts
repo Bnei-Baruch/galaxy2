@@ -18,12 +18,13 @@ export class JanusService {
   private initialize(): ng.IPromise<any> {
     var deffered = this.$q.defer();
 
-    if (!Janus.isWebrtcSupported()) {
-      this.toastr.error('No WebRTC support... ');
-      deffered.reject();
-    }
-
     var initCallback = () => {
+
+      if (!Janus.isWebrtcSupported()) {
+        this.toastr.error('No WebRTC support... ');
+        deffered.reject();
+      }
+
       this.session = new Janus({
         server: this.config.janus.serverUri,
         success: () => {

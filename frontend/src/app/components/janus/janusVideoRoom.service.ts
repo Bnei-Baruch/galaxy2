@@ -78,7 +78,6 @@ export class JanusVideoRoomService {
   // Mapping between login and inner Janus data
   publishers: { (login: string): any } = <any>{};
 
-  joined: boolean;
   localUserLogin: string;
   localStream: MediaStream;
 
@@ -89,8 +88,6 @@ export class JanusVideoRoomService {
       private janus: JanusService,
       private toastr: any,
       private config: any) {
-
-    this.joined = false;
 
     this.localHandleAttached = this.attachLocalHandle();
 
@@ -104,8 +101,8 @@ export class JanusVideoRoomService {
     this.localUserLogin = login;
 
     this.localHandleAttached.then(() => {
-      this.localStreamReady.then(() => {
-        streamReadyCallback(this.localStream);
+      this.localStreamReady.then((stream: MediaStream) => {
+        streamReadyCallback(stream);
       });
     });
   }
@@ -394,6 +391,7 @@ export class JanusVideoRoomService {
         },
         onmessage: (msg: any, jsep: any) => {
           this.onLocalHandleMessage(msg, jsep);
+
           if (jsep) {
             console.debug('Handling SDP as well...');
             console.debug(jsep);
@@ -410,7 +408,7 @@ export class JanusVideoRoomService {
           // Disable local audio tracks
           this.toggleLocalAudio(false);
 
-          streamReadyPromise.resolve();
+          streamReadyPromise.resolve(stream);
         },
         onremotestream: (stream: MediaStream) => {
           console.debug('Got a remote stream!', stream);
@@ -435,12 +433,10 @@ export class JanusVideoRoomService {
 
     switch (e) {
       case 'joined':
-        this.joined = true;
         // TODO: Fix following variable formatting (does not work!)
         console.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
 
         if (this.localUserLogin) {
-          debugger;
           this.publishLocalFeed();
         } else {
           console.debug('No local user registered. Not publishing local feed.');
@@ -451,7 +447,6 @@ export class JanusVideoRoomService {
         }
         break;
       case 'destroyed':
-        this.joined = false;
         this.toastr.error('The room has been destroyed');
         break;
       case 'event':
@@ -470,8 +465,6 @@ export class JanusVideoRoomService {
   // 1) Media stream is connected and broadcasting video.
   // 2) Local handle is connected to Janus.
   private publishLocalFeed(): void {
-    var self = this;
-
     this.localHandle.createOffer({
       media: {
         // Publishers are sendonly
@@ -481,15 +474,15 @@ export class JanusVideoRoomService {
         videoSend: true,
         video: 'stdres-16:9'
       },
-      success: function(jsep: any) {
+      success: (jsep: any) => {
         console.debug('Got publisher SDP!');
         console.debug(jsep);
 
         var publish = { 'request': 'configure', 'audio': true, 'video': true };
-        self.localHandle.send({'message': publish, 'jsep': jsep});
+        this.localHandle.send({'message': publish, 'jsep': jsep});
       },
       error: (error: any) => {
-        self.toastr.error(`WebRTC error: ${error.message}`);
+        this.toastr.error(`WebRTC error: ${error.message}`);
         console.error('WebRTC error... ' + JSON.stringify(error));
       }
     });
