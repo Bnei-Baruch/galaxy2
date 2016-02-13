@@ -66,6 +66,7 @@ interface IFeedForwardInfo {
 /* @ngInject */
 export class JanusVideoRoomService {
   localHandleAttached: ng.IPromise<any>;
+  localStreamReady: ng.IPromise<any>;
 
   remoteHandles: { (login: string): IRemoteHandle } = <any>{};
   localHandle: any;
@@ -80,7 +81,6 @@ export class JanusVideoRoomService {
   joined: boolean;
   localUserLogin: string;
   localStream: MediaStream;
-  localStreamReadyCallback: (stream: MediaStream) => void;
 
   constructor(private $q: ng.IQService,
       private $rootScope: ng.IRootScopeService,
@@ -102,16 +102,11 @@ export class JanusVideoRoomService {
   // API method for javascript client to connect local media stream to Janus (sending video/audio?)
   registerLocalUser(login: string, streamReadyCallback: (stream: MediaStream) => void) {
     this.localUserLogin = login;
-    this.localStreamReadyCallback = streamReadyCallback;
 
     this.localHandleAttached.then(() => {
-      if (this.localStream) {
+      this.localStreamReady.then(() => {
         streamReadyCallback(this.localStream);
-      } else {
-        console.debug('Local handle present for', login, ', publishing local feed');
-        // this.publishLocalFeed();
-      }
-
+      });
     });
   }
 
@@ -372,7 +367,8 @@ export class JanusVideoRoomService {
 
   // Attaches local handle to Janus service.
   private attachLocalHandle(): ng.IPromise<any> {
-    var deffered = this.$q.defer();
+    var attachedPromise = this.$q.defer();
+    var streamReadyPromise = this.$q.defer();
 
     this.janus.initialized.then(() => {
 
@@ -390,11 +386,11 @@ export class JanusVideoRoomService {
           };
           this.localHandle.send({'message': register});
 
-          deffered.resolve();
+          attachedPromise.resolve();
         },
         error: (error: any) => {
           this.toastr.error('Error attaching plugin: ' + error);
-          deffered.reject();
+          attachedPromise.reject();
         },
         onmessage: (msg: any, jsep: any) => {
           this.onLocalHandleMessage(msg, jsep);
@@ -414,7 +410,7 @@ export class JanusVideoRoomService {
           // Disable local audio tracks
           this.toggleLocalAudio(false);
 
-          this.localStreamReadyCallback(stream);
+          streamReadyPromise.resolve();
         },
         onremotestream: (stream: MediaStream) => {
           console.debug('Got a remote stream!', stream);
@@ -427,7 +423,9 @@ export class JanusVideoRoomService {
 
     });
 
-    return deffered.promise;
+    this.localStreamReady = streamReadyPromise.promise;
+
+    return attachedPromise.promise;
   }
 
   private onLocalHandleMessage(message: any, jsep: any): void {
@@ -442,6 +440,7 @@ export class JanusVideoRoomService {
         console.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
 
         if (this.localUserLogin) {
+          debugger;
           this.publishLocalFeed();
         } else {
           console.debug('No local user registered. Not publishing local feed.');
