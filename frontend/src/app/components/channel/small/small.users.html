@@ -3,14 +3,14 @@
   <!-- TODO: move styles to channel.scss -->
 
   <!-- Online users -->
-  <md-list-item ng-click="vm.putUserSetToPreview($index)" ng-repeat="userSet in vm.userSets" ng-class-odd="'gray'">
+  <md-list-item ng-click="vm.putCompositeToPreview($index)" ng-repeat="composite in vm.composites" ng-class-odd="'gray'">
     <div layout="row" layout-wrap flex="100">
-      <div layout="column md-caption" flex="50" ng-repeat="user in userSet">
+      <div layout="column md-caption" flex="50" ng-repeat="user in composite">
         <md-icon layout="column" ng-style="{color: '#4CAF50', fontSize: 12, marginRight: '8px'}" class="material-icons">lens</md-icon>
         <div layout="column"
           ng-bind="user.title"
           layout-align="center start"
-          class="{{$parent.$index === vm.userSetIndex.program ? 'program' : ($parent.$index === vm.userSetIndex.preview ? 'preview' : '')}}"
+          class="{{$parent.$index === vm.compositeIndex.program ? 'program' : ($parent.$index === vm.compositeIndex.preview ? 'preview' : '')}}"
           ng-style="{fontSize: 14}"
           flex></div>
 

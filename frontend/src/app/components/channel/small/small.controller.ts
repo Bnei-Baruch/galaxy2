@@ -9,13 +9,13 @@ export class SmallChannelController extends BaseChannelController {
   $q: ng.IQService;
   streaming: JanusStreamingService;
 
-  userSetIndex: { program: number, preview: number } = {
+  compositeIndex: { program: number, preview: number } = {
     program: null,
     preview: null
   };
 
-  userSetSize: number = 4;
-  userSets: IUser[][] = [];
+  compositeSize: number = 4;
+  composites: IUser[][] = [];
 
   constructor($injector: any) {
     super($injector);
@@ -49,19 +49,19 @@ export class SmallChannelController extends BaseChannelController {
 
   trigger() {
     if (this.isReadyToSwitch()) {
-      this.putUserSetToProgram(this.userSetIndex.preview).then(() => {
-        var nextUserSetIndex = (this.userSetIndex.preview + 1) % this.userSets.length;
-        this.putUserSetToPreview(nextUserSetIndex);
+      this.putCompositeToProgram(this.compositeIndex.preview).then(() => {
+        var nextCompositeIndex = (this.compositeIndex.preview + 1) % this.composites.length;
+        this.putCompositeToPreview(nextCompositeIndex);
       });
     }
   }
 
-  putUserSetToProgram(index: number): ng.IPromise<any> {
-    return this.putUserSetToSlot(index, true);
+  putCompositeToProgram(index: number): ng.IPromise<any> {
+    return this.putCompositeToSlot(index, true);
   }
 
-  putUserSetToPreview(index: number): ng.IPromise<any> {
-    return this.putUserSetToSlot(index, false);
+  putCompositeToPreview(index: number): ng.IPromise<any> {
+    return this.putCompositeToSlot(index, false);
   }
 
   disableUser(user: IUser) {
@@ -71,7 +71,7 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   isReadyToSwitch() {
-    if (this.userSetIndex.preview === null || !this.isForwarded.program) {
+    if (this.compositeIndex.preview === null || !this.isForwarded.program) {
       return false;
     }
 
@@ -79,40 +79,40 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   private acceptUser(login: string) {
-    this.addUserToUserSets(this.usersByLogin[login]);
+    this.addUserToComposites(this.usersByLogin[login]);
 
     // Forwarding commented out until concurrency issues solved
     /*
     // Re-forward preview user set to SDI in case of change
-    if (this.userSetIndex.preview === this.userSets.length - 1) {
-      this.putUserSetToPreview(this.userSetIndex.preview);
+    if (this.compositeIndex.preview === this.composites.length - 1) {
+      this.putCompositeToPreview(this.compositeIndex.preview);
     }
     */
   }
 
   private withdrawUser(login: string) {
-    this.removeUserFromUserSets(this.usersByLogin[login]);
+    this.removeUserFromComposites(this.usersByLogin[login]);
 
     // Forwarding commented out until concurrency issues solved
     /*
     // TODO: Handle HTTP errors and rollback to old state in case of an error
-    this.reforwardSlotOnUserRemoval(changedUserSetIndex, false).then(() => {
-      this.reforwardSlotOnUserRemoval(changedUserSetIndex, true);
+    this.reforwardSlotOnUserRemoval(changedCompositeIndex, false).then(() => {
+      this.reforwardSlotOnUserRemoval(changedCompositeIndex, true);
     });
     */
   }
 
   /*
-  private reforwardSlotOnUserRemoval(changedUserSetIndex: number, program: boolean): ng.IPromise<any> {
+  private reforwardSlotOnUserRemoval(changedCompositeIndex: number, program: boolean): ng.IPromise<any> {
     var slotName = this.getSlotName(program);
     var deffered = this.$q.defer();
 
-    if (this.userSetIndex[slotName] > this.userSets.length) {
+    if (this.compositeIndex[slotName] > this.composites.length) {
       // User set removed
-      return this.putUserSetToSlot(null, program);
-    } else if (changedUserSetIndex === this.userSetIndex[slotName]) {
+      return this.putCompositeToSlot(null, program);
+    } else if (changedCompositeIndex === this.compositeIndex[slotName]) {
       // Slot user set changed
-      return this.putUserSetToSlot(changedUserSetIndex, program);
+      return this.putCompositeToSlot(changedCompositeIndex, program);
     }
 
     deffered.resolve();
@@ -120,30 +120,30 @@ export class SmallChannelController extends BaseChannelController {
   } */
 
   // TODO: Handle HTTP errors and rollback to old state in case of an error
-  private putUserSetToSlot(index: number, program: boolean): ng.IPromise<any> {
+  private putCompositeToSlot(index: number, program: boolean): ng.IPromise<any> {
     var deffered = this.$q.defer();
 
     var slotName = this.getSlotName(program);
 
-    if (index === this.userSetIndex[slotName]) {
+    if (index === this.compositeIndex[slotName]) {
       deffered.resolve();
     }
 
-    var userSet: IUser[] = [];
+    var composite: IUser[] = [];
 
-    if (index !== null && this.userSets[index]) {
-      userSet = this.userSets[index];
+    if (index !== null && this.composites[index]) {
+      composite = this.composites[index];
     }
 
-    this.userSetIndex[slotName] = index;
+    this.compositeIndex[slotName] = index;
     this.isForwarded[slotName] = false;
 
     var portsConfig = this.config.janus.sdiPorts[this.name];
     var videoPorts = portsConfig.video[slotName];
 
-    var logins: string[] = Array.apply(null, Array(this.userSetSize));
+    var logins: string[] = Array.apply(null, Array(this.compositeSize));
 
-    userSet.forEach((user: IUser, userIndex: number) => {
+    composite.forEach((user: IUser, userIndex: number) => {
       logins[userIndex] = user.login;
     });
 
@@ -180,50 +180,50 @@ export class SmallChannelController extends BaseChannelController {
     return slotName;
   }
 
-  private addUserToUserSets(user: IUser): void {
-    var lastUserSet = this.userSets[this.userSets.length - 1];
+  private addUserToComposites(user: IUser): void {
+    var lastComposite = this.composites[this.composites.length - 1];
 
-    if (lastUserSet && lastUserSet.length < this.userSetSize) {
-      lastUserSet.push(user);
+    if (lastComposite && lastComposite.length < this.compositeSize) {
+      lastComposite.push(user);
     } else {
-      var userSet: IUser[] = [user];
-      this.userSets.push(userSet);
+      var composite: IUser[] = [user];
+      this.composites.push(composite);
     }
   }
 
-  private removeUserFromUserSets(user: IUser): number {
+  private removeUserFromComposites(user: IUser): number {
     var result: number = null;
 
-    for (var userSetIndex = 0; userSetIndex < this.userSets.length; userSetIndex++) {
-      var userSet = this.userSets[userSetIndex];
-      var userIndex = userSet.indexOf(user);
+    for (var compositeIndex = 0; compositeIndex < this.composites.length; compositeIndex++) {
+      var composite = this.composites[compositeIndex];
+      var userIndex = composite.indexOf(user);
 
       if (userIndex !== -1) {
-        this.spliceUserSet(userIndex, userSetIndex);
+        this.spliceComposite(userIndex, compositeIndex);
 
         // Append the last user from the last composite
-        if (this.userSets.length > userSetIndex + 1) {
-          var lastUserSetIndex = this.userSets.length - 1;
-          var lastUserSet = this.userSets[lastUserSetIndex];
-          var lastUserIndex = lastUserSet.length - 1;
+        if (this.composites.length > compositeIndex + 1) {
+          var lastCompositeIndex = this.composites.length - 1;
+          var lastComposite = this.composites[lastCompositeIndex];
+          var lastUserIndex = lastComposite.length - 1;
 
-          userSet.push(lastUserSet[lastUserIndex]);
-          this.spliceUserSet(lastUserIndex, lastUserSetIndex);
+          composite.push(lastComposite[lastUserIndex]);
+          this.spliceComposite(lastUserIndex, lastCompositeIndex);
         }
 
-        result = userSetIndex;
+        result = compositeIndex;
       }
     }
 
     return result;
   }
 
-  private spliceUserSet (spliceUserIndex: number, spliceUserSetIndex: number) {
-    var spliceUserSet = this.userSets[spliceUserSetIndex];
-    spliceUserSet.splice(spliceUserIndex, 1);
+  private spliceComposite (spliceUserIndex: number, spliceCompositeIndex: number) {
+    var spliceComposite = this.composites[spliceCompositeIndex];
+    spliceComposite.splice(spliceUserIndex, 1);
 
-    if (!spliceUserSet.length) {
-      this.userSets.splice(spliceUserSetIndex, 1);
+    if (!spliceComposite.length) {
+      this.composites.splice(spliceCompositeIndex, 1);
     }
   }
 
