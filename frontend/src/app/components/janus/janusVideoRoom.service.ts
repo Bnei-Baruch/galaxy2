@@ -245,19 +245,6 @@ export class JanusVideoRoomService {
     // Stop (if exists) => Start => Update state => Callback.
     var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
 
-    if (login !== undefined) {
-      if (!(login in this.publishers)) {
-        var error = `Could not find publisher with login ${login}`;
-        this.toastr.error(error);
-        deffered.reject(error);
-      }
-
-      if (prevForwardInfo && prevForwardInfo.publisherId === this.publishers[login].id) {
-        console.debug('User already forwarded to SDI:', login);
-        deffered.resolve();
-      }
-    }
-
     var startForwardingCallback = (forwardInfo: IFeedForwardInfo) => {
       shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
 
@@ -270,7 +257,15 @@ export class JanusVideoRoomService {
 
     this.stopSdiForwarding(prevForwardInfo, () => {
       if (login) {
-        this.startSdiForwarding(login, forwardIp, videoPort, audioPort, startForwardingCallback);
+
+        if (!(login in this.publishers)) {
+          var error = `Could not find publisher with login ${login}`;
+          this.toastr.error(error);
+          deffered.resolve(error);
+        } else {
+          this.startSdiForwarding(login, forwardIp, videoPort, audioPort, startForwardingCallback);
+        }
+
       } else {
         delete shidurState.janus.portsFeedForwardInfo[videoPort];
         deffered.resolve();
@@ -581,6 +576,7 @@ export class JanusVideoRoomService {
       message: forward,
       error: (error: any) => {
         console.error(error);
+        callback(null);
       },
       success: (data: any) => {
         var forwardInfo = <IFeedForwardInfo> {
