@@ -14,7 +14,7 @@ export class FakeUserController {
       toastr: any,
       config: any) {
 
-    this.fakeUsers = ['ashdod', 'arava', 'eilat', 'afula', 'naharia', 'ashkelon', 'arad', 'dnepropetrovsk'];
+    this.fakeUsers = ['ashdod', 'arava', 'eilat', 'afula', 'naharia', 'ashkelon', 'arad'];
     // this.fakeUsers = ['afula', 'arad', 'guadalajara', 'dnepropetrovsk', 'krasnodar', 'krasnoyarsk'];
 
     $timeout(() => {

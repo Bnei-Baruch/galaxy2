@@ -131,7 +131,7 @@ export class SmallChannelController extends BaseChannelController {
 
     var userSet: IUser[] = [];
 
-    if (index !== null) {
+    if (index !== null && this.userSets[index]) {
       userSet = this.userSets[index];
     }
 
