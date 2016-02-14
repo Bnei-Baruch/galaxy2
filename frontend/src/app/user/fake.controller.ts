@@ -11,7 +11,6 @@ export class FakeUserController {
       $rootScope: ng.IRootScopeService,
       $timeout: ng.ITimeoutService,
       $http: ng.IHttpService,
-      janus: JanusService,
       toastr: any,
       config: any) {
 
@@ -21,13 +20,16 @@ export class FakeUserController {
     $timeout(() => {
       this.fakeUsers.forEach((login: string, userIndex: number) => {
         var mediaElement = <HTMLMediaElement>document.querySelector(`video[data-login="${login}"]`);
+
         $timeout(() => {
+          var janus = new JanusService($q, $rootScope, $timeout, toastr, config);
           var videoRoom = new JanusVideoRoomService($q, $rootScope, $timeout, $http, janus, toastr, config);
+
           videoRoom.registerLocalUser(login, (stream: MediaStream) => {
             console.debug('Attaching media stream for the fake user', login);
             attachMediaStream(mediaElement, stream);
           });
-        }, userIndex * 200);
+        }, userIndex * 0);
       });
     });
   }
