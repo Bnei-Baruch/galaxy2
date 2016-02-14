@@ -229,6 +229,9 @@ export class JanusVideoRoomService {
 
       this.$q.all(forwardPromises).then(() => {
         deffered.resolve(shidurState);
+      }, () => {
+        console.error('One or more forwards haven\' been accomplished, saving shidur state...');
+        deffered.resolve(shidurState);
       });
 
       return deffered.promise;
@@ -295,8 +298,6 @@ export class JanusVideoRoomService {
 
   // Handles changes in publishers state and updates registered clients (channel) if needed.
   private updatePublishersAndTriggerJoined(publishers: any[]): void {
-    var self = this;
-
     // TODO: Check that when overriding publisher it's id stays the same
     // Basically if it is not the same, meaning same user logged in for
     // example twice and we need to override the old publisher with new.
@@ -306,12 +307,12 @@ export class JanusVideoRoomService {
       // together with the login. Timestamp better be central.
 
       // The system has to make sure to remove publishers on time.
-      if (p.display in self.publishers) {
+      if (p.display in this.publishers) {
         console.error('This should not happen, we have not handled leave user well!');
       }
 
       // Set or override publisher
-      self.publishers[p.display] = p;
+      this.publishers[p.display] = p;
 
       // Handle channels
       this.applyOnUserChannels(p.display, (channel: IChannel) => {
