@@ -2,27 +2,52 @@
   "environment": "development"
   "janus": {
     "serverUri": "https://galaxy-dev.kbb1.com:8889/janus",
-    "serverIp": "51.254.244.44",
     "secret": "adminpwd",
     "roomId": 3,
     "sdiPorts": {
       "large1": {
-        "video": 10001
+        "forwardIp": "51.254.244.44",
+        "video": {
+          "program": 10001
+        }
       },
       "large2": {
-        "video": 10002
+        "forwardIp": "51.254.244.44",
+        "video": {
+          "program": 10002
+        }
       },
       "small1": {
-        "video": 10003
+        "forwardIp": "127.0.0.1",
+        "streamIds": {
+          "program": 33,
+          "preview": 31
+        },
+        "video": {
+          "program": [20001, 20002, 20003, 20004],
+          "preview": [40001, 40002, 40003, 40004]
+        }
       },
       "small2": {
-        "video": 10004
+        "forwardIp": "127.0.0.1",
+        "streamIds": {
+          "program": 34,
+          "preview": 32
+        },
+        "video": {
+          "program": [30001, 30002, 30003, 30004],
+          "preview": [50001, 50002, 50005, 50004]
+        }
       },
       "control": {
-        "video": 10005,
-        "audio": 40005
+        "forwardIp": "51.254.244.44",
+        "video": {
+          "program": 10005
+        },
+        "audio": 50005
       }
     },
+    "reconnectTimeout": 10,
     "titleApiUrl": "https://v4g.kbb1.com:8080/title.php?title=%title%&port=%port%"
   },
   "backendUri": "https://rt-dev.kbb1.com:5000/galaxy2/backend",

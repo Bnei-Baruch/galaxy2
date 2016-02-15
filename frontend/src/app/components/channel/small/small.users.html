@@ -1,0 +1,46 @@
+<md-list class="users">
+
+  <!-- TODO: move styles to channel.scss -->
+
+  <!-- Online users -->
+  <md-list-item ng-click="vm.putCompositeToPreview($index)" ng-repeat="composite in vm.composites" ng-class-odd="'gray'">
+    <div layout="row" layout-wrap flex="100">
+      <div layout="column md-caption" flex="50" ng-repeat="user in composite">
+        <md-icon layout="column" ng-style="{color: '#4CAF50', fontSize: 12, marginRight: '8px'}" class="material-icons">lens</md-icon>
+        <div layout="column"
+          ng-bind="user.title"
+          layout-align="center start"
+          class="{{$parent.$index === vm.compositeIndex.program ? 'program' : ($parent.$index === vm.compositeIndex.preview ? 'preview' : '')}}"
+          ng-style="{fontSize: 14}"
+          flex></div>
+
+        <md-button
+          ng-click="vm.disableUser(user); $event.stopPropagation()"
+          title="Temporarily disable user"
+          layout="column"
+          aria-label="Disable user"
+          class="md-icon-button block">
+
+          <md-icon
+            ng-style="{color: '#9E9E9E', fontSize: 12, right: '0px'}"
+            class="material-icons">block</md-icon>
+
+        </md-button>
+
+      </div>
+    </div>
+
+    <md-divider></md-divider>
+  </md-list-item>
+
+  <!-- Offline users -->
+  <md-list-item ng-repeat="user in vm.users | filter : {joined: '!'} | orderBy : 'title'">
+    <md-icon layout="column" aria-label="" ng-style="{color: '#9E9E9E'}" class="material-icons">lens</md-icon>
+
+    <div class="md-list-item-text" layout="column" flex>
+      <p ng-bind="user.title"></p>
+    </div>
+
+  </md-list-item>
+
+</md-list>

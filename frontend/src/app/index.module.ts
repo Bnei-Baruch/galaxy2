@@ -4,18 +4,21 @@ import { config } from './index.config';
 import { routerConfig } from './index.route';
 import { runBlock } from './index.run';
 import { galaxyNavbar } from '../app/components/navbar/navbar.directive';
-import { JanusVideoRoomService } from '../app/components/janusVideoRoom/janusVideoRoom.service';
+import { JanusService } from '../app/components/janus/janus.service';
+import { JanusVideoRoomService } from '../app/components/janus/janusVideoRoom.service';
+import { JanusStreamingService } from '../app/components/janus/janusStreaming.service';
 import { ShidurController } from './shidur/shidur.controller';
 import { ShidurService } from './shidur/shidur.service';
 import { UserController } from './user/user.controller';
 import { FakeUserController } from './user/fake.controller';
+import { AdminController } from './admin/admin.controller';
 import { LoginController } from '../app/components/auth/login.controller';
 import { AuthService } from '../app/components/auth/auth.service';
 import { PubSubService } from '../app/components/pubSub/pubSub.service';
 import { slotWidget } from '../app/components/channel/slot/slot.directive';
-import { largeChannelWidget } from '../app/components/channel/large/large.directive';
-import { controlChannelWidget } from '../app/components/channel/control/control.directive';
-import { ChannelService } from '../app/components/channel/channel.service';
+import { LargeChannelWidget } from '../app/components/channel/large/large.directive';
+import { SmallChannelWidget } from '../app/components/channel/small/small.directive';
+import { ControlChannelWidget } from '../app/components/channel/control/control.directive';
 
 module frontend {
   'use strict';
@@ -39,18 +42,21 @@ module frontend {
     .config(config)
     .config(routerConfig)
     .run(runBlock)
-    .service('janus', JanusVideoRoomService)
+    .service('janus', JanusService)
+    .service('videoRoom', JanusVideoRoomService)
+    .service('streaming', JanusStreamingService)
     .service('shidur', ShidurService)
-    .service('channel', ChannelService)
     .service('authService', AuthService)
     .service('pubSub', PubSubService)
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
     .controller('FakeUserController', FakeUserController)
+    .controller('AdminController', AdminController)
     .controller('LoginController', LoginController)
     .directive('galaxyNavbar', galaxyNavbar)
     .directive('slotWidget', slotWidget)
-    .directive('largeChannelWidget', largeChannelWidget)
-    .directive('controlChannelWidget', controlChannelWidget)
+    .directive('largeChannelWidget', () => new LargeChannelWidget())
+    .directive('smallChannelWidget', () => new SmallChannelWidget())
+    .directive('controlChannelWidget', () => new ControlChannelWidget())
     ;
 }

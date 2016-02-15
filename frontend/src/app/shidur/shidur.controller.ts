@@ -1,19 +1,21 @@
 import { IUser, ShidurService } from './shidur.service';
 
 export class ShidurController {
-  public toastr: any;
-  public breakdown: { [index: string]: IUser[]; };
+  $mdSidenav: angular.material.ISidenavService;
+  toastr: any;
+  breakdown: { [index: string]: IUser[] };
 
   /* @ngInject */
-  constructor (shidur: ShidurService, toastr: any) {
+  constructor ($mdSidenav: angular.material.ISidenavService, shidur: ShidurService, toastr: any) {
+    this.$mdSidenav = $mdSidenav;
     this.toastr = toastr;
 
-    shidur.getUsers().then((users) => {
+    shidur.getUsers().then((users: IUser[]) => {
       this.initBreakdown(users);
     });
   }
 
-  initBreakdown(users) {
+  initBreakdown(users: IUser[]) {
     this.breakdown = {};
 
     users.forEach((u: IUser) => {
@@ -25,4 +27,13 @@ export class ShidurController {
       this.breakdown[channel].push(u);
     });
   }
+
+  toggleChat() {
+    this.$mdSidenav('chat').toggle();
+  }
+
+  closeChat() {
+    this.$mdSidenav('chat').close();
+  }
+
 }

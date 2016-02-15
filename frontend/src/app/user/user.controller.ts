@@ -1,6 +1,6 @@
 import { AuthService } from '../components/auth/auth.service';
 import { PubSubService } from '../components/pubSub/pubSub.service';
-import { JanusVideoRoomService } from '../components/janusVideoRoom/janusVideoRoom.service';
+import { JanusVideoRoomService } from '../components/janus/janusVideoRoom.service';
 
 declare var attachMediaStream: any;
 
@@ -9,12 +9,16 @@ export class UserController {
   janus: JanusVideoRoomService;
 
   /* @ngInject */
-  constructor (janus: JanusVideoRoomService, toastr: any, authService: AuthService, pubSub: PubSubService) {
+  constructor (videoRoom: JanusVideoRoomService, toastr: any, authService: AuthService, pubSub: PubSubService) {
     this.toastr = toastr;
-    this.janus = janus;
+    this.janus = videoRoom;
 
     pubSub.client.subscribe('/users/' + authService.user.login, (message: any) => {
       this.onMessage(message);
+    });
+
+    pubSub.client.subscribe('/admin', (message: any) => {
+      this.onAdminMessage(message);
     });
 
     var mediaElement = <HTMLMediaElement>document.querySelector('#localVideo');
@@ -28,5 +32,13 @@ export class UserController {
       this.janus.toggleLocalAudio(message.enabled);
     }
   }
+
+  onAdminMessage(message: any) {
+    if (message.message === 'reload') {
+      this.toastr.info('Got a reload message from admin, reloading...');
+      window.location.reload();
+    }
+  }
+
 }
 

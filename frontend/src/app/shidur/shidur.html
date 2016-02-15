@@ -1,21 +1,40 @@
 <div layout="row" layout-fill ng-if="shidur.breakdown">
-  <div flex="20">
+  <div flex="25">
     <large-channel-widget name="large1" users="shidur.breakdown.large1" hotkey="1"></large-channel-widget>
   </div>
-  <div flex="20">
+  <div flex="25">
     <large-channel-widget name="large2" users="shidur.breakdown.large2" hotkey="2"></large-channel-widget>
   </div>
-  <div flex="20">
-    <control-channel-widget name="control" users-breakdown="shidur.breakdown" hotkey="3"></control-channel-widget>
-  </div>
-  <div flex="40">
-    <!-- <iframe width="100%" height="800px" src="https://chat1.kbb1.com/admin.html?label=galaxy2"></iframe> -->
-    <iframe width="100%" height="800px" src="https://chat1.kbb1.com/?label=galaxy2"></iframe>
+  <div flex="25">
+    <small-channel-widget name="small1" users="shidur.breakdown.small1" hotkey="3"></small-channel-widget>
   </div>
   <!-- <div flex="20"> -->
+  <!--   <small&#45;channel&#45;widget name="small2" users="shidur.breakdown.small2" hotkey="4"></small&#45;channel&#45;widget> -->
   <!-- </div> -->
-  <!-- <div flex="20"> -->
-  <!-- </div> -->
-  <!-- <div flex="20"> -->
-  <!-- </div> -->
+  <div flex="25">
+    <control-channel-widget name="control" users-breakdown="shidur.breakdown" hotkey="5"></control-channel-widget>
+  </div>
+
+  <md-button
+    ng-click="shidur.toggleChat()"
+    class="md-fab md-mini md-primary md-fab-top-right"
+    aria-label="Open chat">
+    <md-icon ng-if="1" class="material-icons">chat</md-icon>
+  </md-button>
+
+  <md-sidenav class="md-sidenav-right md-whiteframe-z2" md-component-id="chat">
+    <md-toolbar class="md-theme-light">
+      <h1 class="md-toolbar-tools" layout="row" layout-align="space-between">Chat
+      <md-button ng-click="shidur.closeChat()" class="md-icon-button">
+        <md-icon
+          ng-style="{color: '#fff'}"
+          class="material-icons">clear</md-icon>
+      </md-button>
+</h1>
+    </md-toolbar>
+    <md-content layout-fill>
+      <iframe src="https://chat1.kbb1.com/?label=galaxy2"></iframe>
+    </md-content>
+  </md-sidenav>
+
 </div>

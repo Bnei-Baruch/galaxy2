@@ -38,6 +38,7 @@ function browserSyncInit(baseDir, browser) {
   var options = {
     startPath: '/',
     server: server,
+    ghostMode: false,
     https: true,
     browser: browser === undefined ? 'default' : browser
   };

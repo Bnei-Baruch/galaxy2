@@ -1,14 +1,24 @@
-import { BaseChannelController } from '../channel.controller';
 import { IUser } from '../../../shidur/shidur.service';
+import { PubSubService } from '../../pubSub/pubSub.service';
+import { SingleUserChannelController } from '../channel.singleUser.controller';
 
 /** @ngInject */
-export class ControlChannelController extends BaseChannelController {
-  users: IUser[] = [];
+export class ControlChannelController extends SingleUserChannelController {
+  $rootScope: ng.IScope;
+  pubSub: PubSubService;
+
   usersBreakdown: { [channel: string]: IUser[]; };
   allowRemoveUsers: boolean = true;
 
   selectedUser: IUser;
   searchText: string;
+
+  constructor($injector: any) {
+    super($injector);
+    this.$rootScope = $injector.get('$rootScope');
+    this.pubSub = $injector.get('pubSub');
+    this.users = [];
+  }
 
   pickUser(user: IUser): void {
     if (user !== undefined) {
@@ -32,7 +42,7 @@ export class ControlChannelController extends BaseChannelController {
   }
 
   trigger(): void {
-    if (this.previewUser) {
+    if (this.previewUser && !this.previewUser.disabled) {
 
       if (this.programUser) {
         this.muteRemoteUser(this.programUser);
@@ -43,17 +53,18 @@ export class ControlChannelController extends BaseChannelController {
   }
 
   removeUser(user: IUser): void {
+    if (user.disabled) {
+      user.disabled = false;
+      this.$rootScope.$broadcast('channel.userEnabled', user.login);
+    }
+
     if (user.joined && user.audioEnabled) {
       this.muteRemoteUser(user);
     }
 
-    // Remove user from slots if present
+    // Remove user from preview if present
     if (this.previewUser === user) {
       this.putUserToPreview(null);
-    }
-
-    if (this.programUser === user) {
-      this.putUserToProgram(null);
     }
 
     // Splice users
@@ -77,28 +88,17 @@ export class ControlChannelController extends BaseChannelController {
     return false;
   }
 
-  querySearch(searchText: string): IUser[] {
-    var users = [];
-
-    searchText = searchText || '';
-    var lowercaseText = searchText.trim().toLowerCase();
-
-    var pickedLogins = this.users.map((user: IUser) => { return user.login; });
+  getAllUsers() {
+    var allUsers: IUser[] = [];
 
     for (var channel in this.usersBreakdown) {
       if (this.usersBreakdown.hasOwnProperty(channel) && channel !== 'hidden') {
-        var channelUsers = this.usersBreakdown[channel].filter((user: IUser) => {
-          if (pickedLogins.indexOf(user.login) !== -1) {
-            return false;
-          }
-          var titleLogin = (user.login + user.title).toLowerCase();
-          return titleLogin.indexOf(lowercaseText) !== -1;
-        });
-        users = users.concat(channelUsers);
+        // allUsers.push.apply(allUsers, this.usersBreakdown[channel]);
+        allUsers = allUsers.concat(this.usersBreakdown[channel]);
       }
     }
 
-    return users;
+    return allUsers;
   }
 
   private muteRemoteUser(user: IUser): void {
@@ -109,7 +109,7 @@ export class ControlChannelController extends BaseChannelController {
 
   private onUsersListChanged(): void {
     this.mapUsersByLogin();
-    this.janus.updateChannelUsers(this.name, this.getLoginsList());
+    this.videoRoom.updateChannelUsers(this.name, this.getLoginsList());
   }
 
 }

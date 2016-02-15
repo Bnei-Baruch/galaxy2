@@ -9,7 +9,7 @@
     <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="shidur" class="md-raised">Shidur</md-button>
     <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="user" class="md-raised">User</md-button>
     <md-button ng-if="$root.currentUser.role === 'admin'" href="/galaxy2/backend/admin" class="md-raised">Admin</md-button>
-    <!-- <md&#45;button href ui&#45;sref="help" class="md&#45;raised">Help</md&#45;button> -->
+    <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="help" class="md-raised">Help</md-button>
   </section>
 
   <md-menu class="galaxy-navbar-text" md-position-mode="target-right bottom">

@@ -1,4 +1,5 @@
-import { JanusVideoRoomService } from '../components/janusVideoRoom/janusVideoRoom.service';
+import { JanusService } from '../components/janus/janus.service';
+import { JanusVideoRoomService } from '../components/janus/janusVideoRoom.service';
 
 declare var attachMediaStream: any;
 
@@ -6,16 +7,28 @@ export class FakeUserController {
   fakeUsers: string[];
 
   /* @ngInject */
-  constructor ($q: ng.IQService, $timeout: ng.ITimeoutService, $http: ng.IHttpService, toastr: any, config: any) {
-    this.fakeUsers = ['afula', 'haifa', 'eilat', 'hadera', 'arava', 'ashkelon'];
+  constructor ($q: ng.IQService,
+      $rootScope: ng.IRootScopeService,
+      $timeout: ng.ITimeoutService,
+      $http: ng.IHttpService,
+      toastr: any,
+      config: any) {
+
+    this.fakeUsers = ['ashdod', 'arava', 'eilat', 'afula', 'naharia', 'ashkelon', 'arad'];
+    // this.fakeUsers = ['afula', 'arad', 'guadalajara', 'dnepropetrovsk', 'krasnodar', 'krasnoyarsk'];
 
     $timeout(() => {
-      this.fakeUsers.forEach((login: string) => {
+      this.fakeUsers.forEach((login: string, userIndex: number) => {
         var mediaElement = <HTMLMediaElement>document.querySelector(`video[data-login="${login}"]`);
-        var janusService = new JanusVideoRoomService($q, $timeout, $http, toastr, config);
-        janusService.registerLocalUser(login, (stream: MediaStream) => {
+
+        var janus = new JanusService($q, $rootScope, $timeout, toastr, config);
+        var videoRoom = new JanusVideoRoomService($q, $rootScope, $timeout, $http, janus, toastr, config);
+
+        videoRoom.registerLocalUser(login, (stream: MediaStream) => {
+          console.debug('Attaching media stream for the fake user', login);
           attachMediaStream(mediaElement, stream);
         });
+
       });
     });
   }
