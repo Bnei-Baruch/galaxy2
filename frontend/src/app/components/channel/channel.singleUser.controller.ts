@@ -1,5 +1,5 @@
 import { BaseChannelController } from './channel.controller';
-import { IUser } from '../../shidur/shidur.service';
+import { IUser } from '../auth/auth.service';
 
 declare var attachMediaStream: any;
 

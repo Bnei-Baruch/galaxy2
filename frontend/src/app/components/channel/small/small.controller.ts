@@ -1,4 +1,4 @@
-import { IUser } from '../../../shidur/shidur.service';
+import { IUser } from '../../auth/auth.service';
 import { JanusStreamingService } from '../../janus/janusStreaming.service';
 import { BaseChannelController } from '../channel.controller';
 
@@ -32,19 +32,19 @@ export class SmallChannelController extends BaseChannelController {
 
     scope.$on('channel.userEnabled', (e: ng.IAngularEvent, login: string) => {
       if (this.usersByLogin[login]) {
-        this.acceptUser(login);
+        this.addUserToComposites(login);
       }
     });
   }
 
   userJoined(login: string) {
     super.userJoined(login);
-    this.acceptUser(login);
+    this.addUserToComposites(login);
   }
 
   userLeft(login: string) {
     super.userLeft(login);
-    this.withdrawUser(login);
+    this.removeUserFromComposites(login);
   }
 
   trigger() {
@@ -66,8 +66,7 @@ export class SmallChannelController extends BaseChannelController {
 
   disableUser(user: IUser) {
     super.disableUser(user);
-
-    this.withdrawUser(user.login);
+    this.removeUserFromComposites(user.login);
   }
 
   isReadyToSwitch() {
@@ -77,47 +76,6 @@ export class SmallChannelController extends BaseChannelController {
 
     return true;
   }
-
-  private acceptUser(login: string) {
-    this.addUserToComposites(this.usersByLogin[login]);
-
-    // Forwarding commented out until concurrency issues solved
-    /*
-    // Re-forward preview user set to SDI in case of change
-    if (this.compositeIndex.preview === this.composites.length - 1) {
-      this.putCompositeToPreview(this.compositeIndex.preview);
-    }
-    */
-  }
-
-  private withdrawUser(login: string) {
-    this.removeUserFromComposites(this.usersByLogin[login]);
-
-    // Forwarding commented out until concurrency issues solved
-    /*
-    // TODO: Handle HTTP errors and rollback to old state in case of an error
-    this.reforwardSlotOnUserRemoval(changedCompositeIndex, false).then(() => {
-      this.reforwardSlotOnUserRemoval(changedCompositeIndex, true);
-    });
-    */
-  }
-
-  /*
-  private reforwardSlotOnUserRemoval(changedCompositeIndex: number, program: boolean): ng.IPromise<any> {
-    var slotName = this.getSlotName(program);
-    var deffered = this.$q.defer();
-
-    if (this.compositeIndex[slotName] > this.composites.length) {
-      // User set removed
-      return this.putCompositeToSlot(null, program);
-    } else if (changedCompositeIndex === this.compositeIndex[slotName]) {
-      // Slot user set changed
-      return this.putCompositeToSlot(changedCompositeIndex, program);
-    }
-
-    deffered.resolve();
-    return deffered.promise;
-  } */
 
   // TODO: Handle HTTP errors and rollback to old state in case of an error
   private putCompositeToSlot(index: number, program: boolean): ng.IPromise<any> {
@@ -180,18 +138,59 @@ export class SmallChannelController extends BaseChannelController {
     return slotName;
   }
 
-  private addUserToComposites(user: IUser): void {
-    var lastComposite = this.composites[this.composites.length - 1];
+  /**
+   * Adds a user to the composites array.
+   * Rules:
+   *  - No complete composites present, just add user to the first one.
+   *  - All present composites are complete or there are no composites, add user and complete
+   *  composite by users from the first composite.
+   *
+   * @param login User login
+   * @returns     Nothing
+   */
+  private addUserToComposites(login: string): void {
+    var user: IUser = this.usersByLogin[login];
 
-    if (lastComposite && lastComposite.length < this.compositeSize) {
-      lastComposite.push(user);
-    } else {
-      var composite: IUser[] = [user];
-      this.composites.push(composite);
+    var firstCompositeIndex = 0;
+    var firstComposite: IUser[] = this.composites[0];
+    var lastComposite: IUser[] = this.composites[this.composites.length - 1];
+
+    // No complete composites present, no completion required
+    if (firstComposite === undefined || firstComposite.length < this.compositeSize) {
+      firstCompositeIndex = null;
     }
+
+    // All composites are complete or no composites, add a new one
+    if (lastComposite === undefined || (lastComposite.length === this.compositeSize &&
+        !lastComposite[this.compositeSize - 1].completesComposite)) {
+      lastComposite = [];
+      this.composites.push(lastComposite);
+    }
+
+    if (lastComposite) {
+      var userAdded = false;
+
+      for (var index = 0; index < this.compositeSize; index++) {
+        var lastCompositeUser = lastComposite[index];
+        if (lastCompositeUser === undefined || lastCompositeUser.completesComposite) {
+          if (userAdded) {
+            if (firstCompositeIndex !== null) {
+              lastComposite[index] = firstComposite[firstCompositeIndex];
+              firstCompositeIndex++;
+            }
+          } else {
+            lastComposite[index] = user;
+            userAdded = true;
+          }
+        }
+      }
+    }
+
+    console.debug('composites:', this.composites);
   }
 
-  private removeUserFromComposites(user: IUser): number {
+  private removeUserFromComposites(login: string): number {
+    var user = this.usersByLogin[login];
     var result: number = null;
 
     for (var compositeIndex = 0; compositeIndex < this.composites.length; compositeIndex++) {
