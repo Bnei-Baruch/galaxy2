@@ -175,7 +175,10 @@ export class SmallChannelController extends BaseChannelController {
         if (lastCompositeUser === undefined || lastCompositeUser.completesComposite) {
           if (userAdded) {
             if (firstCompositeIndex !== null) {
-              lastComposite[index] = firstComposite[firstCompositeIndex];
+              lastComposite[index] = angular.extend({
+                completesComposite: true
+              }, firstComposite[firstCompositeIndex]);
+
               firstCompositeIndex++;
             }
           } else {
