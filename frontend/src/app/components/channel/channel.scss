@@ -15,12 +15,12 @@ video {
   text-transform: uppercase;
 }
 
-.channel .users .program div {
+.channel .users .program, .channel .users .program div {
   color: #E53935;
   font-weight: bold;
 }
 
-.channel .users .preview div {
+.channel .users .preview, .channel .users .preview div {
   color: #43A047;
   font-weight: bold;
 }
