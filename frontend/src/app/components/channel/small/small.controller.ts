@@ -71,7 +71,8 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   isReadyToSwitch() {
-    if (this.compositeIndex.preview === null || !this.isForwarded.program) {
+    if (this.compositeIndex.preview === null ||
+        !this.isForwarded.program || !this.isForwarded.preview) {
       return false;
     }
 
@@ -117,21 +118,19 @@ export class SmallChannelController extends BaseChannelController {
     this.videoRoom.forwardRemoteFeeds(logins, portsConfig.forwardIp, videoPorts).then(() => {
       // Forwarding succeeded, changing titles
 
-      if (!program) {
-        return;
+      if (program) {
+        logins.forEach((login: string, loginIndex: number) => {
+          var title: string;
+
+          if (this.usersByLogin[login]) {
+            title = this.usersByLogin[login].title;
+          } else {
+            title = '';
+          }
+
+          this.videoRoom.changeRemoteFeedTitle(title, videoPorts[loginIndex]);
+        });
       }
-
-      logins.forEach((login: string, loginIndex: number) => {
-        var title: string;
-
-        if (this.usersByLogin[login]) {
-          title = this.usersByLogin[login].title;
-        } else {
-          title = '';
-        }
-
-        this.videoRoom.changeRemoteFeedTitle(title, videoPorts[loginIndex]);
-      });
 
       this.isForwarded[slotName] = true;
 
