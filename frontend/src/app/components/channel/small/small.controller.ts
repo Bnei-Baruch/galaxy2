@@ -116,6 +116,11 @@ export class SmallChannelController extends BaseChannelController {
     // TODO: move to base controller
     this.videoRoom.forwardRemoteFeeds(logins, portsConfig.forwardIp, videoPorts).then(() => {
       // Forwarding succeeded, changing titles
+
+      if (!program) {
+        return;
+      }
+
       logins.forEach((login: string, loginIndex: number) => {
         var title: string;
 
