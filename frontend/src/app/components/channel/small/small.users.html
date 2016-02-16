@@ -3,7 +3,7 @@
   <!-- TODO: move styles to channel.scss -->
 
   <!-- Online users -->
-  <md-list-item ng-click="vm.putCompositeToPreview($index)"
+  <md-list-item ng-click="vm.isReadyToSwitch() && vm.putCompositeToPreview($index)"
     ng-repeat="composite in vm.composites"
     ng-class-odd="'oddComposite'"
     ng-class="$index === vm.compositeIndex.program ? 'program' : ($index === vm.compositeIndex.preview ? 'preview' : '')">

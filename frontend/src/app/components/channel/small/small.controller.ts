@@ -86,12 +86,19 @@ export class SmallChannelController extends BaseChannelController {
 
     if (index === this.compositeIndex[slotName]) {
       deffered.resolve();
+      return deffered.promise;
     }
 
     var composite: IUser[] = [];
 
     if (index !== null && this.composites[index]) {
       composite = this.composites[index];
+
+      if (composite.length < this.compositeSize) {
+        console.debug('Composite is not complete, forwarding refused');
+        deffered.reject();
+        return deffered.promise;
+      }
     }
 
     this.compositeIndex[slotName] = index;
@@ -153,6 +160,11 @@ export class SmallChannelController extends BaseChannelController {
     if (this.onlineUsers.indexOf(login) === -1) {
       this.onlineUsers.push(login);
       this.constructComposites();
+
+      // Forward first composite to preview once it's complete
+      if (this.compositeIndex.preview === null && this.onlineUsers.length >= this.compositeSize) {
+        this.putCompositeToPreview(0);
+      }
     }
   }
 
@@ -170,7 +182,7 @@ export class SmallChannelController extends BaseChannelController {
       var userIndex = this.onlineUsers.indexOf(login);
       var lastLogin = this.onlineUsers.pop();
 
-      if (this.onlineUsers.length) {
+      if (login !== lastLogin) {
         this.onlineUsers[userIndex] = lastLogin;
       }
 
