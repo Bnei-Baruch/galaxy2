@@ -1,4 +1,5 @@
-import { IUser, ShidurService } from './shidur.service';
+import { IUser } from '../components/auth/auth.service';
+import { ShidurService } from './shidur.service';
 
 export class ShidurController {
   $mdSidenav: angular.material.ISidenavService;

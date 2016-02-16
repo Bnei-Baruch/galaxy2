@@ -1,4 +1,4 @@
-import { IUser } from '../../../shidur/shidur.service';
+import { IUser } from '../../auth/auth.service';
 import { JanusStreamingService } from '../../janus/janusStreaming.service';
 import { BaseChannelController } from '../channel.controller';
 
@@ -14,6 +14,7 @@ export class SmallChannelController extends BaseChannelController {
     preview: null
   };
 
+  onlineUsers: string[] = [];
   compositeSize: number = 4;
   composites: IUser[][] = [];
 
@@ -32,19 +33,19 @@ export class SmallChannelController extends BaseChannelController {
 
     scope.$on('channel.userEnabled', (e: ng.IAngularEvent, login: string) => {
       if (this.usersByLogin[login]) {
-        this.acceptUser(login);
+        this.addUserToComposites(login);
       }
     });
   }
 
   userJoined(login: string) {
     super.userJoined(login);
-    this.acceptUser(login);
+    this.addUserToComposites(login);
   }
 
   userLeft(login: string) {
     super.userLeft(login);
-    this.withdrawUser(login);
+    this.removeUserFromComposites(login);
   }
 
   trigger() {
@@ -66,58 +67,17 @@ export class SmallChannelController extends BaseChannelController {
 
   disableUser(user: IUser) {
     super.disableUser(user);
-
-    this.withdrawUser(user.login);
+    this.removeUserFromComposites(user.login);
   }
 
   isReadyToSwitch() {
-    if (this.compositeIndex.preview === null || !this.isForwarded.program) {
+    if (this.compositeIndex.preview === null ||
+        !this.isForwarded.program || !this.isForwarded.preview) {
       return false;
     }
 
     return true;
   }
-
-  private acceptUser(login: string) {
-    this.addUserToComposites(this.usersByLogin[login]);
-
-    // Forwarding commented out until concurrency issues solved
-    /*
-    // Re-forward preview user set to SDI in case of change
-    if (this.compositeIndex.preview === this.composites.length - 1) {
-      this.putCompositeToPreview(this.compositeIndex.preview);
-    }
-    */
-  }
-
-  private withdrawUser(login: string) {
-    this.removeUserFromComposites(this.usersByLogin[login]);
-
-    // Forwarding commented out until concurrency issues solved
-    /*
-    // TODO: Handle HTTP errors and rollback to old state in case of an error
-    this.reforwardSlotOnUserRemoval(changedCompositeIndex, false).then(() => {
-      this.reforwardSlotOnUserRemoval(changedCompositeIndex, true);
-    });
-    */
-  }
-
-  /*
-  private reforwardSlotOnUserRemoval(changedCompositeIndex: number, program: boolean): ng.IPromise<any> {
-    var slotName = this.getSlotName(program);
-    var deffered = this.$q.defer();
-
-    if (this.compositeIndex[slotName] > this.composites.length) {
-      // User set removed
-      return this.putCompositeToSlot(null, program);
-    } else if (changedCompositeIndex === this.compositeIndex[slotName]) {
-      // Slot user set changed
-      return this.putCompositeToSlot(changedCompositeIndex, program);
-    }
-
-    deffered.resolve();
-    return deffered.promise;
-  } */
 
   // TODO: Handle HTTP errors and rollback to old state in case of an error
   private putCompositeToSlot(index: number, program: boolean): ng.IPromise<any> {
@@ -127,12 +87,19 @@ export class SmallChannelController extends BaseChannelController {
 
     if (index === this.compositeIndex[slotName]) {
       deffered.resolve();
+      return deffered.promise;
     }
 
     var composite: IUser[] = [];
 
     if (index !== null && this.composites[index]) {
       composite = this.composites[index];
+
+      if (composite.length < this.compositeSize) {
+        console.debug('Composite is not complete, forwarding refused');
+        deffered.reject();
+        return deffered.promise;
+      }
     }
 
     this.compositeIndex[slotName] = index;
@@ -150,17 +117,20 @@ export class SmallChannelController extends BaseChannelController {
     // TODO: move to base controller
     this.videoRoom.forwardRemoteFeeds(logins, portsConfig.forwardIp, videoPorts).then(() => {
       // Forwarding succeeded, changing titles
-      logins.forEach((login: string, loginIndex: number) => {
-        var title: string;
 
-        if (this.usersByLogin[login]) {
-          title = this.usersByLogin[login].title;
-        } else {
-          title = '';
-        }
+      if (program) {
+        logins.forEach((login: string, loginIndex: number) => {
+          var title: string;
 
-        this.videoRoom.changeRemoteFeedTitle(title, videoPorts[loginIndex]);
-      });
+          if (this.usersByLogin[login]) {
+            title = this.usersByLogin[login].title;
+          } else {
+            title = '';
+          }
+
+          this.videoRoom.changeRemoteFeedTitle(title, videoPorts[loginIndex]);
+        });
+      }
 
       this.isForwarded[slotName] = true;
 
@@ -180,50 +150,80 @@ export class SmallChannelController extends BaseChannelController {
     return slotName;
   }
 
-  private addUserToComposites(user: IUser): void {
-    var lastComposite = this.composites[this.composites.length - 1];
+  /**
+   * Adds a user to the composites array.
+   * Rules:
+   *  - No complete composites present, just add user to the first one.
+   *  - All present composites are complete or there are no composites, add user and complete
+   *  composite by users from the first composite.
+   *
+   * @param login User login
+   * @returns     Nothing
+   */
+  private addUserToComposites(login: string): void {
+    if (this.onlineUsers.indexOf(login) === -1) {
+      this.onlineUsers.push(login);
+      this.constructComposites();
 
-    if (lastComposite && lastComposite.length < this.compositeSize) {
-      lastComposite.push(user);
-    } else {
-      var composite: IUser[] = [user];
-      this.composites.push(composite);
-    }
-  }
-
-  private removeUserFromComposites(user: IUser): number {
-    var result: number = null;
-
-    for (var compositeIndex = 0; compositeIndex < this.composites.length; compositeIndex++) {
-      var composite = this.composites[compositeIndex];
-      var userIndex = composite.indexOf(user);
-
-      if (userIndex !== -1) {
-        this.spliceComposite(userIndex, compositeIndex);
-
-        // Append the last user from the last composite
-        if (this.composites.length > compositeIndex + 1) {
-          var lastCompositeIndex = this.composites.length - 1;
-          var lastComposite = this.composites[lastCompositeIndex];
-          var lastUserIndex = lastComposite.length - 1;
-
-          composite.push(lastComposite[lastUserIndex]);
-          this.spliceComposite(lastUserIndex, lastCompositeIndex);
-        }
-
-        result = compositeIndex;
+      // Forward first composite to preview once it's complete
+      if (this.compositeIndex.preview === null && this.onlineUsers.length >= this.compositeSize) {
+        this.putCompositeToPreview(0);
       }
     }
-
-    return result;
   }
 
-  private spliceComposite (spliceUserIndex: number, spliceCompositeIndex: number) {
-    var spliceComposite = this.composites[spliceCompositeIndex];
-    spliceComposite.splice(spliceUserIndex, 1);
+  /**
+   * Removes a user from the composites array.
+   * Rules:
+   *  - One or no composites present, just remove user from the first one.
+   *  - Two or more composites present, find a replacement for the user from the last composite.
+   *
+   * @param login User login
+   * @returns     Nothing
+   */
+  private removeUserFromComposites(login: string): void {
+    if (this.onlineUsers.indexOf(login) !== -1) {
+      var userIndex = this.onlineUsers.indexOf(login);
+      var lastLogin = this.onlineUsers.pop();
 
-    if (!spliceComposite.length) {
-      this.composites.splice(spliceCompositeIndex, 1);
+      if (login !== lastLogin) {
+        this.onlineUsers[userIndex] = lastLogin;
+      }
+
+      this.constructComposites();
+    }
+  }
+
+  private constructComposites() {
+    this.composites = [];
+    var composite: IUser[] = [];
+
+    // Building composites
+    var lastUserIndex = this.onlineUsers.length - 1;
+
+    this.onlineUsers.forEach((login: string, userIndex: number) => {
+      composite.push(this.usersByLogin[login]);
+      if (composite.length === this.compositeSize || userIndex === lastUserIndex) {
+        this.composites.push(composite);
+        composite = [];
+      }
+    });
+
+    // Completing the last composite if needed
+    var firstCompositeIndex = 0;
+    var firstComposite = this.composites[0];
+    var lastComposite = this.composites[this.composites.length - 1];
+
+    if (this.composites.length > 1) {
+
+      for (var userIndex = lastComposite.length; userIndex < this.compositeSize; userIndex++) {
+        // Clone to avoid global user object override
+        lastComposite[userIndex] = angular.extend({
+          completesComposite: true
+        }, firstComposite[firstCompositeIndex]);
+
+        firstCompositeIndex++;
+      }
     }
   }
 

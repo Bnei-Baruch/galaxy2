@@ -1,28 +1,35 @@
-import { IUser } from '../../shidur/shidur.service';
 import IDialogService = angular.material.IDialogService;
 
 // Implementation follows guidelines from:
 // http://brewhouse.io/blog/2014/12/09/authentication-made-simple-in-single-page-angularjs-applications.html
 
+// TODO: consider moving to a proper place
 export interface IGalaxyScope extends ng.IRootScopeService {
   currentUser?: any;
 }
 
+export interface IUser {
+  login: string;
+  title: string;
+  channel: string;
+  role: string;
+  joined?: moment.Moment;
+  stream?: MediaStream;
+  audioEnabled?: boolean;
+  completesComposite?: boolean;
+  disabled?: boolean;
+}
+
+
 /** @ngInject */
 export class AuthService {
-  $q:ng.IQService;
-  $mdDialog:IDialogService;
-  $auth:any;
-  toastr:any;
-  user:IUser;
-  Rollbar:any;
+  user: IUser;
 
-  constructor($q:ng.IQService, $mdDialog:IDialogService, toastr:any, $auth:any, Rollbar:any) {
-    this.$q = $q;
-    this.$mdDialog = $mdDialog;
-    this.$auth = $auth;
-    this.toastr = toastr;
-    this.Rollbar = Rollbar;
+  constructor(private $q: ng.IQService,
+      private $mdDialog: IDialogService,
+      private toastr: any,
+      private $auth: any,
+      private Rollbar: any) {
   }
 
   authenticate() {

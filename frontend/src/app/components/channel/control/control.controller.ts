@@ -1,4 +1,4 @@
-import { IUser } from '../../../shidur/shidur.service';
+import { IUser } from '../../auth/auth.service';
 import { PubSubService } from '../../pubSub/pubSub.service';
 import { SingleUserChannelController } from '../channel.singleUser.controller';
 
