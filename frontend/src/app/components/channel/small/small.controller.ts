@@ -14,6 +14,7 @@ export class SmallChannelController extends BaseChannelController {
     preview: null
   };
 
+  onlineUsers: string[] = [];
   compositeSize: number = 4;
   composites: IUser[][] = [];
 
@@ -149,83 +150,64 @@ export class SmallChannelController extends BaseChannelController {
    * @returns     Nothing
    */
   private addUserToComposites(login: string): void {
-    var user: IUser = this.usersByLogin[login];
+    if (this.onlineUsers.indexOf(login) === -1) {
+      this.onlineUsers.push(login);
+      this.constructComposites();
+    }
+  }
 
+  /**
+   * Removes a user from the composites array.
+   * Rules:
+   *  - One or no composites present, just remove user from the first one.
+   *  - Two or more composites present, find a replacement for the user from the last composite.
+   *
+   * @param login User login
+   * @returns     Nothing
+   */
+  private removeUserFromComposites(login: string): void {
+    if (this.onlineUsers.indexOf(login) !== -1) {
+      var userIndex = this.onlineUsers.indexOf(login);
+      var lastLogin = this.onlineUsers.pop();
+
+      if (this.onlineUsers.length) {
+        this.onlineUsers[userIndex] = lastLogin;
+      }
+
+      this.constructComposites();
+    }
+  }
+
+  private constructComposites() {
+    this.composites = [];
+    var composite: IUser[] = [];
+
+    // Building composites
+    var lastUserIndex = this.onlineUsers.length - 1;
+
+    this.onlineUsers.forEach((login: string, userIndex: number) => {
+      composite.push(this.usersByLogin[login]);
+      if (composite.length === this.compositeSize || userIndex === lastUserIndex) {
+        this.composites.push(composite);
+        composite = [];
+      }
+    });
+
+    // Completing the last composite if needed
     var firstCompositeIndex = 0;
-    var firstComposite: IUser[] = this.composites[0];
-    var lastComposite: IUser[] = this.composites[this.composites.length - 1];
+    var firstComposite = this.composites[0];
+    var lastComposite = this.composites[this.composites.length - 1];
 
-    // No complete composites present, no completion required
-    if (firstComposite === undefined || firstComposite.length < this.compositeSize) {
-      firstCompositeIndex = null;
-    }
+    if (this.composites.length > 1) {
 
-    // All composites are complete or no composites, add a new one
-    if (lastComposite === undefined || (lastComposite.length === this.compositeSize &&
-        !lastComposite[this.compositeSize - 1].completesComposite)) {
-      lastComposite = [];
-      this.composites.push(lastComposite);
-    }
+      for (var userIndex = lastComposite.length; userIndex < this.compositeSize; userIndex++) {
+        // Clone to avoid global user object override
+        lastComposite[userIndex] = angular.extend({
+          completesComposite: true
+        }, firstComposite[firstCompositeIndex]);
 
-    if (lastComposite) {
-      var userAdded = false;
-
-      for (var index = 0; index < this.compositeSize; index++) {
-        var lastCompositeUser = lastComposite[index];
-        if (lastCompositeUser === undefined || lastCompositeUser.completesComposite) {
-          if (userAdded) {
-            if (firstCompositeIndex !== null) {
-              lastComposite[index] = angular.extend({
-                completesComposite: true
-              }, firstComposite[firstCompositeIndex]);
-
-              firstCompositeIndex++;
-            }
-          } else {
-            lastComposite[index] = user;
-            userAdded = true;
-          }
-        }
+        firstCompositeIndex++;
       }
-    }
-
-    console.debug('composites:', this.composites);
-  }
-
-  private removeUserFromComposites(login: string): number {
-    var user = this.usersByLogin[login];
-    var result: number = null;
-
-    for (var compositeIndex = 0; compositeIndex < this.composites.length; compositeIndex++) {
-      var composite = this.composites[compositeIndex];
-      var userIndex = composite.indexOf(user);
-
-      if (userIndex !== -1) {
-        this.spliceComposite(userIndex, compositeIndex);
-
-        // Append the last user from the last composite
-        if (this.composites.length > compositeIndex + 1) {
-          var lastCompositeIndex = this.composites.length - 1;
-          var lastComposite = this.composites[lastCompositeIndex];
-          var lastUserIndex = lastComposite.length - 1;
-
-          composite.push(lastComposite[lastUserIndex]);
-          this.spliceComposite(lastUserIndex, lastCompositeIndex);
-        }
-
-        result = compositeIndex;
-      }
-    }
-
-    return result;
-  }
-
-  private spliceComposite (spliceUserIndex: number, spliceCompositeIndex: number) {
-    var spliceComposite = this.composites[spliceCompositeIndex];
-    spliceComposite.splice(spliceUserIndex, 1);
-
-    if (!spliceComposite.length) {
-      this.composites.splice(spliceCompositeIndex, 1);
     }
   }
 

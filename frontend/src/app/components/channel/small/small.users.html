@@ -36,8 +36,9 @@
       </div>
     </div>
 
-    <md-divider></md-divider>
   </md-list-item>
+
+  <md-divider></md-divider>
 
   <!-- Offline users -->
   <md-list-item ng-repeat="user in vm.users | filter : {joined: '!'} | orderBy : 'title'">
