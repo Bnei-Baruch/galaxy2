@@ -8,12 +8,12 @@ var browserSync = require('browser-sync');
 var browserSyncSpa = require('browser-sync-spa');
 
 var util = require('util');
+var port_util = require('./port')
 
 var proxyMiddleware = require('http-proxy-middleware');
 
-function browserSyncInit(baseDir, browser) {
-  browser = browser === undefined ? 'default' : browser;
 
+function browserSyncInit(baseDir, browser) {
   var routes = null;
   if(baseDir === conf.paths.src || (util.isArray(baseDir) && baseDir.indexOf(conf.paths.src) !== -1)) {
     routes = {
@@ -35,14 +35,20 @@ function browserSyncInit(baseDir, browser) {
    */
   // server.middleware = proxyMiddleware('/users', {target: 'http://jsonplaceholder.typicode.com', proxyHost: 'jsonplaceholder.typicode.com'});
 
-  browserSync.instance = browserSync.init({
+  var options = {
     startPath: '/',
     server: server,
     ghostMode: false,
     https: true,
-    port: 12000,
-    browser: browser
-  });
+    browser: browser === undefined ? 'default' : browser
+  };
+
+  var port = port_util.getPortFromCommandLine();
+  if (port) {
+    options.port = port;
+  }
+
+  browserSync.instance = browserSync.init(options);
 }
 
 browserSync.use(browserSyncSpa({
@@ -58,9 +64,11 @@ gulp.task('serve:dist', ['config', 'build'], function () {
 });
 
 gulp.task('serve:e2e', ['config:e2e', 'inject'], function () {
+  port_util.requirePortOnCommandLine();
   browserSyncInit([conf.paths.tmp + '/serve', conf.paths.src], []);
 });
 
 gulp.task('serve:e2e-dist', ['config:e2e', 'build'], function () {
+  port_util.requirePortOnCommandLine();
   browserSyncInit(conf.paths.dist, []);
 });

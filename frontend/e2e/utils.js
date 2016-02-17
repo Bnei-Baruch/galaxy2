@@ -12,9 +12,7 @@ exports.login = function() {
 
   submit.click();
 
-  var ret = false;
-  setTimeout(function() { ret = true; }, 2500);
-  browser.wait(function() { return ret; });
+  browser.sleep(3500);
 }
 
 exports.waitForVideo = function(cssSelector) {

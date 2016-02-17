@@ -1,4 +1,4 @@
-import { IUser } from '../../../shidur/shidur.service';
+import { IUser } from '../../auth/auth.service';
 import { JanusStreamingService } from '../../janus/janusStreaming.service';
 import { BaseChannelController } from '../channel.controller';
 
@@ -9,13 +9,14 @@ export class SmallChannelController extends BaseChannelController {
   $q: ng.IQService;
   streaming: JanusStreamingService;
 
-  userSetIndex: { program: number, preview: number } = {
+  compositeIndex: { program: number, preview: number } = {
     program: null,
     preview: null
   };
 
-  userSetSize: number = 4;
-  userSets: IUser[][];
+  onlineUsers: string[] = [];
+  compositeSize: number = 4;
+  composites: IUser[][] = [];
 
   constructor($injector: any) {
     super($injector);
@@ -32,127 +33,108 @@ export class SmallChannelController extends BaseChannelController {
 
     scope.$on('channel.userEnabled', (e: ng.IAngularEvent, login: string) => {
       if (this.usersByLogin[login]) {
-        this.acceptUser(login);
+        this.addUserToComposites(login);
       }
     });
   }
 
   userJoined(login: string) {
     super.userJoined(login);
-    this.acceptUser(login);
+    this.addUserToComposites(login);
   }
 
   userLeft(login: string) {
-    var changedUserSetIndex = this.getUserSetIndexForUser(login);
-
     super.userLeft(login);
-    this.constructUserSets();
-
-    this.reforwardSlotOnUserRemoval(changedUserSetIndex, false).then(() => {
-      this.reforwardSlotOnUserRemoval(changedUserSetIndex, true);
-    });
+    this.removeUserFromComposites(login);
   }
 
   trigger() {
     if (this.isReadyToSwitch()) {
-      this.putUserSetToProgram(this.userSetIndex.preview).then(() => {
-        var nextUserSetIndex = (this.userSetIndex.preview + 1) % this.userSets.length;
-        this.putUserSetToPreview(nextUserSetIndex);
+      this.putCompositeToProgram(this.compositeIndex.preview).then(() => {
+        var nextCompositeIndex = (this.compositeIndex.preview + 1) % this.composites.length;
+        this.putCompositeToPreview(nextCompositeIndex);
       });
     }
   }
 
-  putUserSetToProgram(index: number): ng.IPromise<any> {
-    return this.putUserSetToSlot(index, true);
+  putCompositeToProgram(index: number): ng.IPromise<any> {
+    return this.putCompositeToSlot(index, true);
   }
 
-  putUserSetToPreview(index: number): ng.IPromise<any> {
-    return this.putUserSetToSlot(index, false);
+  putCompositeToPreview(index: number): ng.IPromise<any> {
+    return this.putCompositeToSlot(index, false);
   }
 
   disableUser(user: IUser) {
     super.disableUser(user);
-
-    this.constructUserSets();
+    this.removeUserFromComposites(user.login);
   }
 
   isReadyToSwitch() {
-    if (this.userSetIndex.preview === null || !this.isForwarded.program) {
+    if (this.compositeIndex.preview === null ||
+        !this.isForwarded.program || !this.isForwarded.preview) {
       return false;
     }
 
     return true;
   }
 
-  private acceptUser(login: string) {
-    // Re-forward preview user set to SDI in case of change
-    this.constructUserSets();
-
-    if (this.userSetIndex.preview === this.userSets.length - 1) {
-      this.putUserSetToPreview(this.userSetIndex.preview);
-    }
-  }
-
-  private reforwardSlotOnUserRemoval(changedUserSetIndex: number, program: boolean): ng.IPromise<any> {
-    var slotName = this.getSlotName(program);
-    var deffered = this.$q.defer();
-
-    if (this.userSetIndex[slotName] > this.userSets.length) {
-      // User set removed
-      return this.putUserSetToSlot(null, program);
-    } else if (changedUserSetIndex === this.userSetIndex[slotName]) {
-      // Slot user set changed
-      return this.putUserSetToSlot(changedUserSetIndex, program);
-    }
-
-    deffered.resolve();
-    return deffered.promise;
-  }
-
-  private putUserSetToSlot(index: number, program: boolean): ng.IPromise<any> {
+  // TODO: Handle HTTP errors and rollback to old state in case of an error
+  private putCompositeToSlot(index: number, program: boolean): ng.IPromise<any> {
     var deffered = this.$q.defer();
 
     var slotName = this.getSlotName(program);
 
-    if (index === this.userSetIndex[slotName]) {
+    if (index === this.compositeIndex[slotName]) {
       deffered.resolve();
+      return deffered.promise;
     }
 
-    var userSet: IUser[] = [];
+    var composite: IUser[] = [];
 
-    if (index !== null) {
-      userSet = this.userSets[index];
+    if (index !== null && this.composites[index]) {
+      composite = this.composites[index];
+
+      if (composite.length < this.compositeSize) {
+        console.debug('Composite is not complete, forwarding refused');
+        deffered.reject();
+        return deffered.promise;
+      }
     }
 
-    this.userSetIndex[slotName] = index;
+    this.compositeIndex[slotName] = index;
     this.isForwarded[slotName] = false;
 
-    var videoPorts = this.config.janus.sdiPorts[this.name].video[slotName];
+    var portsConfig = this.config.janus.sdiPorts[this.name];
+    var videoPorts = portsConfig.video[slotName];
 
-    var logins: string[] = Array.apply(null, Array(this.userSetSize));
+    var logins: string[] = Array.apply(null, Array(this.compositeSize));
 
-    userSet.forEach((user: IUser, userIndex: number) => {
+    composite.forEach((user: IUser, userIndex: number) => {
       logins[userIndex] = user.login;
     });
 
     // TODO: move to base controller
-    this.videoRoom.forwardRemoteFeeds(logins, videoPorts).then(() => {
+    this.videoRoom.forwardRemoteFeeds(logins, portsConfig.forwardIp, videoPorts).then(() => {
+      // Forwarding succeeded, changing titles
+
+      if (program) {
+        logins.forEach((login: string, loginIndex: number) => {
+          var title: string;
+
+          if (this.usersByLogin[login]) {
+            title = this.usersByLogin[login].title;
+          } else {
+            title = '';
+          }
+
+          this.videoRoom.changeRemoteFeedTitle(title, videoPorts[loginIndex]);
+        });
+      }
+
       this.isForwarded[slotName] = true;
 
-      // Forwarding succeeded, changing titles
-      logins.forEach((login: string, loginIndex: number) => {
-        var title: string;
-
-        if (this.usersByLogin[login]) {
-          title = this.usersByLogin[login].title;
-        } else {
-          title = '';
-        }
-
-        this.videoRoom.changeRemoteFeedTitle(title, videoPorts[loginIndex]);
-
-        deffered.resolve();
-      });
+      deffered.resolve();
     }, () => {
       var error = 'Failed forwarding feed to SDI';
       this.toastr.error(error);
@@ -168,30 +150,81 @@ export class SmallChannelController extends BaseChannelController {
     return slotName;
   }
 
-  private getUserSetIndexForUser(login: string): number {
-    var user = this.usersByLogin[login];
+  /**
+   * Adds a user to the composites array.
+   * Rules:
+   *  - No complete composites present, just add user to the first one.
+   *  - All present composites are complete or there are no composites, add user and complete
+   *  composite by users from the first composite.
+   *
+   * @param login User login
+   * @returns     Nothing
+   */
+  private addUserToComposites(login: string): void {
+    if (this.onlineUsers.indexOf(login) === -1) {
+      this.onlineUsers.push(login);
+      this.constructComposites();
 
-    this.userSets.forEach((userSet: IUser[], userSetIndex: number) => {
-      if (userSet.indexOf(user) !== -1) {
-        return userSetIndex;
+      // Forward first composite to preview once it's complete
+      if (this.compositeIndex.preview === null && this.onlineUsers.length >= this.compositeSize) {
+        this.putCompositeToPreview(0);
       }
-    });
-
-    return null;
+    }
   }
 
-  private constructUserSets(): void {
-    this.userSets = [];
+  /**
+   * Removes a user from the composites array.
+   * Rules:
+   *  - One or no composites present, just remove user from the first one.
+   *  - Two or more composites present, find a replacement for the user from the last composite.
+   *
+   * @param login User login
+   * @returns     Nothing
+   */
+  private removeUserFromComposites(login: string): void {
+    if (this.onlineUsers.indexOf(login) !== -1) {
+      var userIndex = this.onlineUsers.indexOf(login);
+      var lastLogin = this.onlineUsers.pop();
 
-    var userSet: IUser[] = [];
-    var onlineUsers = this.getOnlineUsers();
-    onlineUsers.forEach((user: IUser, index: number) => {
-      userSet.push(user);
-      if (userSet.length === this.userSetSize || index === onlineUsers.length - 1) {
-        this.userSets.push(userSet);
-        userSet = [];
+      if (login !== lastLogin) {
+        this.onlineUsers[userIndex] = lastLogin;
+      }
+
+      this.constructComposites();
+    }
+  }
+
+  private constructComposites() {
+    this.composites = [];
+    var composite: IUser[] = [];
+
+    // Building composites
+    var lastUserIndex = this.onlineUsers.length - 1;
+
+    this.onlineUsers.forEach((login: string, userIndex: number) => {
+      composite.push(this.usersByLogin[login]);
+      if (composite.length === this.compositeSize || userIndex === lastUserIndex) {
+        this.composites.push(composite);
+        composite = [];
       }
     });
+
+    // Completing the last composite if needed
+    var firstCompositeIndex = 0;
+    var firstComposite = this.composites[0];
+    var lastComposite = this.composites[this.composites.length - 1];
+
+    if (this.composites.length > 1) {
+
+      for (var userIndex = lastComposite.length; userIndex < this.compositeSize; userIndex++) {
+        // Clone to avoid global user object override
+        lastComposite[userIndex] = angular.extend({
+          completesComposite: true
+        }, firstComposite[firstCompositeIndex]);
+
+        firstCompositeIndex++;
+      }
+    }
   }
 
   private attachStreamingHandle(slotElement: HTMLMediaElement, streamId: string) {

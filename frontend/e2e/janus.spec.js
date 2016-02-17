@@ -22,7 +22,6 @@ describe('Janus video room', function () {
     browser.get('/index.html');
     utils.login();
     utils.openNewWindow("/#/user");
-    utils.switchToWindow(1);
     utils.switchToWindow(0);
     utils.waitForVideo('.preview');
   });

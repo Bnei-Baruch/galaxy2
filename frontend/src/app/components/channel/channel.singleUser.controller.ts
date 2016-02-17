@@ -1,5 +1,5 @@
 import { BaseChannelController } from './channel.controller';
-import { IUser } from '../../shidur/shidur.service';
+import { IUser } from '../auth/auth.service';
 
 declare var attachMediaStream: any;
 
@@ -34,6 +34,7 @@ export class SingleUserChannelController extends BaseChannelController {
     }
   }
 
+  // TODO: Handle HTTP errors and rollback to old user in case of an error
   putUserToProgram(user: IUser) {
     if (this.programUser === user) {
       return;
@@ -57,6 +58,7 @@ export class SingleUserChannelController extends BaseChannelController {
     }
   }
 
+  // TODO: Handle HTTP errors and rollback to old user in case of an error
   putUserToPreview(user: IUser) {
     if (this.previewUser === user) {
       return;
@@ -103,6 +105,7 @@ export class SingleUserChannelController extends BaseChannelController {
     return true;
   }
 
+  // TODO: Handle HTTP errors and rollback to old state in case of an error
   forwardProgramToSDI() {
     // Forward program to SDI and change video title
     var sdiPorts = this.config.janus.sdiPorts[this.name];
@@ -117,7 +120,11 @@ export class SingleUserChannelController extends BaseChannelController {
       audioPorts = undefined;
     }
 
-    this.videoRoom.forwardRemoteFeeds([this.programUser.login], [sdiPorts.video.program], audioPorts).then(() => {
+    this.videoRoom.forwardRemoteFeeds([this.programUser.login],
+        sdiPorts.forwardIp,
+        [sdiPorts.video.program],
+        audioPorts).then(() => {
+
       this.isForwarded.program = true;
       this.videoRoom.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video.program);
     }, () => {

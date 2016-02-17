@@ -3,12 +3,12 @@ video {
   width: 100%;
 }
 
-.gray {
-  background: #ddd !important;
-}
-
 .channel {
   margin-right: 4px;
+}
+
+.channel .oddComposite {
+  background: #E0E0E0 !important;
 }
 
 .channel h3 {
@@ -37,14 +37,23 @@ video {
 
 
   .program {
-    color: #E53935;
-    font-weight: bold;
+    &, & div{
+      color: #E53935;
+      font-weight: bold;      
+    }
   }
   .preview {
-    color: #43A047;
+    &, & div{
+      color: #43A047;
+      font-weight: bold;
+    }
+  }
+  .completesComposite {
+    color: #1E88E5 !important;
     font-weight: bold;
   }
 }
+
 
 md-grid-tile-header {
   padding-top: 12px;

@@ -11,13 +11,7 @@ export class JanusService {
       private toastr: any,
       private config: any) {
 
-    if (!Janus.isWebrtcSupported()) {
-      toastr.error('No WebRTC support... ');
-      return;
-    }
-
     this.initialized = this.initialize();
-
   }
 
   // Called once at constructor
@@ -25,16 +19,23 @@ export class JanusService {
     var deffered = this.$q.defer();
 
     var initCallback = () => {
+
+      if (!Janus.isWebrtcSupported()) {
+        this.toastr.error('No WebRTC support... ');
+        deffered.reject();
+      }
+
       this.session = new Janus({
         server: this.config.janus.serverUri,
         success: () => {
-          deffered.resolve();
 
           $(window).on('beforeunload', () => {
             this.$rootScope.$broadcast('janus.destroy');
             this.session.destroy();
             // return "Are you sure want to leave this page?";
           });
+
+          deffered.resolve();
         },
         error: (error: any) => {
           this.toastr.error(`Janus creation error: ${error}`);

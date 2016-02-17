@@ -1,4 +1,4 @@
-import { IUser } from '../../../shidur/shidur.service';
+import { IUser } from '../../auth/auth.service';
 import { PubSubService } from '../../pubSub/pubSub.service';
 import { SingleUserChannelController } from '../channel.singleUser.controller';
 
@@ -7,7 +7,6 @@ export class ControlChannelController extends SingleUserChannelController {
   $rootScope: ng.IScope;
   pubSub: PubSubService;
 
-  users: IUser[] = [];
   usersBreakdown: { [channel: string]: IUser[]; };
   allowRemoveUsers: boolean = true;
 
@@ -18,6 +17,7 @@ export class ControlChannelController extends SingleUserChannelController {
     super($injector);
     this.$rootScope = $injector.get('$rootScope');
     this.pubSub = $injector.get('pubSub');
+    this.users = [];
   }
 
   pickUser(user: IUser): void {

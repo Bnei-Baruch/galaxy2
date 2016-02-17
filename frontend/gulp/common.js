@@ -8,6 +8,8 @@
 
 var gutil = require('gulp-util');
 
+exports.argv = require('yargs').argv;
+
 /**
  *  The main paths of your project handle these with care
  */
@@ -38,3 +40,4 @@ exports.errorHandler = function(title) {
     this.emit('end');
   };
 };
+

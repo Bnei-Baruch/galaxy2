@@ -1,9 +1,9 @@
 <section class="channel md-whiteframe-z1">
   <slot-widget kind="program"
-    users="vm.userSets[vm.programUserSetIndex]"></slot-widget>
+    users="vm.composites[vm.programCompositeIndex]"></slot-widget>
 
   <slot-widget kind="preview"
-    users="vm.userSets[vm.previewUserSetIndex]"
+    users="vm.composites[vm.previewCompositeIndex]"
     is-ready="vm.isReadyToSwitch()"
     trigger="vm.trigger()"></slot-widget>
 
