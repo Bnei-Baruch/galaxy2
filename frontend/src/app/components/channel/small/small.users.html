@@ -1,4 +1,4 @@
-<md-list class="users userList">
+<md-list class="users">
 
   <!-- TODO: move styles to channel.scss -->
 
@@ -6,8 +6,7 @@
   <md-list-item ng-click="vm.isReadyToSwitch() && vm.putCompositeToPreview($index)"
     ng-repeat="composite in vm.composites"
     ng-class-odd="'oddComposite'"
-    ng-class="$index === vm.compositeIndex.program ? 'program' : ($index === vm.compositeIndex.preview ? 'preview' : '')"
-    class="userItem">
+    ng-class="$index === vm.compositeIndex.program ? 'program' : ($index === vm.compositeIndex.preview ? 'preview' : '')">
 
     <div layout="row" layout-wrap flex="100">
       <div layout="column md-caption" flex="50" ng-repeat="user in composite">
@@ -42,7 +41,7 @@
   <md-divider></md-divider>
 
   <!-- Offline users -->
-  <md-list-item ng-repeat="user in vm.users | filter : {joined: '!'} | orderBy : 'title'" class="userItem">
+  <md-list-item ng-repeat="user in vm.users | filter : {joined: '!'} | orderBy : 'title'">
     <md-icon layout="column" aria-label="" ng-style="{color: '#9E9E9E'}" class="material-icons">lens</md-icon>
 
     <div class="md-list-item-text" layout="column" flex>
