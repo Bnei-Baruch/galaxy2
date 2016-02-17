@@ -15,20 +15,45 @@ video {
   text-transform: uppercase;
 }
 
-.channel .users .program, .channel .users .program div {
-  color: #E53935;
-  font-weight: bold;
+.channel .users {
+
+    max-height: 250px;
+    overflow: auto;
+  
+    md-list-item{
+      &, &:hover {        
+        line-height: 0;
+        padding: 5px 0;
+        min-height: 20px;
+      }
+      md-list-item-text, md-list-item-text:hover {
+        line-height: 20px;
+      }
+  
+      & > md-icon:first-child{
+        margin: 0 10px 0 0;
+      }
+    }
+
+
+  .program {
+    &, & div{
+      color: #E53935;
+      font-weight: bold;      
+    }
+  }
+  .preview {
+    &, & div{
+      color: #43A047;
+      font-weight: bold;
+    }
+  }
+  .completesComposite {
+    color: #1E88E5 !important;
+    font-weight: bold;
+  }
 }
 
-.channel .users .preview, .channel .users .preview div {
-  color: #43A047;
-  font-weight: bold;
-}
-
-.channel .users .completesComposite {
-  color: #1E88E5 !important;
-  font-weight: bold;
-}
 
 md-grid-tile-header {
   padding-top: 12px;
@@ -67,3 +92,4 @@ md-grid-tile-header label, md-grid-tile-footer label {
   padding: 3px 6px 3px 6px;
   margin-right: 6px;
 }
+
