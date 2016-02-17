@@ -1,4 +1,4 @@
-import IDialogService = angular.material.IDialogService;
+import { PubSubService } from '../pubSub/pubSub.service';
 
 // Implementation follows guidelines from:
 // http://brewhouse.io/blog/2014/12/09/authentication-made-simple-in-single-page-angularjs-applications.html
@@ -9,7 +9,9 @@ export interface IGalaxyScope extends ng.IRootScopeService {
 }
 
 export interface IUser {
+  id: number;
   login: string;
+  email: string;
   title: string;
   channel: string;
   role: string;
@@ -26,28 +28,27 @@ export class AuthService {
   user: IUser;
 
   constructor(private $q: ng.IQService,
-      private $mdDialog: IDialogService,
-      private toastr: any,
+      private $mdDialog: angular.material.IDialogService,
       private $auth: any,
+      private pubSub: PubSubService,
+      private toastr: any,
       private Rollbar: any) {
   }
 
   authenticate() {
     var deferred = this.$q.defer();
 
-    this.$auth.validateUser().then((user) => {
-      this.user = user;
+    this.$auth.validateUser().then((user: IUser) => {
       this.onLogin(user);
       deferred.resolve(user);
-    }).catch((resp) => {
+    }).catch((resp: any) => {
       // User not authenticated, displaying login modal
       this.$mdDialog.show({
         clickOutsideToClose: false,
         templateUrl: 'app/components/auth/login.html',
         controller: 'LoginController',
         controllerAs: 'vm'
-      }).then((user) => {
-        this.user = user;
+      }).then((user: IUser) => {
         this.onLogin(user);
         deferred.resolve(user);
       });
@@ -55,7 +56,7 @@ export class AuthService {
     return deferred.promise;
   }
 
-  can(role) {
+  can(role: string) {
     switch (this.user.role) {
       case 'admin':
         return true;
@@ -70,13 +71,21 @@ export class AuthService {
 
   logout() {
     return this.$auth.signOut()
-      .then(() => this.Rollbar.configure({payload: {person: null}}))
-      .catch((resp) => {
+      .then(this.onLogout)
+      .catch((resp: any) => {
         this.toastr.error(`Unable to sign out: $(resp.errors)`);
       });
   }
 
-  onLogin(user) {
+  onLogin(user: IUser) {
+    this.user = user;
+
+    // Notify the backend to track multiple logins
+    this.pubSub.client.publish('/auth', {
+      message: 'login',
+      login: user.login
+    });
+
     this.Rollbar.Rollbar.configure({
       payload: {
         person: {
@@ -86,5 +95,14 @@ export class AuthService {
         }
       }
     });
+  }
+
+  onLogout() {
+    this.pubSub.client.publish('/auth', {
+      message: 'logout',
+      login: this.user.login
+    });
+
+    this.Rollbar.configure({payload: {person: null}});
   }
 }
