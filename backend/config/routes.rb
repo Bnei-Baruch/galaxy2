@@ -6,7 +6,13 @@ Rails.application.routes.draw do
 
   # REST api routes
   namespace :rest, defaults: {format: :json} do
-    mount_devise_token_auth_for 'User', at: 'auth', skip: [:registrations, :passwords, :confirmations]
+    mount_devise_token_auth_for 'User',
+      at: 'auth',
+      skip: [:registrations, :passwords, :confirmations]
+      # controllers: {
+      #   token_validations: 'rest/overrides/token_validations'
+      # }
+
     resources :users, only: [:show, :index]
     resources :shidur_state
   end

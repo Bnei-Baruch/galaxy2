@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151223130819) do
+ActiveRecord::Schema.define(version: 20160217103603) do
 
   create_table "shidur_states", force: :cascade do |t|
     t.string   "state"
@@ -39,6 +39,8 @@ ActiveRecord::Schema.define(version: 20151223130819) do
     t.string   "login"
     t.string   "title"
     t.integer  "channel"
+    t.boolean  "logged_in",              default: false
+    t.string   "faye_client_id"
   end
 
   add_index "users", ["email"], name: "index_users_on_email", unique: true
