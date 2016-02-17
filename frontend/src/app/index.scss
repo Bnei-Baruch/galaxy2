@@ -89,7 +89,27 @@ section.jumbotron {
     }
   }
 }
+// show hide chat and top navigation
+header{
+ .showHeader{
+    min-height: 15px;    
+ }
+ md-sidenav {
+    min-height: 100%;
+    right: 0;
+    min-width: 100%;
 
+    &.md-sidenav-top {    
+      transform: translate3d( 0, 0, 0);
+    }
+    &.md-sidenav-top.md-closed {
+      transform: translate3d(0%, 0, 0);
+    }
+  }
+  .md-button.md-fab.md-mini.showHeader{
+    top: 10;
+  }
+}
 /**
  *  Do not remove the comment below. It's the markers used by gulp-inject to inject
  *  all your sass files automatically

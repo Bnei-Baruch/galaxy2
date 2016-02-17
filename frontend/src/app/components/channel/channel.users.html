@@ -14,7 +14,7 @@
   </md-button>
 </script>
 
-<md-list class="users">
+<md-list class="users"  layout="column">
 
   <!-- Online users -->
   <md-list-item ng-click="vm.putUserToPreview(user)" ng-repeat="user in vm.users | filter : {joined: '', disabled: false} | orderBy : 'joined'">
