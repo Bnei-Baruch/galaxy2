@@ -2,6 +2,8 @@
 
 var path = require('path');
 var gulp = require('gulp');
+var gutil = require('gulp-util');
+var exec = require("child_process").execFileSync;
 var conf = require('./common');
 
 var $ = require('gulp-load-plugins')({
@@ -38,6 +40,11 @@ gulp.task('html', ['inject', 'partials'], function () {
   var cssFilter = $.filter('**/*.css', { restore: true });
   var assets;
 
+  gutil.log('Computing git hash');
+  var gitSHA1 = exec('git', [ "rev-parse", "HEAD" ], {env: process.env});
+  gitSHA1 = gitSHA1.toString().trim();
+  gutil.log('gitSHA1: ' + gitSHA1);
+
   return gulp.src(path.join(conf.paths.tmp, '/serve/*.html'))
     .pipe($.inject(partialsInjectFile, partialsInjectOptions))
     .pipe(assets = $.useref.assets())
@@ -46,6 +53,11 @@ gulp.task('html', ['inject', 'partials'], function () {
     .pipe($.sourcemaps.init())
     .pipe($.uglify({ preserveComments: $.uglifySaveLicense })).on('error', conf.errorHandler('Uglify'))
     .pipe($.sourcemaps.write('maps'))
+    .pipe($.rollbar({
+      accessToken: '95882773e355448fbd111f27dded0c6e',
+      version: gitSHA1,
+      sourceMappingURLPrefix: '../maps'
+    }))
     .pipe(jsFilter.restore)
     .pipe(cssFilter)
     .pipe($.sourcemaps.init())

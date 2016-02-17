@@ -17,6 +17,8 @@ export function config($logProvider: ng.ILogProvider, $authProvider: any, toastr
 
   RollbarProvider.init({
     accessToken: config.rollbarToken,
+    source_map_enabled: true,
+    code_version: config.code_version || "unknown_version",
     captureUncaught: true,
     payload: {
       environment: config.environment || "development"
