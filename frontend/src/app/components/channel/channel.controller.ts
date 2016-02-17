@@ -1,5 +1,5 @@
 import { JanusVideoRoomService } from '../janus/janusVideoRoom.service';
-import { IUser } from '../../shidur/shidur.service';
+import { IUser } from '../auth/auth.service';
 
 /** @ngInject */
 export class BaseChannelController {

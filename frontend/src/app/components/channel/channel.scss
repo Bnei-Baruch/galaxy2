@@ -7,7 +7,7 @@ video {
   margin-right: 4px;
 }
 
-.channel .gray {
+.channel .oddComposite {
   background: #E0E0E0 !important;
 }
 
@@ -15,13 +15,18 @@ video {
   text-transform: uppercase;
 }
 
-.channel .users .program {
+.channel .users .program, .channel .users .program div {
   color: #E53935;
   font-weight: bold;
 }
 
-.channel .users .preview {
+.channel .users .preview, .channel .users .preview div {
   color: #43A047;
+  font-weight: bold;
+}
+
+.channel .users .completesComposite {
+  color: #1E88E5 !important;
   font-weight: bold;
 }
 
