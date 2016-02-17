@@ -15,14 +15,35 @@ video {
   text-transform: uppercase;
 }
 
-.channel .users .program {
-  color: #E53935;
-  font-weight: bold;
-}
+.channel .users {
 
-.channel .users .preview {
-  color: #43A047;
-  font-weight: bold;
+    max-height: 250px;
+    overflow: auto;
+  
+    md-list-item{
+      &, &:hover {        
+        line-height: 0;
+        padding: 5px 0;
+        min-height: 20px;
+      }
+      md-list-item-text, md-list-item-text:hover {
+        line-height: 20px;
+      }
+  
+      & > md-icon:first-child{
+        margin: 0 10px 0 0;
+      }
+    }
+
+
+  .program {
+    color: #E53935;
+    font-weight: bold;
+  }
+  .preview {
+    color: #43A047;
+    font-weight: bold;
+  }
 }
 
 md-grid-tile-header {
@@ -62,3 +83,4 @@ md-grid-tile-header label, md-grid-tile-footer label {
   padding: 3px 6px 3px 6px;
   margin-right: 6px;
 }
+
