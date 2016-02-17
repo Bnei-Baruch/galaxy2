@@ -15,19 +15,67 @@ video {
   text-transform: uppercase;
 }
 
-.channel .users .program, .channel .users .program div {
-  color: #E53935;
-  font-weight: bold;
+.userList{
+  &.md-autocomplete-suggestions {
+    & > li{
+      margin: 0; padding: 0;  height: auto;
+    }
+  }
+  .userItem{
+    padding: 5px 0 5px 16px;
+    & > .md-button{
+      padding: 0;
+    }
+    &, & > .md-button{
+      &, &:hover {        
+        line-height: 0;
+        height: auto;
+        min-height: 20px;
+      }      
+    }
+    & .md-list-item-inner{
+      height: 0; min-height: 0;
+      &  > md-icon:first-child{
+        margin: 0 10px 0 0;
+        font-size: 14px;
+        width: 14px;
+      }
+    }
+    & md-icon:first-child{
+      margin: 0 10px 0 0;
+      font-size: 14px;
+      width: 14px;
+    }
+  }
+  .md-icon-button {
+    height: auto; 
+    min-height: auto;
+    line-height: 0; 
+    padding: 0;
+  }  
 }
 
-.channel .users .preview, .channel .users .preview div {
-  color: #43A047;
-  font-weight: bold;
-}
+.channel .users {
 
-.channel .users .completesComposite {
-  color: #1E88E5 !important;
-  font-weight: bold;
+  max-height: 250px;
+  overflow: auto;
+
+  .program {
+    &, & div{
+      color: #E53935;
+      font-weight: bold;      
+    }
+  }
+  .preview{
+    &, & div{
+      color: #43A047;
+      font-weight: bold;
+    }
+  }
+  .completesComposite {
+    color: #1E88E5 !important;
+    font-weight: bold;
+  }
 }
 
 md-grid-tile-header {
