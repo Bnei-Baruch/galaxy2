@@ -1,21 +1,15 @@
-import IDialogService = angular.material.IDialogService;
-
+import { IUser } from '../auth/auth.service';
 
 /** @ngInject */
 export class LoginController {
   login: string;
   password: string;
   $log: ng.ILogService;
-  $scope: ng.IScope;
-  $mdDialog: IDialogService;
-  $auth: any;
-  toastr: any;
 
-  constructor($scope: ng.IScope, $mdDialog: IDialogService, $auth: any, toastr: any) {
-    this.$scope = $scope;
-    this.$mdDialog = $mdDialog;
-    this.$auth = $auth;
-    this.toastr = toastr;
+  constructor(private $scope: ng.IScope,
+      private $mdDialog: angular.material.IDialogService,
+      private $auth: any,
+      private toastr: any) {
   }
 
   submit(login: string, password: string) {
@@ -24,9 +18,10 @@ export class LoginController {
     this.$auth.submitLogin({
       login: this.login,
       password: this.password
-    }).then((user) => {
+    }).then((user: IUser) => {
       this.$mdDialog.hide(user);
-    }).catch((response) => {
+    }).catch((response: any) => {
+      debugger;
       this.toastr.error(response.errors.join(' '));
     });
   }
