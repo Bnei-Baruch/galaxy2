@@ -21,8 +21,8 @@ export class LoginController {
     }).then((user: IUser) => {
       this.$mdDialog.hide(user);
     }).catch((response: any) => {
-      debugger;
-      this.toastr.error(response.errors.join(' '));
+      // Real error message is displayed by auth.service
+      console.debug('Login failed');
     });
   }
 

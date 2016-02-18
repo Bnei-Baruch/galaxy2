@@ -27,12 +27,18 @@ export interface IUser {
 export class AuthService {
   user: IUser;
 
-  constructor(private $q: ng.IQService,
+  constructor($rootScope: ng.IRootScopeService,
+      private $q: ng.IQService,
       private $mdDialog: angular.material.IDialogService,
       private $auth: any,
       private pubSub: PubSubService,
       private toastr: any,
       private Rollbar: any) {
+
+    // Display login errors here because ng-auth-token's catch() gets only a hardcoded error
+    $rootScope.$on('auth:login-error', (e: any, response: any) => {
+      this.toastr.error(response.errors.join(' '));
+    });
   }
 
   authenticate() {
@@ -52,6 +58,9 @@ export class AuthService {
         this.onLogin(user);
         deferred.resolve(user);
       });
+
+      // this.toastr.error(resp.errors.join(' '));
+
     });
     return deferred.promise;
   }
