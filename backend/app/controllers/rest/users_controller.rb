@@ -1,7 +1,7 @@
 module Rest
   class UsersController < ApplicationController
     include DeviseTokenAuth::Concerns::SetUserByToken
-    #before_filter :authenticate_user!
+    before_filter :authenticate_user!
 
     def index
       render json: User.all
