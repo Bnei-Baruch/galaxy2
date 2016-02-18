@@ -1,5 +1,3 @@
-import { PubSubService } from '../pubSub/pubSub.service';
-
 // Implementation follows guidelines from:
 // http://brewhouse.io/blog/2014/12/09/authentication-made-simple-in-single-page-angularjs-applications.html
 
@@ -31,14 +29,8 @@ export class AuthService {
       private $q: ng.IQService,
       private $mdDialog: angular.material.IDialogService,
       private $auth: any,
-      private pubSub: PubSubService,
       private toastr: any,
       private Rollbar: any) {
-
-    // Display login errors here because ng-auth-token's catch() gets only a hardcoded error
-    $rootScope.$on('auth:login-error', (e: any, response: any) => {
-      this.toastr.error(response.errors.join(' '));
-    });
   }
 
   authenticate() {
@@ -59,7 +51,7 @@ export class AuthService {
         deferred.resolve(user);
       });
 
-      // this.toastr.error(resp.errors.join(' '));
+      this.toastr.error(resp.errors.join(' '));
 
     });
     return deferred.promise;
@@ -89,12 +81,6 @@ export class AuthService {
   onLogin(user: IUser) {
     this.user = user;
 
-    // Notify the backend to track multiple logins
-    this.pubSub.client.publish('/auth', {
-      message: 'login',
-      login: user.login
-    });
-
     this.Rollbar.Rollbar.configure({
       payload: {
         person: {
@@ -107,11 +93,6 @@ export class AuthService {
   }
 
   onLogout() {
-    this.pubSub.client.publish('/auth', {
-      message: 'logout',
-      login: this.user.login
-    });
-
     this.Rollbar.configure({payload: {person: null}});
   }
 }

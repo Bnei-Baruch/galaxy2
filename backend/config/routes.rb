@@ -8,11 +8,7 @@ Rails.application.routes.draw do
   namespace :rest, defaults: {format: :json} do
     mount_devise_token_auth_for 'User',
       at: 'auth',
-      skip: [:registrations, :passwords, :confirmations],
-      controllers: {
-        sessions: 'rest/overrides/sessions',
-        token_validations: 'rest/overrides/token_validations'
-      }
+      skip: [:registrations, :passwords, :confirmations]
 
     resources :users, only: [:show, :index]
     resources :shidur_state
