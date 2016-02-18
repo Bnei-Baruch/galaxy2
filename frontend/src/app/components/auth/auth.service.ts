@@ -51,8 +51,6 @@ export class AuthService {
         deferred.resolve(user);
       });
 
-      this.toastr.error(resp.errors.join(' '));
-
     });
     return deferred.promise;
   }
