@@ -7,10 +7,10 @@
     ng-repeat="composite in vm.composites"
     ng-class-odd="'oddComposite'"
     ng-class="$index === vm.compositeIndex.program ? 'program' : ($index === vm.compositeIndex.preview ? 'preview' : '')"
-    class="userItem">
+    class="composite">
 
-    <div layout="row" layout-wrap flex="100">
-      <div layout="column md-caption" flex="50" ng-repeat="user in composite">
+    <div layout="row" layout-wrap flex="100" class="userItem">
+      <div layout="column md-caption" flex="50" ng-repeat="user in composite" class="compositeItem">
         <md-icon layout="column" ng-style="{color: '#4CAF50', fontSize: 12, marginRight: '8px'}" class="material-icons">lens</md-icon>
 
         <div ng-bind="user.title"

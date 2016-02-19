@@ -1,30 +1,67 @@
 <section class="channel md-whiteframe-z1">
-    <slot-widget kind="program" user="vm.programUser" toggle-audio="vm.toggleAudio(vm.programUser)" show-audio-toggle="true"></slot-widget>
-    <slot-widget kind="preview" user="vm.previewUser" is-ready="vm.isReadyToSwitch()" toggle-audio="vm.toggleAudio(vm.previewUser)" show-audio-toggle="true" trigger="vm.trigger()"></slot-widget>
-    <md-autocomplete md-no-cache="true" md-selected-item="vm.selectedUser" md-search-text="vm.searchText" md-selected-item-change="vm.pickUser(user)" md-items="user in vm.getAllUsers() | filter: {disabled: false} | filter: vm.searchText | orderBy : ['joined', 'title']" md-item-text="user.title" md-min-length="0" placeholder="Pick a user" md-menu-class="autocomplete-custom-template userList">
-        <md-item-template>
-            <md-list-item layout="row" class="userItem">
-                <md-icon aria-label="{{ user.title }}" ng-style="user.joined ? {color: '#4CAF50'} : {color: '#9E9E9E'}" class="material-icons">
-                    lens
-                </md-icon>
-                <div class="md-list-item-text" layout="column" flex>
-                    <p ng-bind="user.title"></p>
-                </div>
-            </md-list-item>
-        </md-item-template>
-    </md-autocomplete>
-    <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"></ng-include>
-    <md-list class="users userList" ng-show="disabledUsers.length">
-        <md-subheader class="md-no-sticky">Disabled users</md-subheader>
-        <md-list-item ng-click="vm.putUserToPreview(user)" ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true} | orderBy : 'title')" class="userItem">
-            <md-icon layout="column" aria-label="" ng-style="{{ user.joined ? {color: '#4CAF50'} : {color: '#9E9E9E'} }}" class="material-icons">
-                lens
-            </md-icon>
-            <div class="md-list-item-text" layout="column" flex>
-                <p ng-bind="user.title" class="{{user === vm.previewUser ? 'preview' : ''}}">
-                </p>
-            </div>
-            <ng-include src="'#removeUserTemplate'"></ng-include>
-        </md-list-item>
-    </md-list>
+  <slot-widget kind="program"
+    user="vm.programUser"
+    toggle-audio="vm.toggleAudio(vm.programUser)"
+    show-audio-toggle="true"></slot-widget>
+
+  <slot-widget kind="preview"
+    user="vm.previewUser"
+    is-ready="vm.isReadyToSwitch()"
+    toggle-audio="vm.toggleAudio(vm.previewUser)"
+    show-audio-toggle="true"
+    trigger="vm.trigger()"></slot-widget>
+
+  <md-autocomplete
+    md-no-cache="true"
+    md-selected-item="vm.selectedUser"
+    md-search-text="vm.searchText"
+    md-selected-item-change="vm.pickUser(user)"
+    md-items="user in vm.getAllUsers() | filter: {disabled: false} | filter: vm.searchText | orderBy : ['joined', 'title']"
+    md-item-text="user.title"
+    md-min-length="0"
+    placeholder="Pick a user"
+    md-menu-class="autocomplete-custom-template userList">   
+    <md-item-template>
+      <md-list-item layout="row" class="userItem">
+        <md-icon
+          aria-label="{{ user.title }}"
+          ng-style="user.joined ? {color: '#4CAF50'} : {color: '#9E9E9E'}"
+          class="material-icons">
+          lens
+        </md-icon>
+        <div class="md-list-item-text" layout="column" flex>
+          <p ng-bind="user.title"></p>
+        </div>
+      </md-list-item>
+    </md-item-template>
+  </md-autocomplete>
+
+  <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"></ng-include>
+
+  <md-list class="users userList" ng-show="disabledUsers.length">
+    <md-subheader class="md-no-sticky">Disabled users</md-subheader>
+
+    <md-list-item
+      ng-click="vm.putUserToPreview(user)"
+      ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true} | orderBy : 'title')"
+      class="userItem">
+
+      <md-icon
+        layout="column"
+        aria-label=""
+        ng-style="{{ user.joined ? {color: '#4CAF50'} : {color: '#9E9E9E'} }}"
+        class="material-icons">
+        lens
+      </md-icon>
+
+      <div class="md-list-item-text" layout="column" flex>
+        <p ng-bind="user.title"
+          class="{{user === vm.previewUser ? 'preview' : ''}}">
+        </p>
+      </div>
+
+      <ng-include src="'#removeUserTemplate'"></ng-include>
+    </md-list-item>
+  </md-list>
+
 </section>

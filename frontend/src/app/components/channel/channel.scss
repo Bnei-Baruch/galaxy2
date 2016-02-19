@@ -1,117 +1,123 @@
 video {
-  background: transparent url('data:image/gif,AAAA') 50% 50% / cover;
-  width: 100%;
+    background: transparent url('data:image/gif,AAAA') 50% 50% / cover;
+    width: 100%;
 }
 
 .channel {
-  margin-right: 4px;
+    margin-right: 4px;
 }
 
 .channel .oddComposite {
-  background: #E0E0E0 !important;
+    background: #E0E0E0 !important;
 }
 
 .channel h3 {
-  text-transform: uppercase;
+    text-transform: uppercase;
 }
 
-.userList{
-  &.md-autocomplete-suggestions {
-    & > li{
-      margin: 0; padding: 0;  height: auto;
+.userList {
+    &.md-autocomplete-suggestions {
+        & > li {
+            margin: 0;
+            padding: 0;
+            height: auto;
+        }
     }
-  }
-  .userItem{
-    padding: 5px 0 5px 16px;
-    & > .md-button{
-      padding: 0;
+    .userItem {
+        padding: 5px 0 5px 16px;
+        & > .md-button {
+            padding: 0;
+        }
+        &,
+        & > .md-button {
+            &,
+            &:hover {
+                line-height: 0;
+                height: auto;
+                min-height: 20px;
+            }
+        }
+        & .md-list-item-inner {
+            height: 0;
+            min-height: 0;            
+        }
+        & md-icon.material-icons:first-child {
+            margin: 0 15px 0 0;
+            font-size: 14px;
+            width: 14px;
+        }
+        .noMarginRight md-icon.material-icons:first-child {
+            margin-right: 0;
+        }
     }
-    &, & > .md-button{
-      &, &:hover {        
-        line-height: 0;
+    .md-icon-button {
         height: auto;
-        min-height: 20px;
-      }      
+        min-height: auto;
+        line-height: 0;
+        padding: 0;
     }
-    & .md-list-item-inner{
-      height: 0; min-height: 0;
-      &  > md-icon:first-child{
-        margin: 0 10px 0 0;
-        font-size: 14px;
-        width: 14px;
-      }
-    }
-    & md-icon:first-child{
-      margin: 0 10px 0 0;
-      font-size: 14px;
-      width: 14px;
-    }
-  }
-  .md-icon-button {
-    height: auto; 
-    min-height: auto;
-    line-height: 0; 
-    padding: 0;
-  }  
 }
 
 .channel .users {
-
-  max-height: 250px;
-  overflow: auto;
-
-  .program {
-    &, & div{
-      color: #E53935;
-      font-weight: bold;      
+    max-height: 250px;
+    overflow: auto;
+    .composite > .md-button{
+        padding: 0;
+        .compositeItem{
+            padding: 5px 0;
+            line-height: 14px;
+        }
     }
-  }
-  .preview{
-    &, & div{
-      color: #43A047;
-      font-weight: bold;
+    .program {
+        &, & div {
+            color: #E53935;
+            font-weight: bold;
+        }
     }
-  }
-  .completesComposite {
-    color: #1E88E5 !important;
-    font-weight: bold;
-  }
+    .preview {
+        &, & div {
+            color: #43A047;
+            font-weight: bold;
+        }
+    }
+    .completesComposite {
+        color: #1E88E5 !important;
+        font-weight: bold;
+    }
 }
 
 md-grid-tile-header {
-  padding-top: 12px;
+    padding-top: 12px;
 }
 
-md-grid-tile-header, md-grid-tile-footer {
-  background: none !important;
+md-grid-tile-header,
+md-grid-tile-footer {
+    background: none !important;
 }
 
-md-grid-tile-header h3, md-grid-tile-footer h3 {
-  position: absolute;
-  left: 0px;
-  user-select: none;
-  font-weight: 500 !important;
-  text-shadow:
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000;
+md-grid-tile-header h3,
+md-grid-tile-footer h3 {
+    position: absolute;
+    left: 0px;
+    user-select: none;
+    font-weight: 500 !important;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 }
 
 md-grid-tile-footer md-icon {
-  cursor: default;
-  outline: none;
-  user-select: none;
-  text-shadow:
-    -1px -1px 0 #333,
-    1px -1px 0 #333,
-    -1px 1px 0 #333,
-    1px 1px 0 #333;
+    cursor: default;
+    outline: none;
+    user-select: none;
+    text-shadow: -1px -1px 0 #333, 1px -1px 0 #333, -1px 1px 0 #333, 1px 1px 0 #333;
 }
 
-md-grid-tile-header label, md-grid-tile-footer label {
-  user-select: none;
-  background-color: blue;
-  padding: 3px 6px 3px 6px;
-  margin-right: 6px;
+md-grid-tile-header label,
+md-grid-tile-footer label {
+    user-select: none;
+    background-color: blue;
+    padding: 3px 6px 3px 6px;
+    margin-right: 6px;
+}
+.md-button.md-icon-button{
+  width: auto;
 }
