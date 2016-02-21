@@ -465,11 +465,11 @@ export class JanusVideoRoomService {
   }
 
   private handleMultipleLogins(message: any): boolean {
-    var alreadyLoggedIn = message.publishers.find((publisher: any) => {
+    var alreadyLoggedIn = message.publishers.filter((publisher: any) => {
       return publisher.display === this.localUserLogin;
     });
 
-    if (alreadyLoggedIn) {
+    if (alreadyLoggedIn.length) {
       this.toastr.error('You have already logged in from another place, please logout from there and try again <3');
       this.authService.logout().then(() => {
         // Not reloading immediately for the user to see the explanation message

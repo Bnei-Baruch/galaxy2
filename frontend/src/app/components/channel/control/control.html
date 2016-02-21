@@ -16,7 +16,7 @@
     md-selected-item="vm.selectedUser"
     md-search-text="vm.searchText"
     md-selected-item-change="vm.pickUser(user)"
-    md-items="user in vm.getAllUsers() | filter: {disabled: false} | filter: vm.searchText | orderBy : ['joined', 'title']"
+    md-items="user in vm.getAllUsers() | filter: {disabled: false, login: vm.searchText, title: vm.searchText} | orderBy : ['joined', 'title']"
     md-item-text="user.title"
     md-min-length="0"
     placeholder="Pick a user"
