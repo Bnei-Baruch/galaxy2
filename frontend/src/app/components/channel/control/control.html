@@ -20,29 +20,31 @@
     md-item-text="user.title"
     md-min-length="0"
     placeholder="Pick a user"
-    md-menu-class="autocomplete-custom-template">
+    md-menu-class="autocomplete-custom-template userList">   
     <md-item-template>
-      <span layout="row">
+      <md-list-item layout="row" class="userItem">
         <md-icon
-          flex="20"
           aria-label="{{ user.title }}"
           ng-style="user.joined ? {color: '#4CAF50'} : {color: '#9E9E9E'}"
           class="material-icons">
           lens
         </md-icon>
-        <span flex="80" ng-bind="user.title"></span>
-      </span>
+        <div class="md-list-item-text" layout="column" flex>
+          <p ng-bind="user.title"></p>
+        </div>
+      </md-list-item>
     </md-item-template>
   </md-autocomplete>
 
   <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"></ng-include>
 
-  <md-list class="users" ng-show="disabledUsers.length">
+  <md-list class="users userList" ng-show="disabledUsers.length">
     <md-subheader class="md-no-sticky">Disabled users</md-subheader>
 
     <md-list-item
       ng-click="vm.putUserToPreview(user)"
-      ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true} | orderBy : 'title')">
+      ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true} | orderBy : 'title')"
+      class="userItem">
 
       <md-icon
         layout="column"
