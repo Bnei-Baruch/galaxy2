@@ -27,6 +27,7 @@ export class JanusService {
 
       this.session = new Janus({
         server: this.config.janus.serverUri,
+	iceServers: [{url: this.config.janus.stunUri}],
         success: () => {
 
           $(window).on('beforeunload', () => {
