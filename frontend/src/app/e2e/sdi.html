@@ -1,0 +1,10 @@
+<div class='md-padding' layout="row" layout-wrap>
+<md-card style="width: 320px;" ng-repeat="(port, streamId) in sdi.ports">
+  <!--<video data-login="{{ fakeUser }}" style="height: 180px;" autoplay muted></video>-->
+  <md-card-content>
+    Port:{{ port }} StreamId:{{ streamId }}
+    <video class="relative" id="{{'remoteVideo' + port}}" controls autoplay
+      ng-init='sdi.onVideo(port, streamId, $event, $element)'></video>
+  </md-card-content>
+</md-card>
+</div>
