@@ -14,8 +14,8 @@ export class FakeSDIController {
     angular.element(document).ready(() => {
       for (var name in config.janus.sdiPorts) {
         if (config.janus.sdiPorts.hasOwnProperty(name)) {
-          var video = config.janus.sdiPorts[name].video;
-          var streamId = config.janus.sdiPorts[name].streamId;
+          var video = config.janus.sdiPorts[name].video.program;
+          var streamId = config.janus.sdiPorts[name].video.streamId;
           this.ports[video] = streamId;
         }
       }

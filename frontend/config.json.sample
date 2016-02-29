@@ -1,5 +1,5 @@
 {
-  "environment": "development"
+  "environment": "development",
   "janus": {
     "serverUri": "https://galaxy-dev.kbb1.com:8889/janus",
     "stunUri": "stun://v4g.kbb1.com:3478",
