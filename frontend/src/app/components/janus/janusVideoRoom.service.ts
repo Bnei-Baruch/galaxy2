@@ -1,3 +1,4 @@
+import { AuthService } from '../auth/auth.service';
 import { JanusService } from './janus.service';
 
 /**
@@ -85,6 +86,7 @@ export class JanusVideoRoomService {
       private $rootScope: ng.IRootScopeService,
       private $timeout: ng.ITimeoutService,
       private $http: ng.IHttpService,
+      private authService: AuthService,
       private janus: JanusService,
       private toastr: any,
       private config: any) {
@@ -432,6 +434,11 @@ export class JanusVideoRoomService {
         // TODO: Fix following variable formatting (does not work!)
         console.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
 
+        // Handling multiple logins
+        if (this.handleMultipleLogins(message)) {
+          return;
+        }
+
         if (this.localUserLogin) {
           this.publishLocalFeed();
         } else {
@@ -455,6 +462,25 @@ export class JanusVideoRoomService {
         }
         break;
     }
+  }
+
+  private handleMultipleLogins(message: any): boolean {
+    var alreadyLoggedIn = message.publishers.filter((publisher: any) => {
+      return publisher.display === this.localUserLogin;
+    });
+
+    if (alreadyLoggedIn.length) {
+      this.toastr.error('You have already logged in from another place, please logout from there and try again <3');
+      this.authService.logout().then(() => {
+        // Not reloading immediately for the user to see the explanation message
+        this.authService.authenticate().then(() => {
+          window.location.reload();
+        });
+      });
+      return true;
+    }
+
+    return false;
   }
 
   // Creates sdp offer, meaning two things already happened

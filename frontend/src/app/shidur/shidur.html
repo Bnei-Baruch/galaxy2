@@ -12,29 +12,6 @@
   <!--   <small&#45;channel&#45;widget name="small2" users="shidur.breakdown.small2" hotkey="4"></small&#45;channel&#45;widget> -->
   <!-- </div> -->
   <div flex="25">
-    <control-channel-widget name="control" users-breakdown="shidur.breakdown" hotkey="5"></control-channel-widget>
+    <control-channel-widget name="control" users="[]" users-breakdown="shidur.breakdown" hotkey="5"></control-channel-widget>
   </div>
-
-  <md-button
-    ng-click="shidur.toggleChat()"
-    class="md-fab md-mini md-primary md-fab-top-right"
-    aria-label="Open chat">
-    <md-icon ng-if="1" class="material-icons">chat</md-icon>
-  </md-button>
-
-  <md-sidenav class="md-sidenav-right md-whiteframe-z2" md-component-id="chat">
-    <md-toolbar class="md-theme-light">
-      <h1 class="md-toolbar-tools" layout="row" layout-align="space-between">Chat
-      <md-button ng-click="shidur.closeChat()" class="md-icon-button">
-        <md-icon
-          ng-style="{color: '#fff'}"
-          class="material-icons">clear</md-icon>
-      </md-button>
-</h1>
-    </md-toolbar>
-    <md-content layout-fill>
-      <iframe src="https://chat1.kbb1.com/?label=galaxy2"></iframe>
-    </md-content>
-  </md-sidenav>
-
 </div>
