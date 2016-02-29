@@ -53,5 +53,6 @@
   },
   "backendUri": "https://rt-dev.kbb1.com:5000/galaxy2/backend",
   "rollbarToken": "rollbar-access-token-comes-here",
+  "codeVersion": "git-sha1-deployed-should-be-here",
   "chatUri": "https://chat1.kbb1.com/?label=galaxy2"
 }
