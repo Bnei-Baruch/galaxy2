@@ -1,5 +1,12 @@
+function debugLog(msg) {
+  var a = document.querySelector('body');
+  a.innerHTML = a.innerHTML + msg + '<br>';
+}
+
 function getAverageVideoColor(selector) {
   var videoElement = document.querySelector(selector);
+  //debugLog(selector);
+  //debugLog(videoElement);
   if (!videoElement) {
     return undefined;
   }
