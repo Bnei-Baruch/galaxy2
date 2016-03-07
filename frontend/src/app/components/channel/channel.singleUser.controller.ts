@@ -130,7 +130,7 @@ export class SingleUserChannelController extends BaseChannelController {
     }, () => {
       var error = 'Failed forwarding feed to SDI';
       this.toastr.error(error);
-      console.error(error);
+      this.$log.error(error);
     });
   }
 

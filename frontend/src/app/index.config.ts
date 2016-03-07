@@ -1,5 +1,8 @@
+declare var Rollbar: any;
+
 /** @ngInject */
-export function config($provide: ng.auto.IProvideService,
+export function config(
+    $provide: ng.auto.IProvideService,
     $logProvider: ng.ILogProvider,
     $authProvider: any,
     toastrConfig: any,
@@ -32,12 +35,13 @@ export function config($provide: ng.auto.IProvideService,
 
   // Log errors to Rollbar
   $provide.decorator('$log', ($delegate: any) => {
-    var origCritical = $delegate.critical;
+    var origError = $delegate.error;
 
     // arguments object cannot be used in arrow function
-    $delegate.critical = function() {
-      RollbarProvider.critical(arguments);
-      origCritical.apply(null, arguments);
+    $delegate.error = function() {
+      console.error(arguments);
+      Rollbar.error(arguments);
+      origError.apply(null, arguments);
     };
 
     return $delegate;

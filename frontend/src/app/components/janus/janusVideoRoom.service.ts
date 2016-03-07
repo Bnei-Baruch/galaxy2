@@ -84,6 +84,7 @@ export class JanusVideoRoomService {
 
   constructor(private $q: ng.IQService,
       private $rootScope: ng.IRootScopeService,
+      private $log: ng.ILogService,
       private $timeout: ng.ITimeoutService,
       private $http: ng.IHttpService,
       private authService: AuthService,
@@ -186,7 +187,7 @@ export class JanusVideoRoomService {
         console.debug('Got a remote stream!', stream);
 				console.debug(`Remote feed:`, handleInst);
         if (!(login in self.remoteHandles)) {
-          console.error(`Remote handle not attached for ${login}`);
+          this.$log.error(`Remote handle not attached for ${login}`);
         } else {
           self.remoteHandles[login].stream = stream;
 
@@ -232,7 +233,7 @@ export class JanusVideoRoomService {
       this.$q.all(forwardPromises).then(() => {
         deffered.resolve(shidurState);
       }, () => {
-        console.error('One or more forwards haven\' been accomplished, saving shidur state...');
+        this.$log.error('One or more forwards haven\' been accomplished, saving shidur state...');
         deffered.resolve(shidurState);
       });
 
@@ -287,7 +288,7 @@ export class JanusVideoRoomService {
 
     this.$http.get(titleApiUrl).error((data: any, st: any) => {
       /* this.toastr.error(`Unable to change remote feed to ${title}`); */
-      console.error('Unable to change remote feed:', data, st);
+      this.$log.error('Unable to change remote feed:', data, st);
     });
   }
 
@@ -310,7 +311,7 @@ export class JanusVideoRoomService {
 
       // The system has to make sure to remove publishers on time.
       if (p.display in this.publishers) {
-        console.error('This should not happen, we have not handled leave user well!');
+        this.$log.error('This should not happen, we have not handled leave user well!');
       }
 
       // Set or override publisher
@@ -505,7 +506,7 @@ export class JanusVideoRoomService {
       },
       error: (error: any) => {
         this.toastr.error(`WebRTC error: ${error.message}`);
-        console.error('WebRTC error... ' + JSON.stringify(error));
+        this.$log.error('WebRTC error... ' + JSON.stringify(error));
       }
     });
   }
@@ -539,7 +540,7 @@ export class JanusVideoRoomService {
           handle.send({'message': body, 'jsep': jsep});
         },
         error: (error: any) => {
-          console.error('WebRTC error:', error);
+          this.$log.error('WebRTC error:', error);
           self.toastr.error('WebRTC error... ' + JSON.stringify(error));
         }
       });
@@ -602,7 +603,7 @@ export class JanusVideoRoomService {
     this.localHandle.send({
       message: forward,
       error: (error: any) => {
-        console.error(error);
+        this.$log.error(error);
         callback(null);
       },
       success: (data: any) => {
@@ -665,7 +666,7 @@ export class JanusVideoRoomService {
         callback();
       },
       error: (resp: any) => {
-        console.error('Error stopping forwarding for stream ID', streamId, forwardInfo, resp);
+        this.$log.error('Error stopping forwarding for stream ID', streamId, forwardInfo, resp);
         callback();
       }
     });

@@ -19,6 +19,7 @@ export class BaseChannelController {
     preview: null
   };
 
+  $log: ng.ILogService;
   $timeout: ng.ITimeoutService;
   $document: any;
   videoRoom: JanusVideoRoomService;
@@ -27,6 +28,7 @@ export class BaseChannelController {
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
+    this.$log = $injector.get('$log');
     this.$document = $injector.get('$document');
     this.$timeout = $injector.get('$timeout');
     this.videoRoom = $injector.get('videoRoom');
@@ -73,7 +75,7 @@ export class BaseChannelController {
   }
 
   trigger() {
-    console.error('trigger() not implemented!');
+    this.$log.error('trigger() not implemented!');
   }
 
   disableUser(user: IUser) {
