@@ -3,7 +3,8 @@
 var path = require('path');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
-var exec = require("child_process").execFileSync;
+//var exec = require("child_process").execFileSync;
+var runsync = require("runsync");
 var conf = require('./common');
 
 var $ = require('gulp-load-plugins')({
@@ -41,7 +42,8 @@ gulp.task('html', ['inject', 'partials'], function () {
   var assets;
 
   gutil.log('Computing git hash');
-  var gitSHA1 = exec('git', [ "rev-parse", "HEAD" ], {env: process.env});
+  //var gitSHA1 = exec('git', [ "rev-parse", "HEAD" ], {env: process.env});
+  var gitSHA1 = runsync.spawn("git", ["rev-parse", "HEAD"], { env: process.env });
   gitSHA1 = gitSHA1.toString().trim();
   gutil.log('gitSHA1: ' + gitSHA1);
 

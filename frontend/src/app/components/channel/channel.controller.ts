@@ -25,6 +25,7 @@ export class BaseChannelController {
   videoRoom: JanusVideoRoomService;
   toastr: any;
   config: any;
+  cssUserListHeightCalc: number;
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
@@ -46,6 +47,7 @@ export class BaseChannelController {
       },
       leftCallback: (login: string) => {
         this.userLeft(login);
+
       }
     });
   }
@@ -56,7 +58,23 @@ export class BaseChannelController {
     this.slotElement.program = <HTMLMediaElement>mediaElements.get(0);
     this.slotElement.preview = <HTMLMediaElement>mediaElements.get(1);
 
+    this.$timeout(() => { 
+      this.setUserListHeight(element);
+    }, 0, false);
+    //set users list height 
+
     this.bindHotkey();
+  }
+
+  setUserListHeight(element: ng.IAugmentedJQuery) {
+    var userListEl = element.find('[data-id = channelVideoBlock]');
+    var pareentHeight = userListEl.parent('.channel').height();
+    var _height = pareentHeight - parseInt(userListEl.eq(0).height().toString()) - 20;
+    //correction for search block in control
+    if (this.name === "control")
+      _height -= 40;
+    
+    this.cssUserListHeightCalc = _height;
   }
 
   userJoined(login: string) {
