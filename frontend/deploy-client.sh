@@ -12,7 +12,6 @@ echo "-----> Deploying galaxy2 frontend" && (
 
   echo "npm install" &&
   npm install &&
-  npm ls --depth 0 &&
 
   echo "bower install" &&
   bower install &&
