@@ -28,6 +28,9 @@ echo "-----> Deploying galaxy2 frontend" && (
   echo "gulp build" &&
   gulp build &&
 
+  echo "Rewind patches to config.json" &&
+  sed -i "s/$sha1/git-sha1-deployed-should-be-here/g" config.json &&
+
   echo "" &&
   echo "-----> Done."
 ) || (
