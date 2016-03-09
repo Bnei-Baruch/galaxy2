@@ -96,7 +96,7 @@ export class SmallChannelController extends BaseChannelController {
       composite = this.composites[index];
 
       if (composite.length < this.compositeSize) {
-        console.debug('Composite is not complete, forwarding refused');
+        this.$log.debug('Composite is not complete, forwarding refused');
         deffered.reject();
         return deffered.promise;
       }

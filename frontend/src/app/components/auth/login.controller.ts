@@ -4,16 +4,16 @@ import { IUser } from '../auth/auth.service';
 export class LoginController {
   login: string;
   password: string;
-  $log: ng.ILogService;
 
   constructor(private $scope: ng.IScope,
+      private $log: ng.ILogService,
       private $mdDialog: angular.material.IDialogService,
       private $auth: any,
       private toastr: any) {
   }
 
   submit(login: string, password: string) {
-    console.debug('Signing in as:', this.login);
+    this.$log.debug('Signing in as:', this.login);
 
     this.$auth.submitLogin({
       login: this.login,

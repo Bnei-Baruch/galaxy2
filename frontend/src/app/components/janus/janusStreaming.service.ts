@@ -2,15 +2,12 @@ import { JanusService } from './janus.service';
 
 /* @ngInject */
 export class JanusStreamingService {
-  $q: ng.IQService;
-  janus: JanusService;
-  toastr: any;
   pluginHandles: any[] = [];
 
-  constructor($q: ng.IQService, $rootScope: ng.IRootScopeService, janus: JanusService, toastr: any) {
-    this.$q = $q;
-    this.janus = janus;
-    this.toastr = toastr;
+  constructor(private $q: ng.IQService,
+      private $log: ng.ILogService,
+      private janus: JanusService,
+      private toastr: any, $rootScope: ng.IRootScopeService) {
 
     $rootScope.$on('janus.destroy', () => {
       this.pluginHandles.forEach((handle: any) => {
@@ -43,11 +40,11 @@ export class JanusStreamingService {
           this.onStreamingMessage(streaming, msg, jsep);
         },
         onremotestream: (stream: MediaStream) => {
-          console.debug('Got a remote stream!', stream);
+          this.$log.debug('Got a remote stream!', stream);
           deffered.resolve(stream);
         },
         oncleanup: () => {
-          console.debug('Got a cleanup notification');
+          this.$log.debug('Got a cleanup notification');
         }
       });
     });
@@ -56,18 +53,18 @@ export class JanusStreamingService {
   }
 
   onStreamingMessage(handle: any, msg: any, jsep: any) {
-    console.debug('Got a message', msg);
+    this.$log.debug('Got a message', msg);
 
     if (jsep !== undefined && jsep !== null) {
-      console.debug('Handling SDP as well...', jsep);
+      this.$log.debug('Handling SDP as well...', jsep);
 
       // Answer
       handle.createAnswer({
         jsep: jsep,
         media: { audioSend: false, videoSend: false },  // We want recvonly audio/video
         success: (jsep: any) => {
-          console.log('Got SDP!');
-          console.log(jsep);
+          this.$log.log('Got SDP!');
+          this.$log.log(jsep);
           var body = { 'request': 'start' };
           handle.send({'message': body, 'jsep': jsep});
         },

@@ -71,7 +71,7 @@ export class BaseChannelController {
     user.joined = null;
     user.stream = null;
 
-    console.log('User left', login);
+    this.$log.log('User left', login);
   }
 
   trigger() {

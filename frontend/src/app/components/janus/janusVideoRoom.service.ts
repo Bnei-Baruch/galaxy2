@@ -140,7 +140,7 @@ export class JanusVideoRoomService {
   unpublishOwnFeed() {
     var body = {request: 'unpublish'};
     this.localHandle.send({message: body});
-    console.debug(`Own feed unpublished for handle ${this.localHandle}`);
+    this.$log.debug(`Own feed unpublished for handle ${this.localHandle}`);
   }
 
   // API method for clients (channel) to register to receive when remote 'login' starts streaming his MediaStream
@@ -161,10 +161,10 @@ export class JanusVideoRoomService {
       plugin: 'janus.plugin.videoroom',
       success: (pluginHandle: any) => {
         handleInst = pluginHandle;
-				console.debug(`Remote handle attached ${handleInst.getPlugin()}, id=${handleInst.getId()}`);
+				this.$log.debug(`Remote handle attached ${handleInst.getPlugin()}, id=${handleInst.getId()}`);
         var handleContainer: IRemoteHandle = {
           count: 1,
-          handle: handleInst,
+          handle: handleInst
         };
         self.remoteHandles[login] = handleContainer;
 
@@ -184,8 +184,8 @@ export class JanusVideoRoomService {
         // The subscriber stream is recvonly, we don't expect anything here
       },
       onremotestream: (stream: MediaStream) => {
-        console.debug('Got a remote stream!', stream);
-				console.debug(`Remote feed:`, handleInst);
+        this.$log.debug('Got a remote stream!', stream);
+				this.$log.debug(`Remote feed:`, handleInst);
         if (!(login in self.remoteHandles)) {
           this.$log.error(`Remote handle not attached for ${login}`);
         } else {
@@ -197,7 +197,7 @@ export class JanusVideoRoomService {
         }
       },
       oncleanup: () => {
-        console.debug('Got a cleanup notification');
+        this.$log.debug('Got a cleanup notification');
       }
     });
   }
@@ -213,7 +213,7 @@ export class JanusVideoRoomService {
         delete this.remoteHandles[login];
       }
     } else {
-      console.debug(`Remote handle is not attached for ${login}`);
+      this.$log.debug(`Remote handle is not attached for ${login}`);
     }
   }
 
@@ -342,12 +342,15 @@ export class JanusVideoRoomService {
     var login = null;
 
     for (var key in this.publishers) {
-      var publisher = this.publishers[key];
-      if (publisher.id === janusId) {
-        login = publisher.display;
-        break;
+      if (this.publishers.hasOwnProperty(key)) {
+        var publisher = this.publishers[key];
+        if (publisher.id === janusId) {
+          login = publisher.display;
+          break;
+        }
       }
-    };
+    }
+
     if (login) {
       delete this.publishers[login];
       this.unsubscribeFromStream(login);
@@ -392,16 +395,16 @@ export class JanusVideoRoomService {
           this.onLocalHandleMessage(msg, jsep);
 
           if (jsep) {
-            console.debug('Handling SDP as well...');
-            console.debug(jsep);
+            this.$log.debug('Handling SDP as well...');
+            this.$log.debug(jsep);
             this.localHandle.handleRemoteJsep({jsep: jsep});
           }
         },
         consentDialog: (on: boolean) => {
-          console.debug('Consent dialog should be ' + (on ? 'on' : 'off') + ' now.');
+          this.$log.debug('Consent dialog should be ' + (on ? 'on' : 'off') + ' now.');
         },
         onlocalstream: (stream: MediaStream) => {
-          console.debug('Got local stream', stream);
+          this.$log.debug('Got local stream', stream);
           this.localStream = stream;
 
           // Disable local audio tracks
@@ -410,11 +413,11 @@ export class JanusVideoRoomService {
           streamReadyPromise.resolve(stream);
         },
         onremotestream: (stream: MediaStream) => {
-          console.debug('Got a remote stream!', stream);
+          this.$log.debug('Got a remote stream!', stream);
           // This should not happen. This is local handle.
         },
         oncleanup: () => {
-          console.debug('Got a cleanup notification');
+          this.$log.debug('Got a cleanup notification');
         }
       });
 
@@ -426,14 +429,14 @@ export class JanusVideoRoomService {
   }
 
   private onLocalHandleMessage(message: any, jsep: any): void {
-    console.debug('Got a local message', message);
+    this.$log.debug('Got a local message', message);
 
     var e = message.videoroom;
 
     switch (e) {
       case 'joined':
         // TODO: Fix following variable formatting (does not work!)
-        console.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
+        this.$log.debug(`Successfully joined room ${message.room} with ID ${message.id}`);
 
         // Handling multiple logins
         if (this.handleMultipleLogins(message)) {
@@ -443,7 +446,7 @@ export class JanusVideoRoomService {
         if (this.localUserLogin) {
           this.publishLocalFeed();
         } else {
-          console.debug('No local user registered. Not publishing local feed.');
+          this.$log.debug('No local user registered. Not publishing local feed.');
         };
 
         if (message.publishers) {
@@ -458,7 +461,7 @@ export class JanusVideoRoomService {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
           // Update leaving user
-          console.debug('Local handle leaving room.');
+          this.$log.debug('Local handle leaving room.');
           this.deletePublisherByJanusId(message.leaving);
         }
         break;
@@ -498,8 +501,8 @@ export class JanusVideoRoomService {
         video: 'stdres-16:9'
       },
       success: (jsep: any) => {
-        console.debug('Got publisher SDP!');
-        console.debug(jsep);
+        this.$log.debug('Got publisher SDP!');
+        this.$log.debug(jsep);
 
         var publish = { 'request': 'configure', 'audio': true, 'video': true };
         this.localHandle.send({'message': publish, 'jsep': jsep});
@@ -517,25 +520,25 @@ export class JanusVideoRoomService {
   private onRemoteHandleMessage(handle: any, message: any, jsep: any): void {
     var self = this;
 
-    console.debug('Got a remote message', message);
+    this.$log.debug('Got a remote message', message);
 
     if (message.videoroom === 'attached') {
       // TODO: Run spinner for currently attached remoteHandle.
-      console.debug('Attaching remote handle');
+      this.$log.debug('Attaching remote handle');
       handle.rfid = message.id;
     }
 
     if (jsep) {
-      console.debug('Handling SDP as well...');
-      console.debug(jsep);
+      this.$log.debug('Handling SDP as well...');
+      this.$log.debug(jsep);
 
       // Answer and attach
       handle.createAnswer({
         jsep: jsep,
         media: { audioSend: false, videoSend: false },	// We want recvonly audio/video
         success: (jsep: any) => {
-          console.debug('Got SDP!');
-          console.debug(jsep);
+          this.$log.debug('Got SDP!');
+          this.$log.debug(jsep);
           var body = { 'request': 'start', 'room': self.config.janus.roomId };
           handle.send({'message': body, 'jsep': jsep});
         },
@@ -613,21 +616,21 @@ export class JanusVideoRoomService {
           audioStreamId: data.rtp_stream.audio_stream_id
         };
 
-        console.log(`  -- We got rtp forward video ID: ${data.rtp_stream.video_stream_id}`);
-        console.log(`  -- We got rtp forward audio ID: ${data.rtp_stream.audio_stream_id}`);
-        console.log(`  -- We got rtp forward publisher ID: ${data.publisher_id}`);
-        console.log(JSON.stringify(data));
+        this.$log.log(`  -- We got rtp forward video ID: ${data.rtp_stream.video_stream_id}`);
+        this.$log.log(`  -- We got rtp forward audio ID: ${data.rtp_stream.audio_stream_id}`);
+        this.$log.log(`  -- We got rtp forward publisher ID: ${data.publisher_id}`);
+        this.$log.log(JSON.stringify(data));
 
         callback(forwardInfo);
-      },
+      }
     });
   }
 
   private stopSdiForwarding(forwardInfo: IFeedForwardInfo, callback: () => void): void {
     if (forwardInfo) {
-      console.log(`  -- We need to stop rtp forward video ID: ${forwardInfo.videoStreamId}`);
-      console.log(`  -- We need to stop rtp forward audio ID: ${forwardInfo.audioStreamId}`);
-      console.log(`  -- We need to stop rtp forward publisher ID: ${forwardInfo.publisherId}`);
+      this.$log.log(`  -- We need to stop rtp forward video ID: ${forwardInfo.videoStreamId}`);
+      this.$log.log(`  -- We need to stop rtp forward audio ID: ${forwardInfo.audioStreamId}`);
+      this.$log.log(`  -- We need to stop rtp forward publisher ID: ${forwardInfo.publisherId}`);
 
       // Stop video and then audio forwarding
       this.stopStreamForwarding(forwardInfo, forwardInfo.videoStreamId, () => {
@@ -637,7 +640,7 @@ export class JanusVideoRoomService {
       });
 
     } else {
-      console.log('No forwardInfo, assuming no stream to SDI port');
+      this.$log.log('No forwardInfo, assuming no stream to SDI port');
       callback();
     }
 
@@ -662,7 +665,7 @@ export class JanusVideoRoomService {
     this.localHandle.send({
       message: stopFwMessage,
       success: (data: any) => {
-        console.log('Forwarding stopped successfully for stream ID', streamId, forwardInfo);
+        this.$log.log('Forwarding stopped successfully for stream ID', streamId, forwardInfo);
         callback();
       },
       error: (resp: any) => {

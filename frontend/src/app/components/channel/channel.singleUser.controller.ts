@@ -53,7 +53,7 @@ export class SingleUserChannelController extends BaseChannelController {
       if (oldProgramUser) {
         this.videoRoom.unsubscribeFromStream(oldProgramUser.login);
         oldProgramUser.stream = null;
-        console.debug('Unsubscribed from', oldProgramUser.login);
+        this.$log.debug('Unsubscribed from', oldProgramUser.login);
       }
     }
   }
@@ -73,13 +73,13 @@ export class SingleUserChannelController extends BaseChannelController {
       this.videoRoom.subscribeForStream(user.login, (stream: MediaStream) => {
         user.stream = stream;
         attachMediaStream(this.slotElement.preview, stream);
-        console.debug('Subscribed for', user.login);
+        this.$log.debug('Subscribed for', user.login);
       });
 
       if (oldPreviewUser && oldPreviewUser !== this.programUser) {
         this.videoRoom.unsubscribeFromStream(oldPreviewUser.login);
         oldPreviewUser.stream = null;
-        console.debug('Unsubscribed from', oldPreviewUser.login);
+        this.$log.debug('Unsubscribed from', oldPreviewUser.login);
       }
     }
   }

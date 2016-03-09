@@ -84,7 +84,7 @@ export class ControlChannelController extends SingleUserChannelController {
       enabled: user.audioEnabled
     });
 
-    console.debug('toggleAudio() triggered for', user.login);
+    this.$log.debug('toggleAudio() triggered for', user.login);
     return false;
   }
 
