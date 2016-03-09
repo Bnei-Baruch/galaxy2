@@ -18,7 +18,7 @@ exports.login = function() {
 exports.waitForVideo = function(cssSelector) {
   'use strict';
 
-  browser.wait(function () {
+  var ret = browser.wait(function () {
     var deferred = protractor.promise.defer();
 
     var script = "return getAverageVideoColor('" + cssSelector + "');";
@@ -32,6 +32,8 @@ exports.waitForVideo = function(cssSelector) {
 
     return deferred.promise;
   }, 15000);
+
+  return ret;
 };
 
 exports.openNewWindow = function(url) {
