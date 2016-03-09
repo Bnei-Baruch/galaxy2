@@ -45,7 +45,7 @@ gulp.task('html', ['inject', 'partials'], function () {
   //var gitSHA1 = exec('git', [ "rev-parse", "HEAD" ], {env: process.env});
   //gitSHA1 = gitSHA1.toString().trim();
   var gitSHA1 = runsync.spawn("git", ["rev-parse", "HEAD"], { env: process.env });
-  gitSHA1 = gitSHA1.stdout.trim();
+  gitSHA1 = gitSHA1.stdout;
   gutil.log('gitSHA1: ' + gitSHA1);
 
   return gulp.src(path.join(conf.paths.tmp, '/serve/*.html'))
