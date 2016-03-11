@@ -59,7 +59,7 @@ gulp.task('html', ['inject', 'partials'], function () {
     .pipe($.rollbar({
       accessToken: '95882773e355448fbd111f27dded0c6e',
       version: gitSHA1,
-      sourceMappingURLPrefix: '../maps'
+      sourceMappingURLPrefix: 'https://galaxy.kbb1.com/galaxy2'
     }))
     .pipe(jsFilter.restore)
     .pipe(cssFilter)
