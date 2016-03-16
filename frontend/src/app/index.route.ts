@@ -48,5 +48,15 @@ export function routerConfig($stateProvider: ng.ui.IStateProvider, $urlRouterPro
         requireLogin: true,
         minRole: 'admin'
       }
+    })
+    .state('sdi', {
+      url: '/sdi',
+      templateUrl: 'app/e2e/sdi.html',
+      controller: 'FakeSDIController',
+      controllerAs: 'sdi',
+      data: {
+        requireLogin: true,
+        minRole: 'admin'
+      }
     });
 }
