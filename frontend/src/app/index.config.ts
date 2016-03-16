@@ -27,6 +27,7 @@ export function config(
     accessToken: config.rollbarToken,
     source_map_enabled: true,
     code_version: config.codeVersion || 'unknown_version',
+    guess_uncaught_frames: true,
     captureUncaught: true,
     payload: {
       environment: config.environment || 'development'

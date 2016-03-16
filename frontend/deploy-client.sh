@@ -28,6 +28,16 @@ echo "-----> Deploying galaxy2 frontend" && (
   echo "gulp build" &&
   gulp build &&
 
+  echo "Rewind patches to config.json" &&
+  sed -i "s/$sha1/git-sha1-deployed-should-be-here/g" config.json &&
+
+  echo "Sending deploy signal to Rollbar" &&
+  curl https://api.rollbar.com/api/1/deploy/ \
+    -F access_token=95882773e355448fbd111f27dded0c6e \
+    -F environment=production \
+    -F revision=$sha1 \
+    -F local_username=`whoami` &&
+
   echo "" &&
   echo "-----> Done."
 ) || (
