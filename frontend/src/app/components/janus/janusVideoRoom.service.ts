@@ -239,7 +239,7 @@ export class JanusVideoRoomService {
         deffered.resolve(shidurState);
       }, () => {
         this.$log.error('One or more forwards haven\' been accomplished, saving shidur state...');
-        deffered.resolve(shidurState);
+        deffered.reject(shidurState);
       });
 
       return deffered.promise;
@@ -574,21 +574,23 @@ export class JanusVideoRoomService {
           shidurState.janus.portsFeedForwardInfo = <any>{};
         }
 
-        // Do something with shidur state and update it.
-        useShidurState(shidurState).then(() => {
-
-          // Post shidur state to backend.
-          this.$http.post(this.config.backendUri + '/rest/shidur_state', shidurState)
+        // Post shidur state to the backend
+        var updateShidurState = () => {
+          return this.$http.post(this.config.backendUri + '/rest/shidur_state', shidurState)
             .error((data: string, status: number) => {
               deffered.reject(`Updating shidur state returns error: ${status} ${data}`);
-            })
-            .success(() => {
-              this.$timeout(() => {
-                deffered.resolve();
-              });
             });
+        };
+
+        // Do something with shidur state and then update it
+        useShidurState(shidurState).then(() => {
+          updateShidurState().success(() => {
+            deffered.resolve();
+          });
         }, (error: any) => {
-          deffered.reject(`Failed using shidur state: ${error}`);
+          updateShidurState().success(() => {
+            deffered.reject(`Failed using shidur state: ${error}`);
+          });
         });
       });
 
