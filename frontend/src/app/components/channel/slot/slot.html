@@ -1,4 +1,9 @@
-<md-grid-list md-cols="1" md-row-height="16:9" md-gutter="3px">
+<md-grid-list md-cols="1" md-row-height="16:9" md-gutter="3px" class="slotDir" >
+  <div ng-if="users.length" class="labelsFours">
+      <label ng-repeat="_u in users" ng-if="_u.title">
+        <span>{{_u.title}}</span>
+      </label>
+  </div>
   <md-grid-tile
     ng-style="kind === 'program' ? {'background': 'red'} : {'background': 'green'}"
     md-colspan="1"

@@ -3,9 +3,8 @@
 	<div data-id="channelVideoBlock">	
 	  <slot-widget kind="program"
 	    users="vm.composites[vm.programCompositeIndex]"></slot-widget>
-
 	  <slot-widget kind="preview"
-	    users="vm.composites[vm.previewCompositeIndex]"
+	    users="vm.composite"
 	    is-ready="vm.isReadyToSwitch()"
 	    trigger="vm.trigger()"></slot-widget>
 	</div>
