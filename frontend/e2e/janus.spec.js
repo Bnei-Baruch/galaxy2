@@ -57,4 +57,25 @@ describe('Janus video room', function () {
     // Check video color is changing
     utils.waitForVideo('.preview');
   });
+
+  it('should forward user to SDI when click on program', function() {
+    // Open user
+    browser.get('/#/user');
+    utils.login();
+    // Open SDI page
+    utils.openNewWindow("/#/sdi");
+    // Open shidur
+    utils.openNewWindow("/index.html");
+    // Switch to Shidur page
+    utils.switchToWindow(1);
+    // Click on preview to switch SDI
+    utils.waitForVideo('[kind=preview] video').then(function() {
+      var test = element(by.model('test'));
+      //expect(test.getOuterHtml()).toEqual('!!!');  // Debug
+      test.click();
+      utils.switchToWindow(2);
+      // Check video color is changing
+      utils.waitForVideo('#remoteVideo10001').then(function(color) { console.log('color is:' + color); });
+    });
+  });
 });
