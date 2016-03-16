@@ -1,10 +1,18 @@
+declare var Rollbar: any;
+
 /** @ngInject */
-export function config($logProvider: ng.ILogProvider, $authProvider: any, toastrConfig: any, config: any,
-                       RollbarProvider: any) {
-  // enable log
+export function config(
+    $provide: ng.auto.IProvideService,
+    $logProvider: ng.ILogProvider,
+    $authProvider: any,
+    toastrConfig: any,
+    config: any,
+    RollbarProvider: any) {
+
+  // Enable log
   $logProvider.debugEnabled(true);
 
-  // toastr
+  // Toastr
   toastrConfig.allowHtml = true;
   toastrConfig.timeOut = 3000;
   toastrConfig.positionClass = 'toast-top-right';
@@ -18,11 +26,25 @@ export function config($logProvider: ng.ILogProvider, $authProvider: any, toastr
   RollbarProvider.init({
     accessToken: config.rollbarToken,
     source_map_enabled: true,
-    code_version: config.codeVersion || "unknown_version",
+    code_version: config.codeVersion || 'unknown_version',
     guess_uncaught_frames: true,
     captureUncaught: true,
     payload: {
-      environment: config.environment || "development"
+      environment: config.environment || 'development'
     }
+  });
+
+  // Log errors to Rollbar
+  $provide.decorator('$log', ($delegate: any) => {
+    var origError = $delegate.error;
+
+    // arguments object cannot be used in arrow function
+    $delegate.error = function() {
+      console.error(arguments);
+      Rollbar.error(arguments);
+      origError.apply(null, arguments);
+    };
+
+    return $delegate;
   });
 }

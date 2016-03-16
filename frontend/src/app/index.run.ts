@@ -1,4 +1,4 @@
-import { AuthService, IGalaxyScope } from './components/auth/auth.service';
+import { AuthService, IUser, IGalaxyScope } from './components/auth/auth.service';
 
 /** @ngInject */
 export function runBlock($log: ng.ILogService,
@@ -11,10 +11,10 @@ export function runBlock($log: ng.ILogService,
   // TODO: support pages that don't require login
 
   authService.authenticate()
-    .then(function (user) {
+    .then(function (user: IUser) {
       $rootScope.currentUser = user;
 
-      $rootScope.$on('$stateChangeStart', function (e, to) {
+      $rootScope.$on('$stateChangeStart', function (e: any, to: angular.ui.IState) {
         if (to.data.requireLogin && !authService.can(to.data.minRole)) {
           e.preventDefault();
           $state.go('user', null, {notify: false});
