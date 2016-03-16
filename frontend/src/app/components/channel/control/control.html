@@ -37,7 +37,7 @@
     </md-item-template>
   </md-autocomplete>
 
-  <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="userList"  ng-style="{'height': '{{vm.cssUserListHeightCalc}}px'}"></ng-include>
+  <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="userList"  ng-style="height: {{vm.cssUserListHeightCalc}}px"></ng-include>
 
   <md-list class="users userList" ng-show="disabledUsers.length">
     <md-subheader class="md-no-sticky">Disabled users</md-subheader>

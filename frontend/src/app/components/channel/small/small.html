@@ -9,5 +9,5 @@
 	    is-ready="vm.isReadyToSwitch()"
 	    trigger="vm.trigger()"></slot-widget>
 	</div>
-	<ng-include ng-init="vm = vm" src="'app/components/channel/small/small.users.html'" class="userList" ng-style="{'height': '{{vm.cssUserListHeightCalc}}px'}"></ng-include>
+	<ng-include ng-init="vm = vm" src="'app/components/channel/small/small.users.html'" class="userList" style="height: {{vm.cssUserListHeightCalc}}px"></ng-include>
 </section>
