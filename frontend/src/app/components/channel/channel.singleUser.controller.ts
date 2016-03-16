@@ -41,20 +41,23 @@ export class SingleUserChannelController extends BaseChannelController {
     }
 
     var oldProgramUser = this.programUser;
-    this.programUser = user;
 
     if (user === null) {
       this.slotElement.program.src = null;
+      this.programUser = null;
     } else {
-      attachMediaStream(this.slotElement.program, this.programUser.stream);
 
-      this.forwardProgramToSDI();
+      this.forwardProgramToSDI().then(() => {
+        attachMediaStream(this.slotElement.program, this.programUser.stream);
+        this.programUser = user;
 
-      if (oldProgramUser) {
-        this.videoRoom.unsubscribeFromStream(oldProgramUser.login);
-        oldProgramUser.stream = null;
-        this.$log.debug('Unsubscribed from', oldProgramUser.login);
-      }
+        if (oldProgramUser) {
+          this.videoRoom.unsubscribeFromStream(oldProgramUser.login);
+          oldProgramUser.stream = null;
+          this.$log.debug('Unsubscribed from', oldProgramUser.login);
+        }
+      });
+
     }
   }
 
@@ -65,22 +68,28 @@ export class SingleUserChannelController extends BaseChannelController {
     }
 
     var oldPreviewUser = this.previewUser;
-    this.previewUser = user;
 
     if (user === null) {
       this.slotElement.preview.src = null;
+      this.previewUser = null;
     } else {
-      this.videoRoom.subscribeForStream(user.login, (stream: MediaStream) => {
+      this.videoRoom.subscribeForStream(user.login).then((stream: MediaStream) => {
         user.stream = stream;
+
         attachMediaStream(this.slotElement.preview, stream);
         this.$log.debug('Subscribed for', user.login);
-      });
 
-      if (oldPreviewUser && oldPreviewUser !== this.programUser) {
-        this.videoRoom.unsubscribeFromStream(oldPreviewUser.login);
-        oldPreviewUser.stream = null;
-        this.$log.debug('Unsubscribed from', oldPreviewUser.login);
-      }
+        this.previewUser = user;
+
+        if (oldPreviewUser && oldPreviewUser !== this.programUser) {
+          this.videoRoom.unsubscribeFromStream(oldPreviewUser.login);
+          oldPreviewUser.stream = null;
+          this.$log.debug('Unsubscribed from', oldPreviewUser.login);
+        }
+
+      }, () => {
+        this.toastr.error(`Unable to subscribe for user ${user.login}`);
+      });
     }
   }
 
@@ -120,18 +129,16 @@ export class SingleUserChannelController extends BaseChannelController {
       audioPorts = undefined;
     }
 
-    this.videoRoom.forwardRemoteFeeds([this.programUser.login],
-        sdiPorts.forwardIp,
-        [sdiPorts.video.program],
-        audioPorts).then(() => {
-
-      this.isForwarded.program = true;
-      this.videoRoom.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video.program);
-    }, () => {
-      var error = 'Failed forwarding feed to SDI';
-      this.toastr.error(error);
-      this.$log.error(error);
-    });
+    return this.videoRoom.forwardRemoteFeeds([this.programUser.login], sdiPorts.forwardIp, [sdiPorts.video.program], audioPorts)
+      .then(() => {
+        this.isForwarded.program = true;
+        this.videoRoom.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video.program);
+      }, () => {
+        var error = 'Failed forwarding feed to SDI';
+        this.toastr.error(error);
+        this.$log.error(error);
+        return error;
+      });
   }
 
   getNextUser(user: IUser) {

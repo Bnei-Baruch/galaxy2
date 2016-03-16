@@ -1,41 +1,12 @@
+/**
+ * Library to handle communication with Janus.
+ */
+
 import { AuthService } from '../auth/auth.service';
 import { JanusService } from './janus.service';
 
-/**
- * Library to handle communication with Janus.
- * API:
- *
- * Group methods
- * =============
- *
- * registerLocalUser(login: string, streamReadyCallback: (stream: MediaStream) => void)
- * Connect local media stream to Janus (sending video/audio?)
- *
- * Channel methods
- * ===============
- *
- * registerChannel(options: IChannel)
- * Register channel with specific users so that each joined
- * or leaving user will notify the client (channel).
- *
- * subscribeForStream(login: string, streamReadyCallback: (stream: MediaStream) => void)
- * Register to receive when remote 'login' starts streaming his MediaStream
- *
- * unsubscribeFromStream(login: string)
- * Stop getting updates on specific remote 'login'.
- *
- * SDI methods
- * ===========
- *
- * forwardRemoteFeeds(logins: string[], videoPorts: number[], audioPorts: number[]) returns Promise
- * Forward stream to janus port (sdi).
- *
- * changeRemoteFeedTitle(title: string, port: number)
- * Change Title on some janus port (sdi).
- *
- */
-
 declare var escape: any;
+
 
 interface IChannel {
   name: string;
@@ -99,7 +70,12 @@ export class JanusVideoRoomService {
     });
   }
 
-  // API method for javascript client to connect local media stream to Janus (sending video/audio?)
+  /**
+   * Connect local media stream to Janus (sending video/audio?)
+   *
+   * @param login   User login
+   * @param streamReadyCallback A callback function to be called after the local stream is created.
+   */
   registerLocalUser(login: string, streamReadyCallback: (stream: MediaStream) => void) {
     this.localUserLogin = login;
 
@@ -110,8 +86,16 @@ export class JanusVideoRoomService {
     });
   }
 
-  // API method for javascript client to register channel with specific users so that each joined
-  // or leaving user will notify the client (channel).
+  /**
+   * Register channel with specific users so that each joined or leaving user
+   * will notify the client (channel).
+   *
+   * @param options.name              Channel name.
+   * @param options.users             User logins list.
+   * @param options.joinedCallback    Callback called when new user joined.
+   * @param options.leftCallback      Callback called when user left.
+   *
+   */
   registerChannel(options: IChannel) {
     this.channels[options.name] = options;
 
@@ -143,9 +127,16 @@ export class JanusVideoRoomService {
     this.$log.debug(`Own feed unpublished for handle ${this.localHandle}`);
   }
 
-  // API method for clients (channel) to register to receive when remote 'login' starts streaming his MediaStream
-  subscribeForStream(login: string, streamReadyCallback: (stream: MediaStream) => void) {
+  /**
+   * Subscribe for a remote user stream.
+   *
+   * @param login User login.
+   * @returns     ng.IPromise
+   *
+   */
+  subscribeForStream(login: string): ng.IPromise<MediaStream> {
     // TODO: implement timeout
+    var deffered = this.$q.defer();
 
     var self = this;
     var handleInst = null;
@@ -153,7 +144,7 @@ export class JanusVideoRoomService {
     if (login in this.remoteHandles) {
       var loginHandle = this.remoteHandles[login];
       loginHandle.count++;
-      streamReadyCallback(loginHandle.stream);
+      deffered.resolve(loginHandle.stream);
       return;
     }
 
@@ -161,11 +152,14 @@ export class JanusVideoRoomService {
       plugin: 'janus.plugin.videoroom',
       success: (pluginHandle: any) => {
         handleInst = pluginHandle;
+
 				this.$log.debug(`Remote handle attached ${handleInst.getPlugin()}, id=${handleInst.getId()}`);
+
         var handleContainer: IRemoteHandle = {
           count: 1,
           handle: handleInst
         };
+
         self.remoteHandles[login] = handleContainer;
 
         // TODO: This publisher id is of old video stream, it should be overriden when
@@ -175,7 +169,8 @@ export class JanusVideoRoomService {
         handleInst.send({'message': listen});
       },
       error: (error: any) => {
-        self.toastr.error('Error attaching plugin: ' + error);
+        this.$log.error('Error attaching Janus video room plugin: ' + error);
+        deffered.reject();
       },
       onmessage: (msg: any, jsep: any) => {
         self.onRemoteHandleMessage(handleInst, msg, jsep);
@@ -186,13 +181,15 @@ export class JanusVideoRoomService {
       onremotestream: (stream: MediaStream) => {
         this.$log.debug('Got a remote stream!', stream);
 				this.$log.debug(`Remote feed:`, handleInst);
+
         if (!(login in self.remoteHandles)) {
           this.$log.error(`Remote handle not attached for ${login}`);
+          deffered.reject();
         } else {
           self.remoteHandles[login].stream = stream;
 
           self.$timeout(() => {
-            streamReadyCallback(stream);
+            deffered.resolve(stream);
           });
         }
       },
@@ -200,9 +197,16 @@ export class JanusVideoRoomService {
         this.$log.debug('Got a cleanup notification');
       }
     });
+
+    return deffered.promise;
   }
 
-  // API for client (channel) to stop getting updates on specific remote 'login'
+  /**
+   * Unsubscribe from a previously subscribed remote user stream.
+   *
+   * @param login User login.
+   *
+   */
   unsubscribeFromStream(login: string) {
     if (login in this.remoteHandles) {
       var handleItem = this.remoteHandles[login];
@@ -219,6 +223,7 @@ export class JanusVideoRoomService {
 
   /**
    * Forward streams to janus ports
+   *
    * @returns List of promises for every video port provided
    */
   forwardRemoteFeeds(logins: string[], forwardIp: string, videoPorts: number[], audioPorts?: number[]): ng.IPromise<any> {
@@ -281,6 +286,10 @@ export class JanusVideoRoomService {
     return deffered.promise;
   }
 
+  /**
+   * Change user title on a Janus port (SDI)
+   *
+   */
   changeRemoteFeedTitle(title: string, port: number) {
     var titleApiUrl = this.config.janus.titleApiUrl
       .replace('%title%', escape(title))
@@ -578,8 +587,8 @@ export class JanusVideoRoomService {
                 deffered.resolve();
               });
             });
-        }, () => {
-          deffered.reject('Failed using shidur state');
+        }, (error: any) => {
+          deffered.reject(`Failed using shidur state: ${error}`);
         });
       });
 
