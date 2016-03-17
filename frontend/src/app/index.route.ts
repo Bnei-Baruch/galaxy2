@@ -21,6 +21,14 @@ export function routerConfig($stateProvider: ng.ui.IStateProvider, $urlRouterPro
         minRole: 'user'
       }
     })
+    .state('player', {
+      url: '/player',
+      templateUrl: 'app/user/player.html',
+      data: {
+        requireLogin: true,
+        minRole: 'user'
+      }
+    })
     .state('help', {
       url: '/help',
       templateUrl: 'app/help/shidur.html',

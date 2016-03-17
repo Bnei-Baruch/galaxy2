@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>WebRTC Shidur BB</title>
+        <script type="text/javascript" src="js/jquery.min.js" ></script>
+        <script type="text/javascript" src="js/jquery.blockUI.js" ></script>
+        <script type="text/javascript" src="js/bootstrap.js"></script>
+        <script type="text/javascript" src="js/bootbox.min.js"></script>
+        <script type="text/javascript" src="js/spin.min.js"></script>
+        <script type="text/javascript" src="js/janus.js" ></script>
+        <script src="js/adapter.js"></script>
+        <script src="//v4g.kbb1.com/video/js/client-api.js"></script>
+        <script src="js/client.js"></script>
+        <link rel="stylesheet" href="css/cerulean/bootstrap.css" type="text/css"/>
+        <link rel="stylesheet" href="css/demo.css" type="text/css"/>
+        <link rel="stylesheet" href="css/font-awesome.css"/>
+        <link href="css/slider.css" rel="stylesheet">
+        <style>
+            #remoteVideo {width: 360; height: 180;}
+            #remoteAudio {display: none;}
+            #playpausebtn {display: none;}
+            #seekslider {display: none;}
+            #curtimetext {display: none;}
+            #durtimetext {display: none;}
+            div#video_controls_bar{ padding:10px; color:#CCC;}
+            input#seekslider{ width:180px; }
+            input#volumeslider{ width: 180px;}
+            .col-md-8 {
+                float: left;
+                width: 750px;
+                margin-right: 2px;
+            }
+            .col-md-12 {
+                float: left;
+                width: 850px;
+                margin-right: 2px;
+            }
+            .row {
+                margin-left: 0;
+                margin-right: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="page-header">
+            <h1> 
+                <button class="btn btn-default hide" autocomplete="off" id="start">Start</button>
+            </h1>
+            <div class="btn-group btn-group-sm">
+                <button autocomplete="off" id="bitrate" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Video <span class="caret"></span></button>
+                <ul id="bitratelist" class="dropdown-menu" role="menu">
+                </ul>
+            </div>
+            <div class="btn-group btn-group-sm">
+                <button autocomplete="off" id="lang" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Audio<span class="caret"></span></button>
+                <ul id="langlist" class="dropdown-menu" role="menu">
+                </ul>
+            </div>
+        </div>
+        <div id="videos">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><span class="label label-primary hide" id="status"></span></h3>
+                        </div>
+                        <div class="panel-body" id="videolocal">
+                            <video class="rounded centered" id="remoteVideo" autoplay></video>
+                            <audio id="remoteAudio" controls autoplay></audio>
+                        </div>
+                        <div class="panel-footer">
+                            <div id="video_controls_bar">
+                                <button class="btn btn-info" id="fullscreenbtn">FullScreen</button>
+                                <button id="playpausebtn">Pause</button>
+                                <input id="seekslider" type="range" min="0" max="100" value="0" step="1">
+                                <span id="curtimetext">00:00</span>  <span id="durtimetext">00:00</span>
+                                <input id="volumeslider" type="range" min="0" max="100" value="100" step="1" style="position: absolute; bottom: 35px; right: 130px;">
+                                <button class="btn btn-danger" id="mutebtn" style="position: absolute; right: 40px;">Mute</button>
+                                <!--input id="volumeslider" type="range" min="0" max="100" value="100" step="1" style="position: absolute; bottom: 35px; right: 100px; margin: 20px;">
+                                <button class="btn btn-danger" id="mutebtn" style="position: absolute; bottom: 20px; right: 10px; margin: 20px;">Mute</button-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr />
+        </div>
+    </body>
+</html>
