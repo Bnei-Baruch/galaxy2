@@ -11,6 +11,7 @@ import { ShidurController } from './shidur/shidur.controller';
 import { ShidurService } from './shidur/shidur.service';
 import { UserController } from './user/user.controller';
 import { FakeUserController } from './user/fake.controller';
+import { PlayerController } from './player/player.controller';
 import { AdminController } from './admin/admin.controller';
 import { FakeSDIController } from './e2e/sdi.controller';
 import { LoginController } from '../app/components/auth/login.controller';
@@ -52,6 +53,7 @@ module frontend {
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
     .controller('FakeUserController', FakeUserController)
+    .controller('PlayerController', PlayerController)
     .controller('AdminController', AdminController)
     .controller('FakeSDIController', FakeSDIController)
     .controller('LoginController', LoginController)

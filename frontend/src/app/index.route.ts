@@ -23,7 +23,7 @@ export function routerConfig($stateProvider: ng.ui.IStateProvider, $urlRouterPro
     })
     .state('player', {
       url: '/player',
-      templateUrl: 'app/user/player.html',
+      templateUrl: 'app/player/player.html',
       controller: 'PlayerController',
       controllerAs: 'player',
       data: {

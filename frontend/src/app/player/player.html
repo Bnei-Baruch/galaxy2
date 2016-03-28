@@ -1,0 +1,33 @@
+<script src="//v4g.kbb1.com/video/js/client-api.js"></script>
+
+<h1 class="md-display-1">Player</h1>
+
+<div layout="row" flex="50" layout-align="space-between center">
+  <md-input-container>
+    <label>Bitrate</label>
+    <md-select ng-model="player.bitrate">
+      <md-option ng-repeat="bitrate in player.bitrates" value="{{bitrate.value}}" ng-disabled="$index === 1">
+        {{bitrate.label}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+
+  <md-input-container>
+    <label>Language</label>
+    <md-select ng-model="player.bitrate">
+      <md-option ng-repeat="bitrate in player.bitrates" value="{{bitrate.value}}" ng-disabled="$index === 1">
+        {{bitrate.label}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+</div>
+
+<video id="remoteVideo"></video>
+
+<div layout="row" flex="50" layout-align="space-between center">
+  <md-button class="md-raised md-primary">Fullscreen</md-button>
+
+  <md-slider flex min="0" max="255" ng-model="player.volume" aria-label="Volume" id="red-slider"></md-slider>
+
+  <md-button class="md-raised md-warn">Mute</md-button>
+</div>
