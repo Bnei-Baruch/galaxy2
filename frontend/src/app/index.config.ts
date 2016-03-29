@@ -21,9 +21,11 @@ export function config($logProvider: ng.ILogProvider, $authProvider: any, toastr
     payload: {
       environment: config.environment || "development",
       client: {
-        source_map_enabled: true,
-        code_version: config.codeVersion || "unknown_version",
-        guess_uncaught_frames: true
+        javascript: {
+          source_map_enabled: true,
+          code_version: config.codeVersion || "unknown_version",
+          guess_uncaught_frames: true
+        }
       }
     }
   });
