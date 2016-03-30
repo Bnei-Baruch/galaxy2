@@ -21,7 +21,7 @@ export class ControlChannelController extends SingleUserChannelController {
   }
 
   pickUser(user: IUser): void {
-    if (user !== undefined) {
+    if (user !== undefined && this.users.indexOf(user) === -1) {
       this.users.unshift(user);
 
       if (user.joined) {
