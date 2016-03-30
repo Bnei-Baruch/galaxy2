@@ -96,7 +96,7 @@ export class SmallChannelController extends BaseChannelController {
       this.composite = this.composites[index];
 
       if (this.composite.length < this.compositeSize) {
-        console.debug('Composite is not complete, forwarding refused');
+        this.$log.debug('Composite is not complete, forwarding refused');
         deffered.reject();
         return deffered.promise;
       }
@@ -138,7 +138,7 @@ export class SmallChannelController extends BaseChannelController {
     }, () => {
       var error = 'Failed forwarding feed to SDI';
       this.toastr.error(error);
-      console.error(error);
+      this.$log.error(error);
       deffered.reject();
     });
 

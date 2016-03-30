@@ -13,7 +13,7 @@ export function slotWidget(): ng.IDirective {
       trigger: '&',
       toggleAudio: '&',
       hotkey: '=',
-      users: "="
+      users: '='
     },
     link: (scope: ng.IScope, element: ng.IAugmentedJQuery, attrs?: ng.IAttributes, ctrl?: SlotController) => {
       ctrl.onLink(scope, element);

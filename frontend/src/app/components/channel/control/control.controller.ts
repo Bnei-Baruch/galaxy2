@@ -21,7 +21,7 @@ export class ControlChannelController extends SingleUserChannelController {
   }
 
   pickUser(user: IUser): void {
-    if (user !== undefined && this.users.indexOf(user) == -1) {
+    if (user !== undefined && this.users.indexOf(user) === -1) {
       this.users.unshift(user);
 
       if (user.joined) {
@@ -84,7 +84,7 @@ export class ControlChannelController extends SingleUserChannelController {
       enabled: user.audioEnabled
     });
 
-    console.debug('toggleAudio() triggered for', user.login);
+    this.$log.debug('toggleAudio() triggered for', user.login);
     return false;
   }
 
