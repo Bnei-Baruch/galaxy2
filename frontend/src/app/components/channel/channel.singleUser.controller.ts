@@ -46,16 +46,19 @@ export class SingleUserChannelController extends BaseChannelController {
       this.slotElement.program.src = null;
       this.programUser = null;
     } else {
+      this.programUser = user;
 
       this.forwardProgramToSDI().then(() => {
         attachMediaStream(this.slotElement.program, this.programUser.stream);
-        this.programUser = user;
 
         if (oldProgramUser) {
           this.videoRoom.unsubscribeFromStream(oldProgramUser.login);
           oldProgramUser.stream = null;
           this.$log.debug('Unsubscribed from', oldProgramUser.login);
         }
+      }, () => {
+        // Rolling back current program user in case of error
+        this.programUser = oldProgramUser;
       });
 
     }

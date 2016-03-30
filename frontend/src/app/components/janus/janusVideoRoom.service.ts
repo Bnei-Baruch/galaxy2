@@ -145,7 +145,7 @@ export class JanusVideoRoomService {
       var loginHandle = this.remoteHandles[login];
       loginHandle.count++;
       deffered.resolve(loginHandle.stream);
-      return;
+      return deffered.promise;
     }
 
     this.janus.session.attach({
