@@ -25,13 +25,13 @@
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
 
-    <div layout="vertical" ng-if="currentUser">
-      <section flex="100">
+    <div layout="vertical" ng-if="currentUser" class="height100">
+      <section flex="100" class="positionRel">
         <header>
           <galaxy-navbar></galaxy-navbar>
         </header>
 
-        <md-content ui-view layout-padding>
+        <md-content ui-view layout-padding class="posAbsHeight100" style="top: 20px">
         </md-content>
       </section>
     </div>

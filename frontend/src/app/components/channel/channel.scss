@@ -4,6 +4,7 @@ video {
 }
 
 .channel {
+    @extend .posAbsHeight100;
     margin-right: 4px;
 }
 
@@ -16,6 +17,7 @@ video {
 }
 
 .userList {
+    display: block;
     &.md-autocomplete-suggestions {
         & > li {
             margin: 0;
@@ -59,7 +61,8 @@ video {
 }
 
 .channel .users {
-    max-height: 250px;
+    min-height: 100%;
+    height: 100%;
     overflow: auto;
     .composite > .md-button{
         padding: 0;

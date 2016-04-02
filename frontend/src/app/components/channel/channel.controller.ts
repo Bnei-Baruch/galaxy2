@@ -19,14 +19,17 @@ export class BaseChannelController {
     preview: null
   };
 
+  $log: ng.ILogService;
   $timeout: ng.ITimeoutService;
   $document: any;
   videoRoom: JanusVideoRoomService;
   toastr: any;
   config: any;
+  cssUserListHeightCalc: number;
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
+    this.$log = $injector.get('$log');
     this.$document = $injector.get('$document');
     this.$timeout = $injector.get('$timeout');
     this.videoRoom = $injector.get('videoRoom');
@@ -44,6 +47,7 @@ export class BaseChannelController {
       },
       leftCallback: (login: string) => {
         this.userLeft(login);
+
       }
     });
   }
@@ -54,7 +58,26 @@ export class BaseChannelController {
     this.slotElement.program = <HTMLMediaElement>mediaElements.get(0);
     this.slotElement.preview = <HTMLMediaElement>mediaElements.get(1);
 
+    this.$timeout(() => {
+      this.setUserListHeight(element);
+    }, 0, false);
+
+    // Set users list height
+
     this.bindHotkey();
+  }
+
+  setUserListHeight(element: ng.IAugmentedJQuery) {
+    var userListEl = element.find('[data-id = channelVideoBlock]');
+    var parentHeight = userListEl.parent('.channel').height();
+    var usersHeight = parentHeight - parseInt(userListEl.eq(0).height().toString(), 10) - 20;
+
+    // Correction for search block in control
+    if (this.name === 'control') {
+      usersHeight -= 40;
+    }
+
+    this.cssUserListHeightCalc = usersHeight;
   }
 
   userJoined(login: string) {
@@ -69,11 +92,11 @@ export class BaseChannelController {
     user.joined = null;
     user.stream = null;
 
-    console.log('User left', login);
+    this.$log.log('User left', login);
   }
 
   trigger() {
-    console.error('trigger() not implemented!');
+    this.$log.error('trigger() not implemented!');
   }
 
   disableUser(user: IUser) {

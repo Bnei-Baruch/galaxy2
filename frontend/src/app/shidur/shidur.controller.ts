@@ -5,11 +5,15 @@ export class ShidurController {
   $mdSidenav: angular.material.ISidenavService;
   toastr: any;
   breakdown: { [index: string]: IUser[] };
+  cssUserListHeightCalc: number;
+  $timeout: ng.ITimeoutService;
+  $injector: any;
 
   /* @ngInject */
-  constructor ($mdSidenav: angular.material.ISidenavService, shidur: ShidurService, toastr: any) {
+  constructor($mdSidenav: angular.material.ISidenavService, shidur: ShidurService, toastr: any, $injector: any) {
     this.$mdSidenav = $mdSidenav;
     this.toastr = toastr;
+    this.$timeout = $injector.get('$timeout');
 
     shidur.getUsers().then((users: IUser[]) => {
       this.initBreakdown(users);
@@ -36,5 +40,6 @@ export class ShidurController {
   closeChat() {
     this.$mdSidenav('chat').close();
   }
+
 
 }

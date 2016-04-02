@@ -1,10 +1,13 @@
 <section class="channel md-whiteframe-z1">
-  <slot-widget kind="program" user="vm.programUser"></slot-widget>
 
-  <slot-widget kind="preview"
-    user="vm.previewUser"
-    is-ready="vm.isReadyToSwitch()"
-    trigger="vm.trigger()"></slot-widget>
+  <div data-id="channelVideoBlock"> 
+	  <slot-widget kind="program" user="vm.programUser"></slot-widget>
 
-  <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"></ng-include>
+	  <slot-widget kind="preview"
+	    user="vm.previewUser"
+	    is-ready="vm.isReadyToSwitch()"
+	    trigger="vm.trigger()"></slot-widget>
+   </div>
+
+  <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="userList"  style="height: {{vm.cssUserListHeightCalc}}px"></ng-include>
 </section>

@@ -17,6 +17,7 @@ export class SmallChannelController extends BaseChannelController {
   onlineUsers: string[] = [];
   compositeSize: number = 4;
   composites: IUser[][] = [];
+  composite: IUser[] = [];
 
   constructor($injector: any) {
     super($injector);
@@ -90,13 +91,12 @@ export class SmallChannelController extends BaseChannelController {
       return deffered.promise;
     }
 
-    var composite: IUser[] = [];
 
     if (index !== null && this.composites[index]) {
-      composite = this.composites[index];
+      this.composite = this.composites[index];
 
-      if (composite.length < this.compositeSize) {
-        console.debug('Composite is not complete, forwarding refused');
+      if (this.composite.length < this.compositeSize) {
+        this.$log.debug('Composite is not complete, forwarding refused');
         deffered.reject();
         return deffered.promise;
       }
@@ -110,7 +110,7 @@ export class SmallChannelController extends BaseChannelController {
 
     var logins: string[] = Array.apply(null, Array(this.compositeSize));
 
-    composite.forEach((user: IUser, userIndex: number) => {
+    this.composite.forEach((user: IUser, userIndex: number) => {
       logins[userIndex] = user.login;
     });
 
@@ -138,7 +138,7 @@ export class SmallChannelController extends BaseChannelController {
     }, () => {
       var error = 'Failed forwarding feed to SDI';
       this.toastr.error(error);
-      console.error(error);
+      this.$log.error(error);
       deffered.reject();
     });
 

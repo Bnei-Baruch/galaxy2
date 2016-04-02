@@ -1,16 +1,17 @@
 <section class="channel md-whiteframe-z1">
-  <slot-widget kind="program"
-    user="vm.programUser"
-    toggle-audio="vm.toggleAudio(vm.programUser)"
-    show-audio-toggle="true"></slot-widget>
+  <div data-id="channelVideoBlock"> 
+    <slot-widget kind="program"
+      user="vm.programUser"
+      toggle-audio="vm.toggleAudio(vm.programUser)"
+      show-audio-toggle="true"></slot-widget>
 
-  <slot-widget kind="preview"
-    user="vm.previewUser"
-    is-ready="vm.isReadyToSwitch()"
-    toggle-audio="vm.toggleAudio(vm.previewUser)"
-    show-audio-toggle="true"
-    trigger="vm.trigger()"></slot-widget>
-
+    <slot-widget kind="preview"
+      user="vm.previewUser"
+      is-ready="vm.isReadyToSwitch()"
+      toggle-audio="vm.toggleAudio(vm.previewUser)"
+      show-audio-toggle="true"
+      trigger="vm.trigger()"></slot-widget>
+  </div>
   <md-autocomplete
     md-no-cache="true"
     md-selected-item="vm.selectedUser"
@@ -36,7 +37,7 @@
     </md-item-template>
   </md-autocomplete>
 
-  <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"></ng-include>
+  <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="userList"  style="height: {{vm.cssUserListHeightCalc}}px"></ng-include>
 
   <md-list class="users userList" ng-show="disabledUsers.length">
     <md-subheader class="md-no-sticky">Disabled users</md-subheader>

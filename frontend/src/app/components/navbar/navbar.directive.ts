@@ -16,24 +16,19 @@ export function galaxyNavbar(): ng.IDirective {
 
 /** @ngInject */
 export class NavbarController {
-  $rootScope: IGalaxyScope;
-  auth: AuthService;
-  toastr: any;
-  $mdSidenav: angular.material.ISidenavService;
 
-  constructor($rootScope: IGalaxyScope, authService: AuthService, $mdSidenav: angular.material.ISidenavService, toastr: any) {
-    this.$rootScope = $rootScope;
-    this.auth = authService;
-    this.toastr = toastr;
-    this.$mdSidenav = $mdSidenav;
+  constructor(private $rootScope: IGalaxyScope,
+      private authService: AuthService,
+      private $mdSidenav: angular.material.ISidenavService,
+      private toastr: any) {
   }
 
-  openMenu($mdOpenMenu, e) {
+  openMenu($mdOpenMenu: any, e: ng.IAngularEvent) {
     $mdOpenMenu(e);
   };
 
   logout() {
-    this.auth.logout().then(() => {
+    this.authService.logout().then(() => {
       window.location.reload();
     });
   }
