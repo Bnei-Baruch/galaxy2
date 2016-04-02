@@ -1,4 +1,10 @@
 var utils = require('./utils');
+var fs = require('fs');
+
+function readConfig(path) {
+  var buf = fs.readFileSync(path, "utf8").toString();
+  return JSON.parse(buf);
+}
 
 describe('Janus video room', function () {
   'use strict';
@@ -10,7 +16,7 @@ describe('Janus video room', function () {
     browser.ignoreSynchronization = false;
   });
 
-  it('should display user video when the user logged in before shidur page loaded', function() {
+  xit('should display user video when the user logged in before shidur page loaded', function() {
     browser.get('/#/user');
     utils.login();
     utils.openNewWindow("/index.html");
@@ -18,7 +24,7 @@ describe('Janus video room', function () {
     utils.waitForVideo('.preview');
   });
 
-  it('should display user video when the user logged in after shidur page loaded', function() {
+  xit('should display user video when the user logged in after shidur page loaded', function() {
     browser.get('/index.html');
     utils.login();
     utils.openNewWindow("/#/user");
@@ -26,7 +32,7 @@ describe('Janus video room', function () {
     utils.waitForVideo('.preview');
   });
 
-  it('should resume getting dynamic video when user reloads the page', function() {
+  xit('should resume getting dynamic video when user reloads the page', function() {
     // Open user
     browser.get('/#/user');
     utils.login();
@@ -43,7 +49,7 @@ describe('Janus video room', function () {
     utils.waitForVideo('.preview');
   });
 
-  it('should resume getting user video when shidur reloads the page', function() {
+  xit('should resume getting user video when shidur reloads the page', function() {
     // Open user
     browser.get('/#/user');
     utils.login();
@@ -59,23 +65,34 @@ describe('Janus video room', function () {
   });
 
   it('should forward user to SDI when click on program', function() {
+    var testing_config = 'config.testing.json';
+    var config = readConfig(testing_config);
+    var large1_port = config.janus.sdiPorts.large1.video.program;
+
     // Open user
-    browser.get('/#/user');
-    utils.login();
-    // Open SDI page
-    utils.openNewWindow("/#/sdi");
-    // Open shidur
-    utils.openNewWindow("/index.html");
-    // Switch to Shidur page
-    utils.switchToWindow(1);
-    // Click on preview to switch SDI
-    utils.waitForVideo('[kind=preview] video').then(function() {
-      var test = element(by.model('test'));
-      //expect(test.getOuterHtml()).toEqual('!!!');  // Debug
-      test.click();
-      utils.switchToWindow(2);
-      // Check video color is changing
-      utils.waitForVideo('#remoteVideo10001').then(function(color) { console.log('color is:' + color); });
+    browser.get('/#/user').then(function() {
+      utils.login();
+      // Open SDI page
+      utils.openNewWindow("/#/sdi").then(function() {
+        // Open shidur
+        utils.openNewWindow("/index.html").then(function() {
+          // Switch to Shidur page
+          utils.switchToWindow(1).then(function() {
+            // Click on preview to switch SDI
+            utils.waitForVideo('[kind=preview] video').then(function() {
+              var test = element(by.model('test'));
+              //expect(test.getOuterHtml()).toEqual('!!!');  // Debug
+              test.click();
+              utils.switchToWindow(2).then(function() {
+                // Check video color is changing
+                utils.waitForVideo('#remoteVideo' + large1_port).then(function(color) {
+                  console.log('color is:' + color);
+                });
+              });
+            });
+          });
+        });
+      });
     });
   });
 });

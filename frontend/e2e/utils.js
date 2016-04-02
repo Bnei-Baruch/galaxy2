@@ -9,7 +9,6 @@ exports.login = function() {
 
   login.sendKeys('e2e');
   password.sendKeys('e2eARVUT2014');
-
   submit.click();
 
   browser.sleep(3500);
@@ -48,12 +47,15 @@ exports.switchToWindow = function(number) {
   var deferred = protractor.promise.defer();
 
   browser.getAllWindowHandles().then(function(handles) {
-    console.log("All window handles:", handles);
-
+    //console.log("All window handles:", handles);
     browser.switchTo().window(handles[number]).then(function () {
-      console.log("Switched to window:", handles[number]);
-      browser.driver.executeScript('window.focus();');
-      deferred.fulfill();
+      //console.log("Switched to window:", handles[number]);
+      browser.driver.executeScript('window.focus();').then(function() {
+        browser.getCurrentUrl().then(function(url) {
+          console.log('Switch to ' + url);
+          deferred.fulfill();
+        });
+      });
     });
   });
 
