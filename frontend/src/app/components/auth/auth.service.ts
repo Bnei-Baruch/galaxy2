@@ -25,12 +25,12 @@ export interface IUser {
 export class AuthService {
   user: IUser;
 
-  constructor($rootScope: ng.IRootScopeService,
-      private $q: ng.IQService,
-      private $mdDialog: angular.material.IDialogService,
-      private $auth: any,
-      private toastr: any,
-      private Rollbar: any) {
+  constructor(private $q: ng.IQService,
+              private $mdDialog: angular.material.IDialogService,
+              private $auth: any,
+              private toastr: any,
+              private $log: ng.ILogService,
+              private Rollbar: any) {
   }
 
   authenticate() {
@@ -50,7 +50,6 @@ export class AuthService {
         this.onLogin(user);
         deferred.resolve(user);
       });
-
     });
     return deferred.promise;
   }
@@ -72,6 +71,7 @@ export class AuthService {
     return this.$auth.signOut()
       .then(this.onLogout)
       .catch((resp: any) => {
+        this.$log.error('Error signing out', resp);
         this.toastr.error(`Unable to sign out: ${resp.errors}`);
       });
   }

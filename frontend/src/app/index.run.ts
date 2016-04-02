@@ -4,8 +4,6 @@ import { AuthService, IUser, IGalaxyScope } from './components/auth/auth.service
 export function runBlock($log: ng.ILogService,
                          $rootScope: IGalaxyScope,
                          $state: ng.ui.IStateService,
-                         toastr: any,
-                         $auth: any,
                          authService: AuthService) {
 
   // TODO: support pages that don't require login
