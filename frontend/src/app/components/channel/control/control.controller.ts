@@ -77,14 +77,14 @@ export class ControlChannelController extends SingleUserChannelController {
   }
 
   toggleAudio(user: IUser) {
-    user.audioEnabled = !user.audioEnabled;
+    this.$log.debug('Toggle audio', this.name, user.login);
 
+    user.audioEnabled = !user.audioEnabled;
     this.pubSub.client.publish('/users/' + user.login, {
       message: 'toggleAudio',
       enabled: user.audioEnabled
     });
 
-    this.$log.debug('toggleAudio() triggered for', user.login);
     return false;
   }
 

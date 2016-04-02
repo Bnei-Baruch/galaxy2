@@ -86,17 +86,17 @@ export class SmallChannelController extends BaseChannelController {
 
     var slotName = this.getSlotName(program);
 
+    // Composite already in slot ?
     if (index === this.compositeIndex[slotName]) {
       deffered.resolve();
       return deffered.promise;
     }
 
-
+    // Composite is complete ?
     if (index !== null && this.composites[index]) {
       this.composite = this.composites[index];
-
       if (this.composite.length < this.compositeSize) {
-        this.$log.debug('Composite is not complete, forwarding refused');
+        this.$log.info('Composite is not complete, forwarding refused');
         deffered.reject();
         return deffered.promise;
       }
@@ -115,6 +115,7 @@ export class SmallChannelController extends BaseChannelController {
     });
 
     // TODO: move to base controller
+    this.$log.info('Putting composite to slot', slotName, logins);
     this.videoRoom.forwardRemoteFeeds(logins, portsConfig.forwardIp, videoPorts).then(() => {
       // Forwarding succeeded, changing titles
 
@@ -136,9 +137,8 @@ export class SmallChannelController extends BaseChannelController {
 
       deffered.resolve();
     }, () => {
-      var error = 'Failed forwarding feed to SDI';
-      this.toastr.error(error);
-      this.$log.error(error);
+      this.$log.error('Error putting composite to slot', slotName);
+      this.toastr.error(`Error forwarding composite to ${slotName}`);
       deffered.reject();
     });
 
@@ -146,8 +146,7 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   private getSlotName(program: boolean): string {
-    var slotName = program ? 'program' : 'preview';
-    return slotName;
+    return program ? 'program' : 'preview';
   }
 
   /**
