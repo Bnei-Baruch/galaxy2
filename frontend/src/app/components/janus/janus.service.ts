@@ -8,6 +8,7 @@ export class JanusService {
   constructor(private $q: ng.IQService,
       private $rootScope: ng.IRootScopeService,
       private $timeout: ng.ITimeoutService,
+      private $log: ng.ILogService,
       private toastr: any,
       private config: any) {
 
@@ -21,15 +22,15 @@ export class JanusService {
     var initCallback = () => {
 
       if (!Janus.isWebrtcSupported()) {
-        this.toastr.error('No WebRTC support... ');
+        this.toastr.error('Sorry, we need your browser to support WebRTC.');
         deffered.reject();
       }
 
+      this.$log.info('Initializing connection to Janus')
       this.session = new Janus({
         server: this.config.janus.serverUri,
-	iceServers: [{url: this.config.janus.stunUri}],
+	      iceServers: [{url: this.config.janus.stunUri}],
         success: () => {
-
           $(window).on('beforeunload', () => {
             this.$rootScope.$broadcast('janus.destroy');
             this.session.destroy();
@@ -39,7 +40,8 @@ export class JanusService {
           deffered.resolve();
         },
         error: (error: any) => {
-          this.toastr.error(`Janus creation error: ${error}`);
+          this.$log.error('Error connecting to Janus', error);
+          this.toastr.error("Oops, we can't connect to the WebRTC gateway.");
           this.reloadAfterTimeout();
           deffered.reject();
         }
