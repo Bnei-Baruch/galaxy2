@@ -1,4 +1,4 @@
-import { AuthService, IGalaxyScope } from '../auth/auth.service';
+import { AuthService } from '../auth/auth.service';
 
 /** @ngInject */
 export function galaxyNavbar(): ng.IDirective {
@@ -17,10 +17,16 @@ export function galaxyNavbar(): ng.IDirective {
 /** @ngInject */
 export class NavbarController {
 
-  constructor(private $rootScope: IGalaxyScope,
-      private authService: AuthService,
-      private $mdSidenav: angular.material.ISidenavService,
-      private toastr: any) {
+  constructor(private authService: AuthService,
+              private $mdSidenav: angular.material.ISidenavService) {
+  }
+
+  openHeader() {
+    this.$mdSidenav('headerNav').open();
+  }
+
+  closeHeader() {
+    this.$mdSidenav('headerNav').close();
   }
 
   openMenu($mdOpenMenu: any, e: ng.IAngularEvent) {

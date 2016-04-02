@@ -1,9 +1,9 @@
 <div>
-    <md-toolbar class="showHeader" ng-click="vm.$mdSidenav('headerNav').open()">
+    <md-toolbar class="showHeader" ng-click="vm.openHeader()">
         <md-icon ng-if="1" class="material-icons">menu</md-icon>
     </md-toolbar>
     <md-sidenav class="md-sidenav-top" md-component-id="headerNav">
-        <md-toolbar layout="row" layout-align="center center" md-component-id="" ng-click="vm.$mdSidenav('headerNav').close()">
+        <md-toolbar layout="row" layout-align="center center" md-component-id="" ng-click="vm.closeHeader()">
             <md-button href="/">
                 <!-- <md&#45;icon md&#45;svg&#45;src="/assets/images/galaxy&#45;logo.svg" aria&#45;label="Galaxy 2 Logo"></md&#45;icon> -->
                 Galaxy 2

@@ -36,7 +36,7 @@ export class BaseChannelController {
     this.toastr = $injector.get('toastr');
     this.config = $injector.get('config');
 
-    // Mapping users by login for conveniency
+    // Mapping users by login for convenience
     this.mapUsersByLogin();
 
     this.videoRoom.registerChannel({
@@ -47,7 +47,6 @@ export class BaseChannelController {
       },
       leftCallback: (login: string) => {
         this.userLeft(login);
-
       }
     });
   }
@@ -81,25 +80,27 @@ export class BaseChannelController {
   }
 
   userJoined(login: string) {
-    // TODO: The timestamp should be better taken from Janus point of view
+    this.$log.info('User joined', this.name, login);
     var user = this.usersByLogin[login];
+
+    // TODO: The timestamp should be better taken from Janus point of view
     user.joined = moment();
     user.disabled = false;
   }
 
   userLeft(login: string) {
+    this.$log.info('User left', this.name, login);
     var user = this.usersByLogin[login];
     user.joined = null;
     user.stream = null;
-
-    this.$log.log('User left', login);
   }
 
   trigger() {
-    this.$log.error('trigger() not implemented!');
+    this.$log.error('trigger() not implemented!', this.name);
   }
 
   disableUser(user: IUser) {
+    this.$log.info('Disable user', this.name, user.login);
     user.disabled = true;
   }
 
@@ -108,7 +109,7 @@ export class BaseChannelController {
       this.users = [];
     }
 
-    // Mapping users by login for conveniency
+    // Mapping users by login for convenience
     this.users.forEach((user: IUser) => {
       this.usersByLogin[user.login] = user;
     });
