@@ -80,9 +80,10 @@ describe('Janus video room', function () {
           utils.switchToWindow(1).then(function() {
             // Click on preview to switch SDI
             utils.waitForVideo('[kind=preview] video').then(function() {
-              var test = element(by.model('test'));
-              //expect(test.getOuterHtml()).toEqual('!!!');  // Debug
-              test.click();
+              var channel = element(by.css('large-channel-widget[name="large1"]'));
+              var slot = channel.element(by.css('slot-widget[kind="preview"]'));
+              // expect(slot.getOuterHtml()).toEqual('!!!');  // Debug
+              slot.click();
               utils.switchToWindow(2).then(function() {
                 // Check video color is changing
                 utils.waitForVideo('#remoteVideo' + large1_port).then(function(color) {
