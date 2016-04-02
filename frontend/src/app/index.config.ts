@@ -10,7 +10,7 @@ export function config(
     RollbarProvider: any) {
 
   // Enable log
-  $logProvider.debugEnabled(true);
+  $logProvider.debugEnabled(config.environment !== 'production');
 
   // Toastr
   toastrConfig.allowHtml = true;
@@ -40,13 +40,13 @@ export function config(
 
   // Log errors to Rollbar
   $provide.decorator('$log', ($delegate: any) => {
-    var origError = $delegate.error;
+    var fn = $delegate.error;
 
     // arguments object cannot be used in arrow function
     $delegate.error = function() {
-      console.error(arguments);
-      Rollbar.error(arguments);
-      origError.apply(null, arguments);
+      var data = Array.prototype.slice.call(arguments);
+      fn.apply($delegate, data);
+      Rollbar.error.apply(Rollbar, data);
     };
 
     return $delegate;

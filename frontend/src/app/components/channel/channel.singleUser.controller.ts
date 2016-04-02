@@ -43,21 +43,24 @@ export class SingleUserChannelController extends BaseChannelController {
     var oldProgramUser = this.programUser;
 
     if (user === null) {
+      this.$log.info('Program user is null', this.name);
       this.slotElement.program.src = null;
       this.programUser = null;
     } else {
+      this.$log.info('Putting user to program', this.name, user.login);
       this.programUser = user;
-
       this.forwardProgramToSDI().then(() => {
         attachMediaStream(this.slotElement.program, this.programUser.stream);
 
         if (oldProgramUser) {
+          this.$log.info('Unsubscribe (program)', this.name, oldProgramUser.login);
           this.videoRoom.unsubscribeFromStream(oldProgramUser.login);
           oldProgramUser.stream = null;
-          this.$log.debug('Unsubscribed from', oldProgramUser.login);
         }
       }, () => {
-        // Rolling back current program user in case of error
+        this.toastr.error(`Error putting ${user.login} to program,
+        rolling back to ${oldProgramUser.login}`);
+        this.$log.info('Rolling back program user', this.name, oldProgramUser.login);
         this.programUser = oldProgramUser;
       });
 
@@ -73,25 +76,25 @@ export class SingleUserChannelController extends BaseChannelController {
     var oldPreviewUser = this.previewUser;
 
     if (user === null) {
+      this.$log.info('Preview user is null', this.name);
       this.slotElement.preview.src = null;
       this.previewUser = null;
     } else {
+      this.$log.info('Putting user to preview', this.name, user.login);
       this.videoRoom.subscribeForStream(user.login).then((stream: MediaStream) => {
         user.stream = stream;
-
         attachMediaStream(this.slotElement.preview, stream);
-        this.$log.debug('Subscribed for', user.login);
 
         this.previewUser = user;
 
         if (oldPreviewUser && oldPreviewUser !== this.programUser) {
+          this.$log.info('Unsubscribe (preview)', this.name, oldPreviewUser.login);
           this.videoRoom.unsubscribeFromStream(oldPreviewUser.login);
           oldPreviewUser.stream = null;
-          this.$log.debug('Unsubscribed from', oldPreviewUser.login);
         }
-
       }, () => {
-        this.toastr.error(`Unable to subscribe for user ${user.login}`);
+        this.$log.info('Error putting user to preview', this.name, user.login);
+        this.toastr.error(`Error putting ${user.login} to preview`);
       });
     }
   }
@@ -125,7 +128,6 @@ export class SingleUserChannelController extends BaseChannelController {
     this.isForwarded.program = false;
 
     var audioPorts;
-
     if (sdiPorts.audio) {
       audioPorts = [sdiPorts.audio];
     } else {
@@ -137,9 +139,9 @@ export class SingleUserChannelController extends BaseChannelController {
         this.isForwarded.program = true;
         this.videoRoom.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video.program);
       }, () => {
-        var error = 'Failed forwarding feed to SDI';
+        this.$log.error('Error forwarding program to SDI', this.programUser.login);
+        var error = `Error forwarding program to SDI ${this.programUser.login}`;
         this.toastr.error(error);
-        this.$log.error(error);
         return error;
       });
   }
@@ -152,8 +154,7 @@ export class SingleUserChannelController extends BaseChannelController {
       return null;
     }
 
-    var nextUser = onlineUsers[(userIndex + 1) % onlineUsers.length];
-    return nextUser;
+    return onlineUsers[(userIndex + 1) % onlineUsers.length];
   }
 
 }
