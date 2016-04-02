@@ -5,15 +5,14 @@ export class LoginController {
   login: string;
   password: string;
 
-  constructor(private $scope: ng.IScope,
-      private $log: ng.ILogService,
-      private $mdDialog: angular.material.IDialogService,
-      private $auth: any,
-      private toastr: any) {
+  constructor(private $log: ng.ILogService,
+              private $mdDialog: angular.material.IDialogService,
+              private $auth: any,
+              private toastr: any) {
   }
 
-  submit(login: string, password: string) {
-    this.$log.debug('Signing in as:', this.login);
+  submit() {
+    this.$log.debug('Signing in as: ', this.login);
 
     this.$auth.submitLogin({
       login: this.login,
@@ -21,6 +20,7 @@ export class LoginController {
     }).then((user: IUser) => {
       this.$mdDialog.hide(user);
     }).catch((response: any) => {
+      this.$log.error('Error submitting login form', response);
       this.toastr.error(response.errors.join(' '));
     });
   }
