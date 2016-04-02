@@ -26,7 +26,7 @@ export class JanusService {
         deffered.reject();
       }
 
-      this.$log.info('Initializing connection to Janus')
+      this.$log.info('Initializing connection to Janus');
       this.session = new Janus({
         server: this.config.janus.serverUri,
 	      iceServers: [{url: this.config.janus.stunUri}],
@@ -41,7 +41,7 @@ export class JanusService {
         },
         error: (error: any) => {
           this.$log.error('Error connecting to Janus', error);
-          this.toastr.error("Oops, we can't connect to the WebRTC gateway.");
+          this.toastr.error('Oops, we can\'t connect to the WebRTC gateway.');
           this.reloadAfterTimeout();
           deffered.reject();
         }

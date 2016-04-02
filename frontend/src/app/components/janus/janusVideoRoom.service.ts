@@ -125,7 +125,7 @@ export class JanusVideoRoomService {
     this.$log.info('VideoRoom - unpublish own feed', this.localHandle);
     this.localHandle.send({
       message: {request: 'unpublish'},
-      error: (response) => this.$log.error('Error Unpublishing own feed', response)
+      error: (response: any) => this.$log.error('Error Unpublishing own feed', response)
     });
   }
 
@@ -173,13 +173,13 @@ export class JanusVideoRoomService {
               'ptype': 'listener',
               'feed': self.publishers[login].id
             },
-            error: (response) => this.$log.error('Error joining remote handle as listener', response)
+            error: (response: any) => this.$log.error('Error joining remote handle as listener', response)
           });
         } else {
           this.$log.error('VideoRoom - login not in publishers', login);
         }
       },
-      error: (response) => {
+      error: (response: any) => {
         this.$log.error('Error attaching videoroom handle', response);
         deffered.reject(response);
       },
@@ -226,12 +226,12 @@ export class JanusVideoRoomService {
       if (!handleItem.count) {
         this.$log.info('VideoRoom - last remote handle, detaching.', login);
         handleItem.handle.detach({
-          error: (response) => this.$log.error('Error detaching videoroom remote handle', response)
+          error: (response: any) => this.$log.error('Error detaching videoroom remote handle', response)
         });
         delete this.remoteHandles[login];
       }
     } else {
-      this.$log.error('VideoRoom - login not in remoteHandles', login)
+      this.$log.error('VideoRoom - login not in remoteHandles', login);
     }
   }
 
@@ -360,7 +360,7 @@ export class JanusVideoRoomService {
         });
       });
     } else {
-      this.$log.error('VideoRoom - login not in userChannels', login)
+      this.$log.error('VideoRoom - login not in userChannels', login);
     }
   }
 
@@ -415,7 +415,7 @@ export class JanusVideoRoomService {
               ptype: 'publisher',
               display: this.localUserLogin
             },
-            error: (response) => {
+            error: (response: any) => {
               this.$log.error('Error joining local handle', response);
               this.toastr.error(`Error joining video room: ${response}`);
             }
@@ -436,7 +436,7 @@ export class JanusVideoRoomService {
             this.$log.debug(jsep);
             this.localHandle.handleRemoteJsep({
               jsep: jsep,
-              error: (response) => this.$log.error('Error handling remote jsep', response)
+              error: (response: any) => this.$log.error('Error handling remote jsep', response)
             });
           }
         },
@@ -531,7 +531,7 @@ export class JanusVideoRoomService {
   private publishLocalFeed(): void {
     this.$log.info('VideoRoom - publish local feed, creating offer.');
 
-    //noinspection TypeScriptValidateJSTypes
+    // noinspection TypeScriptValidateJSTypes
     this.localHandle.createOffer({
       media: {
         // Publishers are sendonly
@@ -547,7 +547,7 @@ export class JanusVideoRoomService {
         this.localHandle.send({
           'message': {'request': 'configure', 'audio': true, 'video': true},
           'jsep': jsep,
-          error: (response) => this.$log.error('Error configuring local feed', response)
+          error: (response: any) => this.$log.error('Error configuring local feed', response)
         });
       },
       error: (respnose: any) => {
@@ -574,7 +574,7 @@ export class JanusVideoRoomService {
       this.$log.info('VideoRoom - Creating answer', handle.getId());
       this.$log.debug(jsep);
 
-      //noinspection TypeScriptValidateJSTypes
+      // noinspection TypeScriptValidateJSTypes
       handle.createAnswer({
         jsep: jsep,
         media: { audioSend: false, videoSend: false },	// We want recvonly audio/video
@@ -584,10 +584,10 @@ export class JanusVideoRoomService {
           handle.send({
             'message': {'request': 'start', 'room': self.config.janus.roomId},
             'jsep': jsep,
-            error: (response) => this.$log.error('Error starting videoroom SDP answer', response)
+            error: (response: any) => this.$log.error('Error starting videoroom SDP answer', response)
           });
         },
-        error: (response) => {
+        error: (response: any) => {
           this.$log.error('Error creating videoroom SDP answer', response);
           this.toastr.error('WebRTC error: ' + response);
         }
@@ -625,7 +625,7 @@ export class JanusVideoRoomService {
           updateShidurState().success(() => {
             deffered.resolve();
           });
-        }, (error:any) => {
+        }, (error: any) => {
           updateShidurState().success(() => {
             deffered.reject(`Failed using shidur state: ${error}`);
           });
@@ -671,7 +671,7 @@ export class JanusVideoRoomService {
           this.$log.error('Error rtp_forward success data', data);
         }
       },
-      error: (response) => {
+      error: (response: any) => {
         this.$log.error('Error rtp_forward', response);
         callback(null);
       }
@@ -715,10 +715,10 @@ export class JanusVideoRoomService {
         room: self.config.janus.roomId,
         secret: self.config.janus.secret
       },
-      success: (data:any) => {
+      success: (data: any) => {
         callback();
       },
-      error: (response) => {
+      error: (response: any) => {
         this.$log.error('Error stop_rtp_forward ', response);
         callback();
       }

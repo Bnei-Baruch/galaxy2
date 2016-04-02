@@ -26,7 +26,7 @@ export class JanusStreamingService {
           this.$log.info('Streaming - watch', streamId);
           handle.send({
             'message': {request: 'watch', id: streamId},
-            error: (response) => this.$log.error('Error watching streaming handle', response)
+            error: (response: any) => this.$log.error('Error watching streaming handle', response)
           });
         },
         error: (response: any) => {
@@ -57,7 +57,7 @@ export class JanusStreamingService {
       this.$log.info('Streaming - Creating answer', handle.getId());
       this.$log.debug(jsep);
 
-      //noinspection TypeScriptValidateJSTypes
+      // noinspection TypeScriptValidateJSTypes
       handle.createAnswer({
         jsep: jsep,
         media: { audioSend: false, videoSend: false },  // We want recvonly audio/video
@@ -67,10 +67,10 @@ export class JanusStreamingService {
           handle.send({
             'message': {'request': 'start'},
             'jsep': jsep,
-            error: (response) => this.$log.error('Error starting streaming SDP answer', response)
+            error: (response: any) => this.$log.error('Error starting streaming SDP answer', response)
           });
         },
-        error: (response) => {
+        error: (response: any) => {
           this.$log.error('Error creating streaming SDP answer', response);
           this.toastr.error('WebRTC error: ' + response);
         }
@@ -78,12 +78,12 @@ export class JanusStreamingService {
     }
   }
 
-  onJanusDestroy(){
+  onJanusDestroy() {
     this.pluginHandles.forEach((handle: any) => {
       this.$log.info('Stopping streaming handle', handle.getId());
       handle.send({
         message: {request: 'stop'},
-        error: (response) => this.$log.error('Error stopping streaming handle', response)
+        error: (response: any) => this.$log.error('Error stopping streaming handle', response)
       });
 
       this.$log.info('Hanging up streaming handle', handle.getId());
