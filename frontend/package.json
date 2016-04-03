@@ -1,7 +1,6 @@
 {
   "name": "frontend",
   "version": "0.0.0",
-  "dependencies": {},
   "scripts": {
     "test": "gulp test"
   },
@@ -48,6 +47,8 @@
     "main-bower-files": "~2.9.0",
     "ng-annotate-loader": "0.0.10",
     "phantomjs": "~1.9.18",
+    "readline-sync": "^1.4.1",
+    "runsync": "^0.1.8",
     "tsd": "~0.6.5",
     "tslint-loader": "~1.0.2",
     "typescript": "~1.6.2",
