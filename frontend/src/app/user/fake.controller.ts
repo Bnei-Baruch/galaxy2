@@ -24,7 +24,7 @@ export class FakeUserController {
       this.fakeUsers.forEach((login: string, userIndex: number) => {
         var mediaElement = <HTMLMediaElement>document.querySelector(`video[data-login="${login}"]`);
 
-        var janus = new JanusService($q, $rootScope, $timeout, toastr, config);
+        var janus = new JanusService($q, $rootScope, $timeout, $log, toastr, config);
         var videoRoom = new JanusVideoRoomService($q, $rootScope, $log, $timeout, $http, authService, janus, toastr, config);
 
         videoRoom.registerLocalUser(login, (stream: MediaStream) => {
