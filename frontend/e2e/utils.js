@@ -41,22 +41,39 @@ exports.openNewWindow = function(url) {
   return browser.driver.executeScript("$(window.open('" + url + "'))");
 };
 
-exports.switchToWindow = function(number) {
+exports.switchToSpecificHandle = function(handle) {
+  'use strict';
+  var deferred = protractor.promise.defer();
+  browser.switchTo().window(handle).then(function () {
+    //console.log("Switched to window:", handles[number]);
+    browser.driver.executeScript('window.focus();').then(function() {
+      browser.getCurrentUrl().then(function(url) {
+        console.log('Switch to ' + url);
+        deferred.fulfill();
+      });
+    });
+  });
+  return deferred.promise;
+};
+
+exports.switchToWindow = function(number, url_contains) {
   'use strict';
 
   var deferred = protractor.promise.defer();
 
   browser.getAllWindowHandles().then(function(handles) {
-    //console.log("All window handles:", handles);
+    console.log("All window handles:", handles);
     browser.switchTo().window(handles[number]).then(function () {
-      //console.log("Switched to window:", handles[number]);
       browser.driver.executeScript('window.focus();').then(function() {
-        browser.getCurrentUrl().then(function(url) {
-          console.log('Switch to ' + url);
+        browser.driver.executeScript('return window.location.toString();').then(function(url) {
+          if (url_contains) {
+            expect(url).toContain(url_contains);
+          }
+          console.log('Switch to [' + handles[number] + ']: ' + url);
           deferred.fulfill();
-        });
-      });
-    });
+        }, function() { throw 'Could not get current url.'; });
+      }, function() { throw 'Could not focus.'; });
+    }, function() { throw 'Could not switchTo.'; });
   });
 
   return deferred.promise;
