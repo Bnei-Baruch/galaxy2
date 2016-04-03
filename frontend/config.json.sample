@@ -1,5 +1,4 @@
 {
-  "environment": "development",
   "janus": {
     "serverUri": "https://galaxy-dev.kbb1.com:8889/janus",
     "stunUri": "stun://v4g.kbb1.com:3478",
@@ -9,13 +8,15 @@
       "large1": {
         "forwardIp": "51.254.244.44",
         "video": {
-          "program": 10001
+          "program": 10001,
+          "streamId": 11
         }
       },
       "large2": {
         "forwardIp": "51.254.244.44",
         "video": {
-          "program": 10002
+          "program": 10002,
+          "streamId": 12
         }
       },
       "small1": {
@@ -43,7 +44,8 @@
       "control": {
         "forwardIp": "51.254.244.44",
         "video": {
-          "program": 10005
+          "program": 10005,
+          "streamId": 17
         },
         "audio": 50005
       }
@@ -52,6 +54,7 @@
     "titleApiUrl": "https://v4g.kbb1.com:8080/title.php?title=%title%&port=%port%"
   },
   "backendUri": "https://rt-dev.kbb1.com:5000/galaxy2/backend",
+  "environment": "development",
   "rollbarToken": "rollbar-access-token-comes-here",
   "codeVersion": "git-sha1-deployed-should-be-here",
   "chatUri": "https://chat1.kbb1.com/?label=galaxy2"
