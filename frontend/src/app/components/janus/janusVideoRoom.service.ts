@@ -261,43 +261,6 @@ export class JanusVideoRoomService {
     });
   }
 
-  stopAndStartSdiForwarding(shidurState: IShidurState,
-      login: string,
-      forwardIp: string,
-      videoPort: number,
-      audioPort: number): ng.IPromise<any> {
-    // Stop (if exists) => Start => Update state => Callback.
-
-    var deffered = this.$q.defer();
-
-    var startForwardingCallback = (forwardInfo: IFeedForwardInfo) => {
-      shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
-      if (audioPort) {
-        shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
-      }
-      deffered.resolve();
-    };
-
-    var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
-    this.stopSdiForwarding(prevForwardInfo, () => {
-      if (login) {
-        if (login in this.publishers) {
-          this.startSdiForwarding(login, forwardIp, videoPort, audioPort, startForwardingCallback);
-        } else {
-          this.$log.error('VideoRoom - bad shidur state, login not in publishers', login);
-          var error = `Could not find publisher with login ${login}`;
-          this.toastr.error(error);
-          deffered.resolve(error);
-        }
-      } else {
-        delete shidurState.janus.portsFeedForwardInfo[videoPort];
-        deffered.resolve();
-      }
-    });
-
-    return deffered.promise;
-  }
-
   /**
    * Change user title on a Janus port (SDI)
    *
@@ -320,6 +283,46 @@ export class JanusVideoRoomService {
       this.$log.info('VideoRoom - toggle audio track', audioTrack.label, enabled);
       audioTrack.enabled = enabled;
     });
+  }
+
+  private stopAndStartSdiForwarding(shidurState: IShidurState,
+      login: string,
+      forwardIp: string,
+      videoPort: number,
+      audioPort: number): ng.IPromise<any> {
+    // Stop (if exists) => Start => Update state => Callback.
+
+    var deffered = this.$q.defer();
+
+    var startForwardingCallback = (forwardInfo: IFeedForwardInfo) => {
+      shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
+      if (audioPort) {
+        shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
+      }
+      deffered.resolve();
+    };
+
+    var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
+    this.stopSdiForwarding(prevForwardInfo).then(() => {
+      if (login) {
+        if (login in this.publishers) {
+          this.startSdiForwarding(login, forwardIp, videoPort, audioPort, startForwardingCallback);
+        } else {
+          this.$log.error('VideoRoom - bad shidur state, login not in publishers', login);
+          var error = `Could not find publisher with login ${login}`;
+          this.toastr.error(error);
+          deffered.resolve(error);
+        }
+      } else {
+        delete shidurState.janus.portsFeedForwardInfo[videoPort];
+        deffered.resolve();
+      }
+    }, () => {
+      this.$log.error('VideoRoom - error stoping SDI forwarding.');
+      deffered.reject();
+    });
+
+    return deffered.promise;
   }
 
   // Handles changes in publishers state and updates registered clients (channel) if needed.
@@ -651,7 +654,7 @@ export class JanusVideoRoomService {
       forward.audio_port = audioPort;
     }
 
-    this.$log.info('VideoRoom - start SDI forwarding', login);
+    this.$log.info('VideoRoom - start SDI fortarding', login);
     this.localHandle.send({
       message: forward,
       success: (data: any) => {
@@ -678,33 +681,42 @@ export class JanusVideoRoomService {
     });
   }
 
-  private stopSdiForwarding(forwardInfo: IFeedForwardInfo, callback: () => void): void {
+  private stopSdiForwarding(forwardInfo: IFeedForwardInfo): ng.IPromise<any> {
+    var deffered = this.$q.defer();
+
     if (forwardInfo) {
       this.$log.info('VideoRoom - stop SDI forwarding', forwardInfo.publisherId);
       this.$log.debug('VideoRoom - stop forwarding video', forwardInfo.videoStreamId);
       this.$log.debug('VideoRoom - stop forwarding audio', forwardInfo.audioStreamId);
 
       // Stop video and then audio forwarding
-      this.stopStreamForwarding(forwardInfo, forwardInfo.videoStreamId, () => {
-        this.stopStreamForwarding(forwardInfo, forwardInfo.audioStreamId, () => {
-          callback();
-        });
+      this.stopStreamForwarding(forwardInfo, forwardInfo.videoStreamId).then(() => {
+        if (forwardInfo.audioStreamId) {
+          this.stopStreamForwarding(forwardInfo, forwardInfo.audioStreamId).then(() => {
+            deffered.resolve();
+          }, () => {
+            this.$log.error('VideoRoom - error stoping audio stream.');
+            deffered.reject();
+          });
+        } else {
+          deffered.resolve();
+        }
+      }, () => {
+        this.$log.error('VideoRoom - error stoping video stream.');
+        deffered.reject();
       });
 
     } else {
       this.$log.error('VideoRoom - stop SDI forwarding without info');
-      callback();
+      deffered.reject();
     }
 
+    return deffered.promise;
   }
 
-  private stopStreamForwarding(forwardInfo: IFeedForwardInfo, streamId: string, callback: () => void): void {
+  private stopStreamForwarding(forwardInfo: IFeedForwardInfo, streamId: string): ng.IPromise<any> {
     var self = this;
-
-    if (!streamId) {
-      callback();
-      return;
-    }
+    var deffered = this.$q.defer();
 
     this.$log.info('VideoRoom - stop_rtp_forward', forwardInfo, streamId);
     this.localHandle.send({
@@ -716,13 +728,15 @@ export class JanusVideoRoomService {
         secret: self.config.janus.secret
       },
       success: (data: any) => {
-        callback();
+        deffered.resolve();
       },
       error: (response: any) => {
         this.$log.error('Error stop_rtp_forward ', response);
-        callback();
+        deffered.reject();
       }
     });
+
+    return deffered.promise;
   }
 
 }
