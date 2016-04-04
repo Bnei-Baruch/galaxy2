@@ -473,22 +473,16 @@ export class JanusVideoRoomService {
 
   private onLocalHandleMessage(message: any, jsep: any): void {
     this.$log.debug('VideoRoom - handle local message', message);
+    if (this.authService.can('operator')) {
+      this.handleLocalOperatorMessage(message, jsep);
+    } else {
+      this.handleLocalUserMessage(message, jsep);
+    }
+  }
 
-    var e = message.videoroom;
-
-    switch (e) {
+  private handleLocalOperatorMessage(message: any, jsep: any) {
+    switch (message.videoroom) {
       case 'joined':
-        // Handling multiple logins
-        if (this.handleMultipleLogins(message)) {
-          return;
-        }
-
-        if (this.localUserLogin) {
-          this.publishLocalFeed();
-        } else {
-          this.$log.error('VideoRoom - local user is not registered, not publishing local feed.');
-        }
-
         if (message.publishers) {
           this.updatePublishersAndTriggerJoined(message.publishers);
         }
@@ -501,10 +495,29 @@ export class JanusVideoRoomService {
         if (message.publishers) {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
-          // Update leaving user
-          this.$log.info('VideoRoom - local handle leaving room');
           this.deletePublisherByJanusId(message.leaving);
         }
+        break;
+    }
+  }
+
+  private handleLocalUserMessage(message: any, jsep: any): void {
+    switch (message.videoroom) {
+      case 'joined':
+        // Handling multiple logins
+        if (this.handleMultipleLogins(message)) {
+          return;
+        }
+
+        if (this.localUserLogin) {
+          this.publishLocalFeed();
+        } else {
+          this.$log.error('VideoRoom - local user is not registered, not publishing local feed.');
+        }
+        break;
+      case 'destroyed':
+        this.$log.error('VideoRoom - room destroyed', message);
+        this.toastr.error('Oh crap! video room has been destroyed');
         break;
     }
   }

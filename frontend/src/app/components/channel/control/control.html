@@ -17,7 +17,7 @@
     md-selected-item="vm.selectedUser"
     md-search-text="vm.searchText"
     md-selected-item-change="vm.pickUser(user)"
-    md-items="user in vm.getAllUsers() | filter: {disabled: false, login: vm.searchText, title: vm.searchText} | orderBy : ['joined', 'title']"
+    md-items="user in vm.getAllUsers() | filter: {disabled: false, login: vm.searchText, title: vm.searchText} | orderBy : ['joined', 'title']  track by user.id"
     md-item-text="user.title"
     md-min-length="0"
     placeholder="Pick a user"
@@ -44,7 +44,7 @@
 
     <md-list-item
       ng-click="vm.putUserToPreview(user)"
-      ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true} | orderBy : 'title')"
+      ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true} | orderBy : 'title')  track by user.id"
       class="userItem">
 
       <md-icon
