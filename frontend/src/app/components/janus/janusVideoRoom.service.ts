@@ -294,28 +294,30 @@ export class JanusVideoRoomService {
 
     var deffered = this.$q.defer();
 
-    var startForwardingCallback = (forwardInfo: IFeedForwardInfo) => {
-      shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
-      if (audioPort) {
-        shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
-      }
-      deffered.resolve();
-    };
-
     var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
     this.stopSdiForwarding(prevForwardInfo).then(() => {
       if (login) {
         if (login in this.publishers) {
-          this.startSdiForwarding(login, forwardIp, videoPort, audioPort, startForwardingCallback);
+          this.startSdiForwarding(login, forwardIp, videoPort, audioPort).then((forwardInfo: IFeedForwardInfo) => {
+            shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
+            if (audioPort) {
+              shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
+            }
+            deffered.resolve();
+          }, () => {
+            this.$log.error('VideoRoom - error failed starting SDI forward.');
+            deffered.reject();
+          });
         } else {
           this.$log.error('VideoRoom - bad shidur state, login not in publishers', login);
           var error = `Could not find publisher with login ${login}`;
           this.toastr.error(error);
-          deffered.resolve(error);
+          deffered.reject(error);
         }
       } else {
         delete shidurState.janus.portsFeedForwardInfo[videoPort];
-        deffered.resolve();
+        this.$log.error('VideoRoom - error no login, cannot start SDI forward.');
+        deffered.reject();
       }
     }, () => {
       this.$log.error('VideoRoom - error stoping SDI forwarding.');
@@ -654,8 +656,8 @@ export class JanusVideoRoomService {
     return deffered.promise;
   }
 
-  private startSdiForwarding(login: string, forwardIp: string, videoPort: number, audioPort: number,
-      callback: (forwardInfo: IFeedForwardInfo) => void): void {
+  private startSdiForwarding(login: string, forwardIp: string, videoPort: number, audioPort: number): ng.IPromise<any> {
+    var deffered = this.$q.defer();
     var self = this;
 
     var forward: any = {
@@ -685,16 +687,19 @@ export class JanusVideoRoomService {
             videoStreamId: data.rtp_stream.video_stream_id,
             audioStreamId: data.rtp_stream.audio_stream_id
           };
-          callback(forwardInfo);
+          deffered.resolve(forwardInfo);
         } else {
           this.$log.error('Error rtp_forward success data', data);
+          deffered.reject();
         }
       },
       error: (response: any) => {
         this.$log.error('Error rtp_forward', response);
-        callback(null);
+        deffered.reject();
       }
     });
+
+    return deffered.promise;
   }
 
   private stopSdiForwarding(forwardInfo: IFeedForwardInfo): ng.IPromise<any> {
