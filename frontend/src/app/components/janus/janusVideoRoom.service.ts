@@ -483,6 +483,9 @@ export class JanusVideoRoomService {
         if (message.publishers) {
           this.updatePublishersAndTriggerJoined(message.publishers);
         }
+        if (this.localUserLogin) { // comes from user page
+          this.publishLocalFeed();
+        }
         break;
       case 'destroyed':
         this.$log.error('VideoRoom - room destroyed', message);
