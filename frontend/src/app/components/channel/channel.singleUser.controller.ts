@@ -77,16 +77,20 @@ export class SingleUserChannelController extends BaseChannelController {
 
     if (user === null) {
       this.$log.info('Preview user is null', this.name);
+
+      // Unsubscribe current preview user if not in program
+      if (this.previewUser !== this.programUser) {
+        this.$log.info('Unsubscribe (preview)', this.name, this.previewUser.login);
+        this.videoRoom.unsubscribeFromStream(this.previewUser.login);
+      }
       this.slotElement.preview.src = null;
       this.previewUser = null;
     } else {
       this.$log.info('Putting user to preview', this.name, user.login);
+      this.previewUser = user;
       this.videoRoom.subscribeForStream(user.login).then((stream: MediaStream) => {
         user.stream = stream;
         attachMediaStream(this.slotElement.preview, stream);
-
-        this.previewUser = user;
-
         if (oldPreviewUser && oldPreviewUser !== this.programUser) {
           this.$log.info('Unsubscribe (preview)', this.name, oldPreviewUser.login);
           this.videoRoom.unsubscribeFromStream(oldPreviewUser.login);
@@ -94,6 +98,8 @@ export class SingleUserChannelController extends BaseChannelController {
         }
       }, () => {
         this.$log.info('Error putting user to preview', this.name, user.login);
+        this.$log.info('Rolling back to old preview user', oldPreviewUser);
+        this.previewUser = oldPreviewUser;
         this.toastr.error(`Error putting ${user.login} to preview`);
       });
     }
