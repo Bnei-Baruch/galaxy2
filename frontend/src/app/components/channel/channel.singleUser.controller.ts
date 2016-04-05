@@ -77,6 +77,12 @@ export class SingleUserChannelController extends BaseChannelController {
 
     if (user === null) {
       this.$log.info('Preview user is null', this.name);
+
+      // Unsubscribe current preview user if not in program
+      if (this.previewUser !== this.programUser) {
+        this.$log.info('Unsubscribe (preview)', this.name, this.previewUser.login);
+        this.videoRoom.unsubscribeFromStream(this.previewUser.login);
+      }
       this.slotElement.preview.src = null;
       this.previewUser = null;
     } else {
