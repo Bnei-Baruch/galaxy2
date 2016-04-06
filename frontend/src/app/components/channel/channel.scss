@@ -62,8 +62,17 @@ video {
 
 .channel .users {
     min-height: 100%;
-    height: 100%;
+    height: 100%;    
     overflow: auto;
+    &.maxHeight50{
+        height: auto;
+        min-height:0;
+        position: relative;
+    }
+    &.usersWithHeader{
+        min-height: calc(100% - 50px);
+        height: calc(100% - 50px);
+    }
     .composite > .md-button{
         padding: 0;
         .compositeItem{
