@@ -140,7 +140,6 @@ export class JanusVideoRoomService {
     // TODO: implement timeout
     var deffered = this.$q.defer();
 
-    var self = this;
     var handleInst = null;
 
     if (login in this.remoteHandles) {
@@ -160,18 +159,18 @@ export class JanusVideoRoomService {
           count: 1,
           handle: handleInst
         };
-        self.remoteHandles[login] = handleContainer;
+        this.remoteHandles[login] = handleContainer;
 
         this.$log.info('VideoRoom - remote handle attached, joining room as listener', login);
-        if (login in self.publishers) {
+        if (login in this.publishers) {
           // TODO: This publisher id is of old video stream, it should be overridden when
           // same group enters again.
           handleInst.send({
             'message': {
               'request': 'join',
-              'room': self.config.janus.roomId,
+              'room': this.config.janus.roomId,
               'ptype': 'listener',
-              'feed': self.publishers[login].id
+              'feed': this.publishers[login].id
             },
             error: (response: any) => this.$log.error('Error joining remote handle as listener', response)
           });
@@ -183,8 +182,11 @@ export class JanusVideoRoomService {
         this.$log.error('Error attaching videoroom handle', response);
         deffered.reject(response);
       },
+      mediaState: (kind: string, on: boolean) => {
+        this.$log.error(`mediaState changed for {$login}, type={$response), on={$on}`);
+      },
       onmessage: (msg: any, jsep: any) => {
-        self.onRemoteHandleMessage(handleInst, msg, jsep);
+        this.onRemoteHandleMessage(handleInst, msg, jsep);
       },
       onlocalstream: () => {
         // The subscriber stream is recvonly, we don't expect anything here
@@ -194,9 +196,9 @@ export class JanusVideoRoomService {
         this.$log.info('VideoRoom - got remote stream', login, stream);
 				this.$log.debug(`Remote feed:`, handleInst);
 
-        if (login in self.remoteHandles) {
-          self.remoteHandles[login].stream = stream;
-          self.$timeout(() => {
+        if (login in this.remoteHandles) {
+          this.remoteHandles[login].stream = stream;
+          this.$timeout(() => {
             deffered.resolve(stream);
           });
         } else {
@@ -588,8 +590,6 @@ export class JanusVideoRoomService {
   private onRemoteHandleMessage(handle: any, message: any, jsep: any): void {
     this.$log.debug('VideoRoom - handle remote message', message);
 
-    var self = this;
-
     if (message.videoroom === 'attached') {
       // TODO: Run spinner for currently attached remoteHandle.
       handle.rfid = message.id;
@@ -607,7 +607,7 @@ export class JanusVideoRoomService {
           this.$log.info('VideoRoom - got SDP, starting...', handle.getId());
           this.$log.debug(jsep);
           handle.send({
-            'message': {'request': 'start', 'room': self.config.janus.roomId},
+            'message': {'request': 'start', 'room': this.config.janus.roomId},
             'jsep': jsep,
             error: (response: any) => this.$log.error('Error starting videoroom SDP answer', response)
           });
@@ -662,13 +662,12 @@ export class JanusVideoRoomService {
 
   private startSdiForwarding(login: string, forwardIp: string, videoPort: number, audioPort: number): ng.IPromise<any> {
     var deffered = this.$q.defer();
-    var self = this;
 
     var forward: any = {
       request: 'rtp_forward',
       publisher_id: this.publishers[login].id,
-      room: self.config.janus.roomId,
-      secret: self.config.janus.secret,
+      room: this.config.janus.roomId,
+      secret: this.config.janus.secret,
       host: forwardIp,
       video_port: videoPort
     };
@@ -741,7 +740,6 @@ export class JanusVideoRoomService {
   }
 
   private stopStreamForwarding(forwardInfo: IFeedForwardInfo, streamId: string): ng.IPromise<any> {
-    var self = this;
     var deffered = this.$q.defer();
 
     this.$log.info('VideoRoom - stop_rtp_forward', forwardInfo, streamId);
@@ -750,8 +748,8 @@ export class JanusVideoRoomService {
         request: 'stop_rtp_forward',
         stream_id: streamId,
         publisher_id: forwardInfo.publisherId,
-        room: self.config.janus.roomId,
-        secret: self.config.janus.secret
+        room: this.config.janus.roomId,
+        secret: this.config.janus.secret
       },
       success: (data: any) => {
         deffered.resolve();
