@@ -672,7 +672,7 @@ export class JanusVideoRoomService {
       forward.audio_port = audioPort;
     }
 
-    this.$log.info('VideoRoom - start SDI fortarding', login);
+    this.$log.info('VideoRoom - start SDI forwarding', login);
     this.localHandle.send({
       message: forward,
       success: (data: any) => {
