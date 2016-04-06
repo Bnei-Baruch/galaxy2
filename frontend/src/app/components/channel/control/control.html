@@ -17,7 +17,7 @@
     md-selected-item="vm.selectedUser"
     md-search-text="vm.searchText"
     md-selected-item-change="vm.pickUser(user)"
-    md-items="user in vm.getAllUsers() | filter: {disabled: false, login: vm.searchText, title: vm.searchText} | orderBy : ['joined', 'title']  track by user.id"
+    md-items="user in vm.getAllUsers() | filter: {disabled: false, login: vm.searchText, title: vm.searchText} | orderBy : ['joined', 'title']"
     md-item-text="user.title"
     md-min-length="0"
     placeholder="Pick a user"
@@ -37,32 +37,35 @@
     </md-item-template>
   </md-autocomplete>
 
-  <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="userList"  style="height: {{vm.cssUserListHeightCalc}}px; position: absolute;"></ng-include>
-<div class="userList">  
-  <md-list class="users" ng-show="disabledUsers.length">
+<div class="userList"   style="height: {{vm.cssUserListHeightCalc}}px;">  
+  <div  class="users maxHeight50">
+    <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="maxHeight50"></ng-include>    
+  </div>
+  <md-list ng-show="disabledUsers.length"  class="maxHeight50">
     <md-subheader class="md-no-sticky">Disabled users</md-subheader>
+    <div class="users usersWithHeader">      
+      <md-list-item
+        ng-click="vm.putUserToPreview(user)"
+        ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true} | orderBy : 'title')"
+        class="userItem">
 
-    <md-list-item
-      ng-click="vm.putUserToPreview(user)"
-      ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true} | orderBy : 'title')  track by user.id"
-      class="userItem">
+        <md-icon
+          layout="column"
+          aria-label=""
+          ng-style="{{ user.joined ? {color: '#4CAF50'} : {color: '#9E9E9E'} }}"
+          class="material-icons">
+          lens
+        </md-icon>
 
-      <md-icon
-        layout="column"
-        aria-label=""
-        ng-style="{{ user.joined ? {color: '#4CAF50'} : {color: '#9E9E9E'} }}"
-        class="material-icons">
-        lens
-      </md-icon>
+        <div class="md-list-item-text" layout="column" flex>
+          <p ng-bind="user.title"
+            class="{{user === vm.previewUser ? 'preview' : ''}}">
+          </p>
+        </div>
 
-      <div class="md-list-item-text" layout="column" flex>
-        <p ng-bind="user.title"
-          class="{{user === vm.previewUser ? 'preview' : ''}}">
-        </p>
-      </div>
-
-      <ng-include src="'#removeUserTemplate'"></ng-include>
-    </md-list-item>
+        <ng-include src="'#removeUserTemplate'"></ng-include>
+      </md-list-item>
+    </div>
   </md-list>
 </div>
 
