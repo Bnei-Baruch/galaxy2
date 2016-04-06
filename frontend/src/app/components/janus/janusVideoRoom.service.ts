@@ -252,9 +252,10 @@ export class JanusVideoRoomService {
       this.$q.all(forwardPromises).then(() => {
         this.$log.info('VideoRoom - all remote feeds forwarded successfully');
         deffered.resolve(shidurState);
-      }, () => {
-        this.$log.error('One or more forwards haven\' been accomplished, saving shidur state...');
-        deffered.reject(shidurState);
+      }, (error: string) => {
+        var error_msg = `One or more forwards failed (${error}), saving shidur state ${JSON.stringify(shidurState)}.`;
+        this.$log.error(error_msg);
+        deffered.reject(error_msg);
       });
 
       return deffered.promise;
@@ -305,23 +306,26 @@ export class JanusVideoRoomService {
             }
             deffered.resolve();
           }, () => {
-            this.$log.error('VideoRoom - error failed starting SDI forward.');
-            deffered.reject();
+            var error = 'VideoRoom - error failed starting SDI forward.';
+            this.$log.error(error);
+            deffered.reject(error);
           });
         } else {
-          this.$log.error('VideoRoom - bad shidur state, login not in publishers', login);
           var error = `Could not find publisher with login ${login}`;
+          this.$log.error(error);
           this.toastr.error(error);
           deffered.reject(error);
         }
       } else {
         delete shidurState.janus.portsFeedForwardInfo[videoPort];
-        this.$log.error('VideoRoom - error no login, cannot start SDI forward.');
-        deffered.reject();
+        var error = 'VideoRoom - error no login, cannot start SDI forward.';
+        this.$log.error(error);
+        deffered.reject(error);
       }
-    }, () => {
-      this.$log.error('VideoRoom - error stoping SDI forwarding.');
-      deffered.reject();
+    }, (errMsg: string) => {
+      var error = errMsg;
+      this.$log.error(error);
+      deffered.reject(error);
     });
 
     return deffered.promise;
@@ -646,9 +650,9 @@ export class JanusVideoRoomService {
           updateShidurState().success(() => {
             deffered.resolve();
           });
-        }, (error: any) => {
+        }, (errMsg: string) => {
           updateShidurState().success(() => {
-            deffered.reject(`Failed using shidur state: ${error}`);
+            deffered.reject(`Failed (${errMsg}) saving shidur state anyway.`);
           });
         });
       });
@@ -723,13 +727,14 @@ export class JanusVideoRoomService {
           deffered.resolve();
         }
       }, () => {
-        this.$log.error('VideoRoom - error stoping video stream.');
-        deffered.reject();
+        var error = 'VideoRoom - error stoping video stream.';
+        this.$log.error(error);
+        deffered.reject(error);
       });
 
     } else {
-      this.$log.error('VideoRoom - stop SDI forwarding without info');
-      deffered.reject();
+      // No forward info, no need to stop.
+      deffered.resolve();
     }
 
     return deffered.promise;
