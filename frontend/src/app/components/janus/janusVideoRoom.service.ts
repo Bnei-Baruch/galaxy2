@@ -183,7 +183,10 @@ export class JanusVideoRoomService {
         deffered.reject(response);
       },
       mediaState: (kind: string, on: boolean) => {
-        this.$log.error(`mediaState changed for {$login}, type={$response), on={$on}`);
+        this.$log.debug(`mediaState changed for ${login}, type=${kind}, on=${on}`);
+        var key = `mediaState::${login}::${kind}::${on}`;
+        var prevCount = Number(localStorage.getItem(key) || '0');
+        localStorage.setItem(key, (prevCount + 1).toString());
       },
       onmessage: (msg: any, jsep: any) => {
         this.onRemoteHandleMessage(handleInst, msg, jsep);
