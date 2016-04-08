@@ -581,8 +581,13 @@ export class JanusVideoRoomService {
         });
       },
       error: (response: any) => {
-        this.$log.error('Error creating SDP offer', response);
-        this.toastr.error(`Bummers, can't share video: ${response.message}`);
+        if (response === 'No capture device found') {
+          this.toastr.error('We can\'t see you, please connect your camera.');
+        } else {
+          this.$log.error('Error creating SDP offer', response);
+          this.toastr.error(`Bummers, can't share video: ${response.message}`);
+        }
+
       }
     });
   }
