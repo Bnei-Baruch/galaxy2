@@ -31,12 +31,6 @@ export class JanusService {
         server: this.config.janus.serverUri,
 	      iceServers: [{url: this.config.janus.stunUri}],
         success: () => {
-          $(window).on('beforeunload', () => {
-            this.$rootScope.$broadcast('janus.destroy');
-            this.session.destroy();
-            // return "Are you sure want to leave this page?";
-          });
-
           deffered.resolve();
         },
         error: (error: any) => {

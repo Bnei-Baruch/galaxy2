@@ -7,8 +7,7 @@ export class JanusStreamingService {
   constructor(private $q: ng.IQService,
       private $log: ng.ILogService,
       private janus: JanusService,
-      private toastr: any, $rootScope: ng.IRootScopeService) {
-    $rootScope.$on('janus.destroy', () => this.onJanusDestroy());
+      private toastr: any) {
   }
 
   attachStreamingHandle(streamId: string): ng.IPromise<MediaStream> {
@@ -76,19 +75,6 @@ export class JanusStreamingService {
         }
       });
     }
-  }
-
-  onJanusDestroy() {
-    this.pluginHandles.forEach((handle: any) => {
-      this.$log.info('Stopping streaming handle', handle.getId());
-      handle.send({
-        message: {request: 'stop'},
-        error: (response: any) => this.$log.error('Error stopping streaming handle', response)
-      });
-
-      this.$log.info('Hanging up streaming handle', handle.getId());
-      handle.hangup();
-    });
   }
 
 }
