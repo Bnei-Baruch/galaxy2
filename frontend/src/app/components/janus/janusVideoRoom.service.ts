@@ -54,7 +54,6 @@ export class JanusVideoRoomService {
   localStream: MediaStream;
 
   constructor(private $q: ng.IQService,
-      private $rootScope: ng.IRootScopeService,
       private $log: ng.ILogService,
       private $timeout: ng.ITimeoutService,
       private $http: ng.IHttpService,
@@ -62,12 +61,7 @@ export class JanusVideoRoomService {
       private janus: JanusService,
       private toastr: any,
       private config: any) {
-
     this.localHandleAttached = this.attachLocalHandle();
-
-    $rootScope.$on('janus.destroy', () => {
-      this.unpublishOwnFeed();
-    });
   }
 
   /**
@@ -117,15 +111,6 @@ export class JanusVideoRoomService {
       if (channels.indexOf(name) === -1) {
         channels.push(name);
       }
-    });
-  }
-
-  // When current client is closed, sends self unpublish event to Janus.
-  unpublishOwnFeed() {
-    this.$log.info('VideoRoom - unpublish own feed', this.localHandle);
-    this.localHandle.send({
-      message: {request: 'unpublish'},
-      error: (response: any) => this.$log.error('Error Unpublishing own feed', response)
     });
   }
 
@@ -580,9 +565,14 @@ export class JanusVideoRoomService {
           error: (response: any) => this.$log.error('Error configuring local feed', response)
         });
       },
-      error: (respnose: any) => {
-        this.$log.error('Error creating SDP offer', respnose);
-        this.toastr.error(`Bummers, can't share video: ${respnose.message}`);
+      error: (response: any) => {
+        if (response === 'No capture device found') {
+          this.toastr.error('We can\'t see you, please connect your camera.');
+        } else {
+          this.$log.error('Error creating SDP offer', response);
+          this.toastr.error(`Bummers, can't share video: ${response.message}`);
+        }
+
       }
     });
   }
@@ -722,14 +712,14 @@ export class JanusVideoRoomService {
           this.stopStreamForwarding(forwardInfo, forwardInfo.audioStreamId).then(() => {
             deffered.resolve();
           }, () => {
-            this.$log.error('VideoRoom - error stoping audio stream.');
+            this.$log.error('VideoRoom - error stopping audio stream.');
             deffered.reject();
           });
         } else {
           deffered.resolve();
         }
       }, () => {
-        var error = 'VideoRoom - error stoping video stream.';
+        var error = 'VideoRoom - error stopping video stream.';
         this.$log.error(error);
         deffered.reject(error);
       });
