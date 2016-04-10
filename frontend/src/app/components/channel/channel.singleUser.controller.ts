@@ -119,7 +119,7 @@ export class SingleUserChannelController extends BaseChannelController {
       return false;
     }
 
-    if (!this.previewUser.stream) {
+    if (!this.previewUser.stream || this.previewUser.disabled) {
       return false;
     }
 

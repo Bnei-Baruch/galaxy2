@@ -42,7 +42,7 @@ export class ControlChannelController extends SingleUserChannelController {
   }
 
   trigger(): void {
-    if (this.previewUser && !this.previewUser.disabled) {
+    if (this.isReadyToSwitch()) {
 
       if (this.programUser) {
         this.muteRemoteUser(this.programUser);
@@ -79,10 +79,14 @@ export class ControlChannelController extends SingleUserChannelController {
   toggleAudio(user: IUser) {
     this.$log.debug('Toggle audio', this.name, user.login);
 
-    user.audioEnabled = !user.audioEnabled;
     this.pubSub.client.publish('/users/' + user.login, {
       message: 'toggleAudio',
       enabled: user.audioEnabled
+    }).then(() => {
+      user.audioEnabled = !user.audioEnabled;
+    }, (error: any) => {
+      this.$log.error(`Error sending toggle audio command for ${user.login}`, error);
+      this.toastr.error('Unable to toggle audio, error response recorded');
     });
 
     return false;
@@ -93,7 +97,6 @@ export class ControlChannelController extends SingleUserChannelController {
 
     for (var channel in this.usersBreakdown) {
       if (this.usersBreakdown.hasOwnProperty(channel) && channel !== 'hidden') {
-        // allUsers.push.apply(allUsers, this.usersBreakdown[channel]);
         allUsers = allUsers.concat(this.usersBreakdown[channel]);
       }
     }
