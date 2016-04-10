@@ -80,7 +80,6 @@ export class SmallChannelController extends BaseChannelController {
     return true;
   }
 
-  // TODO: Handle HTTP errors and rollback to old state in case of an error
   private putCompositeToSlot(index: number, program: boolean): ng.IPromise<any> {
     var deffered = this.$q.defer();
 
@@ -93,22 +92,28 @@ export class SmallChannelController extends BaseChannelController {
     }
 
     // Composite is complete ?
-    if (index !== null && this.composites[index]) {
-      this.composite = this.composites[index];
-      if (this.composite.length < this.compositeSize) {
+    var composite = this.composites[index];
+    if (index !== null && composite) {
+      if (composite.length < this.compositeSize) {
         this.$log.info('Composite is not complete, forwarding refused');
+        this.toastr.info('Composite is not complete, selection aborted');
         deffered.reject();
         return deffered.promise;
+      } else {
+        this.composite = composite;
       }
     }
 
-    this.compositeIndex[slotName] = index;
-    this.isForwarded[slotName] = false;
+    var logins: string[] = Array.apply(null, Array(this.compositeSize));
 
     var portsConfig = this.config.janus.sdiPorts[this.name];
     var videoPorts = portsConfig.video[slotName];
 
-    var logins: string[] = Array.apply(null, Array(this.compositeSize));
+    var oldCompositeIndex = this.compositeIndex[slotName];
+    var oldComposite = this.composite;
+
+    this.compositeIndex[slotName] = index;
+    this.isForwarded[slotName] = false;
 
     this.composite.forEach((user: IUser, userIndex: number) => {
       logins[userIndex] = user.login;
@@ -137,6 +142,10 @@ export class SmallChannelController extends BaseChannelController {
 
       deffered.resolve();
     }, () => {
+      // Reverting composite selection
+      this.compositeIndex[slotName] = oldCompositeIndex;
+      this.composite = oldComposite;
+
       this.$log.error('Error putting composite to slot', slotName);
       this.toastr.error(`Error forwarding composite to ${slotName}`);
       deffered.reject();
