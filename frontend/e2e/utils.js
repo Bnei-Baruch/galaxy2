@@ -11,7 +11,7 @@ exports.login = function() {
   password.sendKeys('e2eARVUT2014');
   submit.click();
 
-  browser.sleep(3500);
+  return browser.sleep(3500);
 }
 
 exports.waitForVideo = function(cssSelector) {
