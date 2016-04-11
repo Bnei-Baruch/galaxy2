@@ -43,7 +43,7 @@ export class JanusService {
     };
 
     Janus.init({
-      debug: ["warn", "error"],
+      debug: ['warn', 'error'],
       callback: () => {
         initCallback();
       }
