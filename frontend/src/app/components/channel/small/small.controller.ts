@@ -80,13 +80,14 @@ export class SmallChannelController extends BaseChannelController {
     return true;
   }
 
-  private putCompositeToSlot(index: number, program: boolean): ng.IPromise<any> {
+  // TODO: Handle HTTP errors and rollback to old state in case of an error
+  private putCompositeToSlot(index: number, program: boolean, force: boolean = false): ng.IPromise<any> {
     var deffered = this.$q.defer();
 
     var slotName = this.getSlotName(program);
 
     // Composite already in slot ?
-    if (index === this.compositeIndex[slotName]) {
+    if (index === this.compositeIndex[slotName] && !force) {
       deffered.resolve();
       return deffered.promise;
     }
@@ -198,7 +199,15 @@ export class SmallChannelController extends BaseChannelController {
         this.onlineUsers[userIndex] = lastLogin;
       }
 
+      // save current preview composite
+      var oldPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
+
       this.constructComposites();
+
+      var newPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
+      if(!angular.equals(oldPrevComposite, newPrevComposite)){
+        this.putCompositeToSlot(this.compositeIndex.preview, false, true);
+      }
     }
   }
 
