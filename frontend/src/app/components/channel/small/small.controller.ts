@@ -205,7 +205,7 @@ export class SmallChannelController extends BaseChannelController {
       this.constructComposites();
 
       var newPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
-      if(!angular.equals(oldPrevComposite, newPrevComposite)){
+      if (!angular.equals(oldPrevComposite, newPrevComposite)) {
         this.putCompositeToSlot(this.compositeIndex.preview, false, true);
       }
     }
