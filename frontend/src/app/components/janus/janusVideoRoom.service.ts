@@ -296,13 +296,13 @@ export class JanusVideoRoomService {
             }
             deffered.resolve();
           }, () => {
-            var error = 'VideoRoom - error failed starting SDI forward.';
+            var error = 'VideoRoom - error starting SDI forward.';
             this.$log.error(error);
             deffered.reject(error);
           });
         } else {
+          this.$log.error('Could not find publisher with login', login);
           var error = `Could not find publisher with login ${login}`;
-          this.$log.error(error);
           this.toastr.error(error);
           deffered.reject(error);
         }
@@ -312,8 +312,7 @@ export class JanusVideoRoomService {
         this.$log.error(error);
         deffered.reject(error);
       }
-    }, (errMsg: string) => {
-      var error = errMsg;
+    }, (error: string) => {
       this.$log.error(error);
       deffered.reject(error);
     });
