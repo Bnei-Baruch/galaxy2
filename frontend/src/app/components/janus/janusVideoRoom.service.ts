@@ -84,16 +84,15 @@ export class JanusVideoRoomService {
    * Register channel with specific users so that each joined or leaving user
    * will notify the client (channel).
    *
-   * @param options.name              Channel name.
-   * @param options.users             User logins list.
-   * @param options.joinedCallback    Callback called when new user joined.
-   * @param options.leftCallback      Callback called when user left.
+   * @param channel.name              Channel name.
+   * @param channel.users             User logins list.
+   * @param channel.joinedCallback    Callback called when new user joined.
+   * @param channel.leftCallback      Callback called when user left.
    *
    */
-  registerChannel(options: IChannel) {
-    this.channels[options.name] = options;
-
-    this.updateChannelUsers(options.name, options.users);
+  registerChannel(channel: IChannel) {
+    this.channels[channel.name] = channel;
+    this.updateChannelUsers(channel.name, channel.users);
 
     // TODO: User publishers list and call userJoined method
     // for relevant channels
@@ -102,14 +101,13 @@ export class JanusVideoRoomService {
   updateChannelUsers(name: string, users: string[]) {
     users.forEach((login: string) => {
       // Store users lookup table by login
-      if (!(login in this.userChannels)) {
+      if (login in this.userChannels) {
+        var channels = this.userChannels[login];
+        if (channels.indexOf(name) === -1) {
+          channels.push(name);
+        }
+      } else {
         this.userChannels[login] = [];
-      }
-
-      // Add channel to user channels list
-      var channels = this.userChannels[login];
-      if (channels.indexOf(name) === -1) {
-        channels.push(name);
       }
     });
   }
@@ -160,7 +158,7 @@ export class JanusVideoRoomService {
             error: (response: any) => this.$log.error('Error joining remote handle as listener', response)
           });
         } else {
-          this.$log.error('VideoRoom - login not in publishers', login);
+          this.$log.error('VideoRoom - login already in publishers', login);
         }
       },
       error: (response: any) => {
@@ -215,7 +213,7 @@ export class JanusVideoRoomService {
         delete this.remoteHandles[login];
       }
     } else {
-      this.$log.error('VideoRoom - login not in remoteHandles', login);
+      this.$log.warn('VideoRoom - unsubscribeFromStream, login not in remoteHandles,', login);
     }
   }
 
@@ -352,7 +350,7 @@ export class JanusVideoRoomService {
         });
       });
     } else {
-      this.$log.error('VideoRoom - login not in userChannels', login);
+      this.$log.warn('VideoRoom - not in any channel', login);
     }
   }
 
