@@ -20,8 +20,8 @@ export class LoginController {
     }).then((user: IUser) => {
       this.$mdDialog.hide(user);
     }).catch((response: any) => {
-      this.$log.error('Error submitting login form', response);
-      this.toastr.error(response.errors.join(' '));
+      /*this.$log.error('Error submitting login form', response);
+      this.toastr.error(response.errors.join(' '));*/
     });
   }
 
