@@ -167,12 +167,6 @@ export class JanusVideoRoomService {
         this.$log.error('Error attaching videoroom handle', response);
         deffered.reject(response);
       },
-      mediaState: (kind: string, on: boolean) => {
-        this.$log.debug(`mediaState changed for ${login}, type=${kind}, on=${on}`);
-        var key = `mediaState::${login}::${kind}::${on}`;
-        var prevCount = Number(localStorage.getItem(key) || '0');
-        localStorage.setItem(key, (prevCount + 1).toString());
-      },
       onmessage: (msg: any, jsep: any) => {
         this.onRemoteHandleMessage(handleInst, msg, jsep);
       },
@@ -494,6 +488,8 @@ export class JanusVideoRoomService {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
           this.deletePublisherByJanusId(message.leaving);
+        } else if (message.unpublished) {
+          this.deletePublisherByJanusId(message.unpublished);
         }
         break;
     }
