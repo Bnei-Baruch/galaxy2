@@ -101,13 +101,14 @@ export class JanusVideoRoomService {
   updateChannelUsers(name: string, users: string[]) {
     users.forEach((login: string) => {
       // Store users lookup table by login
-      if (login in this.userChannels) {
-        var channels = this.userChannels[login];
-        if (channels.indexOf(name) === -1) {
-          channels.push(name);
-        }
-      } else {
+      if (!(login in this.userChannels)) {
         this.userChannels[login] = [];
+      }
+
+      // Add channel to user channels list
+      var channels = this.userChannels[login];
+      if (channels.indexOf(name) === -1) {
+        channels.push(name);
       }
     });
   }
