@@ -213,8 +213,6 @@ export class JanusVideoRoomService {
         });
         delete this.remoteHandles[login];
       }
-    } else {
-      this.$log.warn('VideoRoom - unsubscribeFromStream, login not in remoteHandles,', login);
     }
   }
 
@@ -373,14 +371,14 @@ export class JanusVideoRoomService {
     if (login) {
       this.$log.info('VideoRoom - deleting', login);
       delete this.publishers[login];
+
+      // This user may be in use. If so we need to unsubscribe his stream.
       this.unsubscribeFromStream(login);
 
       // Update channels on leaving user
       this.applyOnUserChannels(login, (channel: IChannel) => {
         channel.leftCallback(login);
       });
-    } else {
-      this.$log.error('VideoRoom - can not delete unknown janusId', janusId);
     }
   }
 
