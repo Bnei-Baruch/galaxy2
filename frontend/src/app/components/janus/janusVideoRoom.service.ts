@@ -84,16 +84,15 @@ export class JanusVideoRoomService {
    * Register channel with specific users so that each joined or leaving user
    * will notify the client (channel).
    *
-   * @param options.name              Channel name.
-   * @param options.users             User logins list.
-   * @param options.joinedCallback    Callback called when new user joined.
-   * @param options.leftCallback      Callback called when user left.
+   * @param channel.name              Channel name.
+   * @param channel.users             User logins list.
+   * @param channel.joinedCallback    Callback called when new user joined.
+   * @param channel.leftCallback      Callback called when user left.
    *
    */
-  registerChannel(options: IChannel) {
-    this.channels[options.name] = options;
-
-    this.updateChannelUsers(options.name, options.users);
+  registerChannel(channel: IChannel) {
+    this.channels[channel.name] = channel;
+    this.updateChannelUsers(channel.name, channel.users);
 
     // TODO: User publishers list and call userJoined method
     // for relevant channels
@@ -160,18 +159,12 @@ export class JanusVideoRoomService {
             error: (response: any) => this.$log.error('Error joining remote handle as listener', response)
           });
         } else {
-          this.$log.error('VideoRoom - login not in publishers', login);
+          this.$log.error('VideoRoom - login already in publishers', login);
         }
       },
       error: (response: any) => {
         this.$log.error('Error attaching videoroom handle', response);
         deffered.reject(response);
-      },
-      mediaState: (kind: string, on: boolean) => {
-        this.$log.debug(`mediaState changed for ${login}, type=${kind}, on=${on}`);
-        var key = `mediaState::${login}::${kind}::${on}`;
-        var prevCount = Number(localStorage.getItem(key) || '0');
-        localStorage.setItem(key, (prevCount + 1).toString());
       },
       onmessage: (msg: any, jsep: any) => {
         this.onRemoteHandleMessage(handleInst, msg, jsep);
@@ -220,8 +213,6 @@ export class JanusVideoRoomService {
         });
         delete this.remoteHandles[login];
       }
-    } else {
-      this.$log.error('VideoRoom - login not in remoteHandles', login);
     }
   }
 
@@ -296,13 +287,13 @@ export class JanusVideoRoomService {
             }
             deffered.resolve();
           }, () => {
-            var error = 'VideoRoom - error failed starting SDI forward.';
+            var error = 'VideoRoom - error starting SDI forward.';
             this.$log.error(error);
             deffered.reject(error);
           });
         } else {
+          this.$log.error('Could not find publisher with login', login);
           var error = `Could not find publisher with login ${login}`;
-          this.$log.error(error);
           this.toastr.error(error);
           deffered.reject(error);
         }
@@ -312,8 +303,7 @@ export class JanusVideoRoomService {
         this.$log.error(error);
         deffered.reject(error);
       }
-    }, (errMsg: string) => {
-      var error = errMsg;
+    }, (error: string) => {
       this.$log.error(error);
       deffered.reject(error);
     });
@@ -359,7 +349,7 @@ export class JanusVideoRoomService {
         });
       });
     } else {
-      this.$log.error('VideoRoom - login not in userChannels', login);
+      this.$log.warn('VideoRoom - not in any channel', login);
     }
   }
 
@@ -381,14 +371,14 @@ export class JanusVideoRoomService {
     if (login) {
       this.$log.info('VideoRoom - deleting', login);
       delete this.publishers[login];
+
+      // This user may be in use. If so we need to unsubscribe his stream.
       this.unsubscribeFromStream(login);
 
       // Update channels on leaving user
       this.applyOnUserChannels(login, (channel: IChannel) => {
         channel.leftCallback(login);
       });
-    } else {
-      this.$log.error('VideoRoom - can not delete unknown janusId', janusId);
     }
   }
 
@@ -495,6 +485,8 @@ export class JanusVideoRoomService {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
           this.deletePublisherByJanusId(message.leaving);
+        } else if (message.unpublished) {
+          this.deletePublisherByJanusId(message.unpublished);
         }
         break;
     }
