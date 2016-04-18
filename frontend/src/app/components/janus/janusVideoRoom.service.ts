@@ -560,11 +560,20 @@ export class JanusVideoRoomService {
       error: (response: any) => {
         if (response === 'No capture device found') {
           this.toastr.error('We can\'t see you, please connect your camera.');
+        } else if(response.name === 'PermissionDeniedError' || response.name === 'PermissionDismissedError') {
+          var msg = `Error: ${response.message} <br />
+            Please allow media permissions.
+            <a href="https://support.google.com/chrome/answer/2693767?hl=en">
+              For more details.
+            </a>`;          
+          this.toastr.error(msg);
+        } else if(response.name === 'MediaDeviceNotSupported') {          
+          this.$log.error('Error creating SDP offer', response);
+          this.toastr.error(`Bummers, can't share video: ${response.message}`);
         } else {
           this.$log.error('Error creating SDP offer', response);
           this.toastr.error(`Bummers, can't share video: ${response.message}`);
         }
-
       }
     });
   }
