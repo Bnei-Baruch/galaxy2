@@ -85,16 +85,15 @@ export class JanusVideoRoomService {
    * Register channel with specific users so that each joined or leaving user
    * will notify the client (channel).
    *
-   * @param options.name              Channel name.
-   * @param options.users             User logins list.
-   * @param options.joinedCallback    Callback called when new user joined.
-   * @param options.leftCallback      Callback called when user left.
+   * @param channel.name              Channel name.
+   * @param channel.users             User logins list.
+   * @param channel.joinedCallback    Callback called when new user joined.
+   * @param channel.leftCallback      Callback called when user left.
    *
    */
-  registerChannel(options: IChannel) {
-    this.channels[options.name] = options;
-
-    this.updateChannelUsers(options.name, options.users);
+  registerChannel(channel: IChannel) {
+    this.channels[channel.name] = channel;
+    this.updateChannelUsers(channel.name, channel.users);
 
     // TODO: User publishers list and call userJoined method
     // for relevant channels
@@ -161,7 +160,7 @@ export class JanusVideoRoomService {
             error: (response: any) => this.$log.error('Error joining remote handle as listener', response)
           });
         } else {
-          this.$log.error('VideoRoom - login not in publishers', login);
+          this.$log.error('VideoRoom - login already in publishers', login);
         }
       },
       error: (response: any) => {
@@ -216,7 +215,7 @@ export class JanusVideoRoomService {
         delete this.remoteHandles[login];
       }
     } else {
-      this.$log.error('VideoRoom - login not in remoteHandles', login);
+      this.$log.warn('VideoRoom - unsubscribeFromStream, login not in remoteHandles,', login);
     }
   }
 
@@ -291,13 +290,13 @@ export class JanusVideoRoomService {
             }
             deferred.resolve();
           }, () => {
-            var error = 'VideoRoom - error failed starting SDI forward.';
+            var error = 'VideoRoom - error starting SDI forward.';
             this.$log.error(error);
             deferred.reject(error);
           });
         } else {
+          this.$log.error('Could not find publisher with login', login);
           var error = `Could not find publisher with login ${login}`;
-          this.$log.error(error);
           this.toastr.error(error);
           deferred.reject(error);
         }
@@ -307,8 +306,7 @@ export class JanusVideoRoomService {
         this.$log.error(error);
         deferred.reject(error);
       }
-    }, (errMsg: string) => {
-      var error = errMsg;
+    }, (error: string) => {
       this.$log.error(error);
       deferred.reject(error);
     });
@@ -354,7 +352,7 @@ export class JanusVideoRoomService {
         });
       });
     } else {
-      this.$log.error('VideoRoom - login not in userChannels', login);
+      this.$log.warn('VideoRoom - not in any channel', login);
     }
   }
 
