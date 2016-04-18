@@ -101,13 +101,14 @@ export class JanusVideoRoomService {
   updateChannelUsers(name: string, users: string[]) {
     users.forEach((login: string) => {
       // Store users lookup table by login
-      if (login in this.userChannels) {
-        var channels = this.userChannels[login];
-        if (channels.indexOf(name) === -1) {
-          channels.push(name);
-        }
-      } else {
+      if (!(login in this.userChannels)) {
         this.userChannels[login] = [];
+      }
+
+      // Add channel to user channels list
+      var channels = this.userChannels[login];
+      if (channels.indexOf(name) === -1) {
+        channels.push(name);
       }
     });
   }
@@ -212,8 +213,6 @@ export class JanusVideoRoomService {
         });
         delete this.remoteHandles[login];
       }
-    } else {
-      this.$log.warn('VideoRoom - unsubscribeFromStream, login not in remoteHandles,', login);
     }
   }
 
@@ -372,14 +371,14 @@ export class JanusVideoRoomService {
     if (login) {
       this.$log.info('VideoRoom - deleting', login);
       delete this.publishers[login];
+
+      // This user may be in use. If so we need to unsubscribe his stream.
       this.unsubscribeFromStream(login);
 
       // Update channels on leaving user
       this.applyOnUserChannels(login, (channel: IChannel) => {
         channel.leftCallback(login);
       });
-    } else {
-      this.$log.error('VideoRoom - can not delete unknown janusId', janusId);
     }
   }
 
