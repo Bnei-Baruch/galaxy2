@@ -62,7 +62,10 @@ export class JanusVideoRoomService {
       private janus: JanusService,
       private toastr: any,
       private config: any) {
+
     this.localHandleAttached = this.attachLocalHandle();
+    // Create already resolved state by default
+    this.shidurStateUpdated = $q.when([]);
   }
 
   /**
@@ -609,46 +612,46 @@ export class JanusVideoRoomService {
   private getAndUpdateShidurState(useShidurState: (shidurState: IShidurState) => ng.IPromise<any>): ng.IPromise<any> {
     var deferred = this.$q.defer();
 
-    this.shidurStateUpdated = this.$q.all(
-        [this.shidurStateUpdated, deferred.promise])
-
     this.shidurStateUpdated.then(() => {
-      this.shidurStateUpdated = deferred.promise;
 
       this.$http.get(this.config.backendUri + '/rest/shidur_state')
-      .error((data: string, status: number) => {
-        this.$log.error('Error fetching shidur state', status, data);
-        deferred.reject('Fetching shidur state returns error: ' + status + ' ' + data);
-      })
-      .success((shidurState: IShidurState) => {
-        if (!shidurState.janus) {
-          shidurState.janus = <any>{};
-        }
-        if (!shidurState.janus.portsFeedForwardInfo) {
-          shidurState.janus.portsFeedForwardInfo = <any>{};
-        }
-
-        // Post shidur state to the backend
-        var updateShidurState = () => {
-        return this.$http.post(this.config.backendUri + '/rest/shidur_state', shidurState)
         .error((data: string, status: number) => {
-          this.$log.error('Error saving shidur state', status, data);
-          deferred.reject(`Updating shidur state returns error: ${status} ${data}`);
-        });
-        };
+          this.$log.error('Error fetching shidur state', status, data);
+          deferred.reject('Fetching shidur state returns error: ' + status + ' ' + data);
+        })
+        .success((shidurState: IShidurState) => {
 
-        // Do something with shidur state and then update it
-        useShidurState(shidurState).then(() => {
-          updateShidurState().success(() => {
-            deferred.resolve();
-          });
-        }, (errMsg: string) => {
-          updateShidurState().success(() => {
-            deferred.reject(`Failed (${errMsg}) saving shidur state anyway.`);
+          if (!shidurState.janus) {
+            shidurState.janus = <any>{};
+          }
+          if (!shidurState.janus.portsFeedForwardInfo) {
+            shidurState.janus.portsFeedForwardInfo = <any>{};
+          }
+
+          // Post shidur state to the backend
+          var updateShidurState = () => {
+            return this.$http.post(this.config.backendUri + '/rest/shidur_state', shidurState)
+              .error((data: string, status: number) => {
+                this.$log.error('Error saving shidur state', status, data);
+                deferred.reject(`Updating shidur state returns error: ${status} ${data}`);
+              });
+          };
+
+          // Do something with shidur state and then update it
+          useShidurState(shidurState).then(() => {
+            updateShidurState().success(() => {
+              deferred.resolve();
+            });
+          }, (errMsg: string) => {
+            updateShidurState().success(() => {
+              deferred.reject(`Failed (${errMsg}) saving shidur state anyway.`);
+            });
           });
         });
-      });
+
     });
+
+    this.shidurStateUpdated = deferred.promise;
 
     return deferred.promise;
   }
