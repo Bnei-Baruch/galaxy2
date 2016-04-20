@@ -282,6 +282,11 @@ export class JanusVideoRoomService {
 
     var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
     this.stopSdiForwarding(prevForwardInfo).then(() => {
+      delete shidurState.janus.portsFeedForwardInfo[videoPort];
+      if (audioPort) {
+        delete shidurState.janus.portsFeedForwardInfo[audioPort];
+      }
+
       if (login) {
         if (login in this.publishers) {
           this.startSdiForwarding(login, forwardIp, videoPort, audioPort).then((forwardInfo: IFeedForwardInfo) => {
@@ -302,7 +307,6 @@ export class JanusVideoRoomService {
           deferred.reject(error);
         }
       } else {
-        delete shidurState.janus.portsFeedForwardInfo[videoPort];
         var error = 'VideoRoom - error no login, cannot start SDI forward.';
         this.$log.error(error);
         deferred.reject(error);

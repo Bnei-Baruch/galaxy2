@@ -44,9 +44,19 @@ export function config(
 
     // arguments object cannot be used in arrow function
     $delegate.error = function() {
-      var data = Array.prototype.slice.call(arguments);
-      fn.apply($delegate, data);
-      Rollbar.error.apply(Rollbar, data);
+      var args = Array.prototype.slice.call(arguments);
+      fn.apply($delegate, args);
+
+      var errorMessage = [];
+      args.forEach((arg: any) => {
+        if (typeof arg === 'string') {
+          errorMessage.push(arg);
+        } else {
+          errorMessage.push(JSON.stringify(arg));
+        }
+      });
+
+      Rollbar.error.apply(Rollbar, errorMessage.join(' '));
     };
 
     return $delegate;
