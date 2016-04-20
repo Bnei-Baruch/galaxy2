@@ -611,8 +611,11 @@ export class JanusVideoRoomService {
 
   private getAndUpdateShidurState(useShidurState: (shidurState: IShidurState) => ng.IPromise<any>): ng.IPromise<any> {
     var deferred = this.$q.defer();
+    var previous = this.shidurStateUpdated;
 
-    this.shidurStateUpdated.then(() => {
+    this.shidurStateUpdated = deferred.promise;
+
+    previous.then(() => {
 
       this.$http.get(this.config.backendUri + '/rest/shidur_state')
         .error((data: string, status: number) => {
@@ -650,8 +653,6 @@ export class JanusVideoRoomService {
         });
 
     });
-
-    this.shidurStateUpdated = deferred.promise;
 
     return deferred.promise;
   }
