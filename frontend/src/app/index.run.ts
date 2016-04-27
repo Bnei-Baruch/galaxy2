@@ -8,6 +8,8 @@ export function runBlock($log: ng.ILogService,
 
   // TODO: support pages that don't require login
 
+  // Using the promise because $stateChangeStart is fired
+  // before the user is authenticated
   var authenticated = authService.authenticate()
     .then((user: IUser) => {
       $rootScope.currentUser = user;
