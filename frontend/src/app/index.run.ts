@@ -22,7 +22,6 @@ export function runBlock($log: ng.ILogService,
       if (to.data.requireLogin && !authService.can(to.data.minRole)) {
         e.preventDefault();
         $state.go('user');
-        // $state.go('user', null, {notify: false});
       }
     });
   });
