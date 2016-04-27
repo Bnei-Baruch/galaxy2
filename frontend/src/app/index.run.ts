@@ -8,21 +8,24 @@ export function runBlock($log: ng.ILogService,
 
   // TODO: support pages that don't require login
 
-  authService.authenticate()
-    .then(function (user: IUser) {
+  var authenticated = authService.authenticate()
+    .then((user: IUser) => {
       $rootScope.currentUser = user;
-
-      $rootScope.$on('$stateChangeStart', function (e: any, to: angular.ui.IState) {
-        if (to.data.requireLogin && !authService.can(to.data.minRole)) {
-          e.preventDefault();
-          $state.go('user', null, {notify: false});
-        }
-      });
 
       if (!$state.current.name) {
         $state.go(authService.can('operator') ? 'shidur' : 'user');
       }
     });
+
+  $rootScope.$on('$stateChangeStart', (e: any, to: angular.ui.IState) => {
+    authenticated.then(() => {
+      if (to.data.requireLogin && !authService.can(to.data.minRole)) {
+        e.preventDefault();
+        $state.go('user');
+        // $state.go('user', null, {notify: false});
+      }
+    });
+  });
 
   $log.debug('runBlock end');
 }
