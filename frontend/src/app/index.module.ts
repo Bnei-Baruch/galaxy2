@@ -21,6 +21,8 @@ import { LargeChannelWidget } from '../app/components/channel/large/large.direct
 import { SmallChannelWidget } from '../app/components/channel/small/small.directive';
 import { ControlChannelWidget } from '../app/components/channel/control/control.directive';
 
+declare var angularDragula: any;
+
 module frontend {
   'use strict';
 
@@ -33,6 +35,7 @@ module frontend {
     'ngAria',
     'ui.router',
     'ngMaterial',
+    angularDragula(angular),
     'toastr',
     'ng-token-auth',
     'tandibar/ng-rollbar'
