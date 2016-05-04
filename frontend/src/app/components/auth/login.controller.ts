@@ -20,8 +20,12 @@ export class LoginController {
     }).then((user: IUser) => {
       this.$mdDialog.hide(user);
     }).catch((response: any) => {
-      /*this.$log.error('Error submitting login form', response);
-      this.toastr.error(response.errors.join(' '));*/
+      var msg = response.errors.join(' ');
+      //If it was user error don't send to rollbar
+      if(msg !== "Invalid credentials"){
+        this.$log.error('Error submitting login form', response);
+      }
+      this.toastr.error(msg);
     });
   }
 
