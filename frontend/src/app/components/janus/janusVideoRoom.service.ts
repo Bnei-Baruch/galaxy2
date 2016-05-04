@@ -576,9 +576,14 @@ export class JanusVideoRoomService {
             </a>`;          
           this.toastr.error(msg);
         } else if(response.name === 'MediaDeviceNotSupported') {          
-          this.$log.error('Error creating SDP offer', response);
-          this.toastr.error(`Bummers, can't share video: ${response.message}`);
-        } else {
+          this.$log.error(response.name, response);
+          this.toastr.error(`Your browser not support video. </br>
+            Please use 
+            <a href="//www.google.com/chrome/browser/desktop/">
+              chrome
+            </a>.`);
+        } else if(response !== undefined) {
+          //don't do nothing if was resolved before
           this.$log.error('Error creating SDP offer', response);
           this.toastr.error(`Bummers, can't share video: ${response.message}`);
         }
