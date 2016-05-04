@@ -205,7 +205,7 @@ export class SmallChannelController extends BaseChannelController {
       this.constructComposites();
 
       var newPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
-      if (!angular.equals(oldPrevComposite, newPrevComposite)) {
+      if (!this.equalComposites(oldPrevComposite, newPrevComposite)) {
         this.putCompositeToSlot(this.compositeIndex.preview, false, true);
       }
     }
@@ -250,5 +250,13 @@ export class SmallChannelController extends BaseChannelController {
       .then((stream: MediaStream) => {
         attachMediaStream(slotElement, stream);
       });
+  }
+  private equalComposites(first: IUser[] , second: IUser[]  ){
+    if(first === undefined || second  === undefined) {
+      return false;
+    }
+    return first.every(function (user, i) {
+      return user.email === second[i].email;
+    })
   }
 }
