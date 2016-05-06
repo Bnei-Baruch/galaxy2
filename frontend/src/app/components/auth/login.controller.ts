@@ -22,7 +22,7 @@ export class LoginController {
     }).catch((response: any) => {
       var msg = response.errors.join(' ');
       //If it was user error don't send to rollbar
-      if(msg !== "Invalid credentials"){
+      if(msg !== 'Invalid credentials'){
         this.$log.error('Error submitting login form', response);
       }
       this.toastr.error(msg);
