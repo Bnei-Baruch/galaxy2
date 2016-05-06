@@ -24,6 +24,7 @@ export class JanusService {
       if (!Janus.isWebrtcSupported()) {
         this.toastr.error('Sorry, we need your browser to support WebRTC.');
         deffered.reject();
+        return;
       }
 
       this.$log.info('Initializing connection to Janus');
