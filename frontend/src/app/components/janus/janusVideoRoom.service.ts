@@ -577,10 +577,10 @@ export class JanusVideoRoomService {
           this.toastr.error(msg);
         } else if(response.name === 'MediaDeviceNotSupported') {          
           this.$log.error(response.name, response);
-          this.toastr.error(`Your browser not support video. </br>
+          this.toastr.error(`Your browser doesn't support video device. </br>
             Please use 
             <a href="//www.google.com/chrome/browser/desktop/">
-              chrome
+              Chrome
             </a>.`);
         } else if(response !== undefined) {
           //don't do nothing if was resolved before
