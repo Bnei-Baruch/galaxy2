@@ -116,29 +116,9 @@ export class SmallChannelController extends BaseChannelController {
     this.compositeIndex[slotName] = index;
     this.isForwarded[slotName] = false;
 
-    this.composite.forEach((user: IUser, userIndex: number) => {
-      logins[userIndex] = user.login;
-    });
-
     // TODO: move to base controller
     this.$log.info('Putting composite to slot', slotName, logins);
-    this.videoRoom.forwardRemoteFeeds(logins, portsConfig.forwardIp, videoPorts).then(() => {
-      // Forwarding succeeded, changing titles
-
-      if (program) {
-        logins.forEach((login: string, loginIndex: number) => {
-          var title: string;
-
-          if (this.usersByLogin[login]) {
-            title = this.usersByLogin[login].title;
-          } else {
-            title = '';
-          }
-
-          this.videoRoom.changeRemoteFeedTitle(title, videoPorts[loginIndex]);
-        });
-      }
-
+    this.videoRoom.forwardRemoteFeeds(this.composite, portsConfig.forwardIp, videoPorts, undefined, program).then(() => {
       this.isForwarded[slotName] = true;
 
       deffered.resolve();

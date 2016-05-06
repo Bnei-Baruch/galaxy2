@@ -2,7 +2,7 @@
  * Library to handle communication with Janus.
  */
 
-import { AuthService } from '../auth/auth.service';
+import { AuthService, IUser  } from '../auth/auth.service';
 import { JanusService } from './janus.service';
 
 declare var escape: any;
@@ -225,13 +225,13 @@ export class JanusVideoRoomService {
    *
    * @returns List of promises for every video port provided
    */
-  forwardRemoteFeeds(logins: string[], forwardIp: string, videoPorts: number[], audioPorts?: number[]): ng.IPromise<any> {
+  forwardRemoteFeeds(users: IUser[], forwardIp: string, videoPorts: number[], audioPorts?: number[], changeTitle?: boolean): ng.IPromise<any> {
     return this.getAndUpdateShidurState((shidurState: IShidurState) => {
       var deferred = this.$q.defer();
 
-      var forwardPromises = logins.map((login: string, index: number) => {
+      var forwardPromises = users.map((user: IUser, index: number) => {
         var audioPort = (audioPorts || [])[index];
-        return this.stopAndStartSdiForwarding(shidurState, login, forwardIp, videoPorts[index], audioPort);
+        return this.stopAndStartSdiForwarding(shidurState, user, forwardIp, videoPorts[index], audioPort, changeTitle);
       });
 
       this.$q.all(forwardPromises).then(() => {
@@ -272,10 +272,11 @@ export class JanusVideoRoomService {
   }
 
   private stopAndStartSdiForwarding(shidurState: IShidurState,
-      login: string,
+      user: IUser,
       forwardIp: string,
       videoPort: number,
-      audioPort: number): ng.IPromise<any> {
+      audioPort: number,
+      changeTitle: boolean): ng.IPromise<any> {
     // Stop (if exists) => Start => Update state => Callback.
 
     var deferred = this.$q.defer();
@@ -287,13 +288,18 @@ export class JanusVideoRoomService {
         delete shidurState.janus.portsFeedForwardInfo[audioPort];
       }
 
-      if (login) {
-        if (login in this.publishers) {
-          this.startSdiForwarding(login, forwardIp, videoPort, audioPort).then((forwardInfo: IFeedForwardInfo) => {
+      if (user.login) {
+        if (user.login in this.publishers) {
+          this.startSdiForwarding(user.login, forwardIp, videoPort, audioPort).then((forwardInfo: IFeedForwardInfo) => {
             shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
             if (audioPort) {
               shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
             }
+            // Forwarding succeeded, changing titles
+            if (changeTitle) {
+              this.changeRemoteFeedTitle(user.title, videoPort);
+            }
+
             deferred.resolve();
           }, () => {
             var error = 'VideoRoom - error starting SDI forward.';
@@ -301,8 +307,8 @@ export class JanusVideoRoomService {
             deferred.reject(error);
           });
         } else {
-          this.$log.error('Could not find publisher with login', login);
-          var error = `Could not find publisher with login ${login}`;
+          this.$log.error('Could not find publisher with login', user.login);
+          var error = `Could not find publisher with login ${user.login}`;
           this.toastr.error(error);
           deferred.reject(error);
         }
