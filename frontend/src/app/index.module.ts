@@ -34,6 +34,7 @@ module frontend {
     'ui.router',
     'ngMaterial',
     'toastr',
+    'ngContextMenu',
     'ng-token-auth',
     'tandibar/ng-rollbar'
   ];

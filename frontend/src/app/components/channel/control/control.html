@@ -1,5 +1,5 @@
 <section class="channel md-whiteframe-z1">
-  <div data-id="channelVideoBlock"> 
+  <div data-id="channelVideoBlock">
     <slot-widget kind="program"
       user="vm.programUser"
       toggle-audio="vm.toggleAudio(vm.programUser)"
@@ -21,7 +21,7 @@
     md-item-text="user.title"
     md-min-length="0"
     placeholder="Pick a user"
-    md-menu-class="autocomplete-custom-template userList">   
+    md-menu-class="autocomplete-custom-template userList">
     <md-item-template>
       <md-list-item layout="row" class="userItem">
         <md-icon
@@ -37,15 +37,15 @@
     </md-item-template>
   </md-autocomplete>
 
-<div class="userList"   style="height: {{vm.cssUserListHeightCalc}}px;">  
-  
+<div class="userList"   style="height: {{vm.cssUserListHeightCalc}}px;">
+
   <div  class="users maxHeight50">
-    <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="maxHeight50"></ng-include>    
+    <ng-include ng-init="vm = vm" src="'app/components/channel/users/users.html'"  class="maxHeight50"></ng-include>
   </div>
-  
+
   <md-list ng-show="disabledUsers.length"  class="maxHeight50">
     <md-subheader class="md-no-sticky">Disabled users</md-subheader>
-    <div class="users usersWithHeader">    
+    <div class="users usersWithHeader">
       <md-list-item
         ng-click="vm.putUserToPreview(user)"
         ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true} | orderBy : 'title') "
