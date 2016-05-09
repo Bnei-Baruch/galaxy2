@@ -18,7 +18,6 @@
 
   <!-- Online users -->
   <md-list-item
-      data-context-menu="app/components/channel/users/users.context-menu.html"
       ng-click="vm.putUserToPreview(user)"
       ng-repeat="user in vm.users | filter : {joined: '', disabled: false} | orderBy : 'joined' track by user.id"
       class="userItem">
@@ -51,7 +50,6 @@
 
   <!-- Offline users -->
   <md-list-item
-      data-context-menu="app/components/channel/users/users.context-menu.html"
       ng-repeat="user in vm.users | filter : {joined: '!', disabled: '!'} | orderBy : 'title' track by user.id"
       class="userItem">
 

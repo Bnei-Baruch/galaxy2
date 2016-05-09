@@ -71,6 +71,7 @@ export class AuthService {
     return this.$auth.signOut()
       .then(this.onLogout)
       .catch((resp: any) => {
+        this.$log.error('Error signing out', resp);
         this.toastr.error(`Unable to sign out: ${resp.errors}`);
       });
   }
