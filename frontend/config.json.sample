@@ -53,7 +53,7 @@
     "reconnectTimeout": 10,
     "titleApiUrl": "https://v4g.kbb1.com:8080/title.php?title=%title%&port=%port%"
   },
-  "backendUri": "https://rt-dev.kbb1.com:5000/galaxy2/backend",
+  "backendUri": "https://rt-dev.kbb1.com:5000/backend",
   "environment": "development",
   "rollbarToken": "rollbar-access-token-comes-here",
   "codeVersion": "git-sha1-deployed-should-be-here",
