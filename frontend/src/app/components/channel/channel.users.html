@@ -51,7 +51,7 @@
 
   <!-- Offline users -->
   <md-list-item
-      data-context-menu="app/components/channel/users/users.context-menu.html"
+      data-context-menu="app/components/channel/user-context-menu/user-context-menu.html"
       ng-model="user"
       ng-controller="UserContextMenuController as contextMenu"
       ng-repeat="user in vm.users | filter : {joined: '!', disabled: '!'} | orderBy : 'title' track by user.id"

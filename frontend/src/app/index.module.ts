@@ -14,7 +14,7 @@ import { FakeUserController } from './user/fake.controller';
 import { AdminController } from './admin/admin.controller';
 import { FakeSDIController } from './e2e/sdi.controller';
 import { LoginController } from '../app/components/auth/login.controller';
-import { UserContextMenuController } from '../app/components/channel/users/users.controller';
+import { UserContextMenuController } from '../app/components/channel/user-context-menu/user-context-menu.controller';
 import { AuthService } from '../app/components/auth/auth.service';
 import { PubSubService } from '../app/components/pubSub/pubSub.service';
 import { slotWidget } from '../app/components/channel/slot/slot.directive';
