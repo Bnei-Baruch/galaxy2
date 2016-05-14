@@ -31,12 +31,12 @@ module frontend {
     'ngSanitize',
     'ngMessages',
     'ngAria',
-    'ngPromiseExtras',
     'ui.router',
     'ngMaterial',
     'toastr',
     'ngContextMenu',
     'ng-token-auth',
+    'ngPromiseExtras',
     'tandibar/ng-rollbar'
   ];
 
