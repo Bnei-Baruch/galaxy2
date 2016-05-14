@@ -31,6 +31,7 @@ module frontend {
     'ngSanitize',
     'ngMessages',
     'ngAria',
+    'ngPromiseExtras',
     'ui.router',
     'ngMaterial',
     'toastr',
