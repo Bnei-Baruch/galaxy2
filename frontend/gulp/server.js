@@ -39,10 +39,6 @@ function browserSyncInit(baseDir, browser) {
     startPath: '/',
     server: server,
     ghostMode: false,
-    https: {
-      key: '/home/negus/ssl/server.key',
-      cert: '/home/negus/ssl/server.crt'
-    },
     browser: browser === undefined ? 'default' : browser
   };
 

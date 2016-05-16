@@ -1,7 +1,9 @@
 {
   "janus": {
     "serverUri": "https://galaxy-dev.kbb1.com:8889/janus",
-    "stunUri": "stun://v4g.kbb1.com:3478",
+    "iceServers": [
+      {"url": "stun:v4g.kbb1.com:3478"
+    ],
     "secret": "adminpwd",
     "roomId": 3,
     "sdiPorts": {
