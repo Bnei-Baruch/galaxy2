@@ -36,6 +36,7 @@ module frontend {
     'toastr',
     'ngContextMenu',
     'ng-token-auth',
+    'ngPromiseExtras',
     'tandibar/ng-rollbar'
   ];
 
