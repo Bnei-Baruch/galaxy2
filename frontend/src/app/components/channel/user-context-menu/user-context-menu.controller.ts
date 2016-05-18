@@ -1,24 +1,19 @@
+import { PubSubService } from '../../pubSub/pubSub.service';
+import { JanusVideoRoomService } from '../../janus/janusVideoRoom.service';
+
 /* @ngInject */
 export class UserContextMenuController {
-  constructor(private $mdDialog: angular.material.IDialogService) {
+  constructor(private pubSub: PubSubService,
+              private videoRoom: JanusVideoRoomService,
+              private toastr: any) {
   }
 
-  toggleUser() {
-    console.log();
-  }
-
-  fixForwardingIssues(login: string, channelName: string) {
-    this.$mdDialog.show({
-      clickOutsideToClose: false,
-      templateUrl: 'app/components/fix-forwarding-dialog/fix-forwarding-dialog.html',
-      controller: 'FixForwardingDialogController',
-      controllerAs: 'fixForwarding',
-      locals: {
-        channelName: channelName
-      },
-      bindToController: true
+  reloadChannelUsers(channelName: string) {
+    this.pubSub.client.publish('/admin', {
+      message: 'reload',
+      channel: channelName
     }).then(() => {
-      console.log('Kolman rocks!');
+      this.toastr.info(`Reload command has been sent to the channel users.`);
     });
   }
 }

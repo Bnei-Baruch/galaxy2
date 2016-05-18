@@ -1,14 +1,15 @@
-<md-card style="z-index: 10000">
+<md-card style="z-index: 10000" ng-show="!user.completesComposite">
   <!-- TODO: Rename vm to channel -->
 
   <md-list ng-cloak>
-    <md-list-item ng-click="contextMenu.toggleUser(login)">
-      <md-icon class="material-icons">{{disabled ? 'on' : 'off'}}</md-icon>
-      <p>{{ disabled ? 'Enable user' : 'Disable temporarily' }}</p>
+    <md-list-item ng-click="vm.disableUser(user); $event.stopPropagation()">
+      <md-icon class="material-icons">visibility_off</md-icon>
+      <p>Disable {{user.title}} temporarily</p>
     </md-list-item>
     <md-menu-divider></md-menu-divider>
-    <md-list-item ng-click="contextMenu.fixForwardingIssues(login, vm.name)">
-      <p>Fix forwarding issues</p>
+    <md-list-item ng-click="contextMenu.reloadChannelUsers(vm.name); $event.stopPropagation()">
+      <md-icon class="material-icons">cached</md-icon>
+      <p>Reload channel users</p>
     </md-list-item>
   </md-list>
 </md-card>

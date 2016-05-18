@@ -39,7 +39,11 @@ function browserSyncInit(baseDir, browser) {
     startPath: '/',
     server: server,
     ghostMode: false,
-    browser: browser === undefined ? 'default' : browser
+    browser: browser === undefined ? 'default' : browser,
+    https: {
+      key: '/home/negus/ssl/server.key',
+      cert: '/home/negus/ssl/server.crt'
+    }
   };
 
   var port = port_util.getPortFromCommandLine();
