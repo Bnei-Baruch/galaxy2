@@ -4,6 +4,7 @@
 
 import { AuthService } from '../auth/auth.service';
 import { JanusService } from './janus.service';
+import{UpdatePublisherStatus} from './classes/UpdatePublisherStatus';
 
 declare var escape: any;
 
@@ -53,6 +54,7 @@ export class JanusVideoRoomService {
 
   localUserLogin: string;
   localStream: MediaStream;
+  localStorage: Storage;
 
   constructor(private $q: ng.IQService,
       private $log: ng.ILogService,
@@ -97,7 +99,6 @@ export class JanusVideoRoomService {
   registerChannel(channel: IChannel) {
     this.channels[channel.name] = channel;
     this.updateChannelUsers(channel.name, channel.users);
-
     // TODO: User publishers list and call userJoined method
     // for relevant channels
   }
@@ -130,6 +131,7 @@ export class JanusVideoRoomService {
 
     var handleInst = null;
 
+    
     if (login in this.remoteHandles) {
       this.$log.info('VideoRoom - remote handle already attached', login);
       var loginHandle = this.remoteHandles[login];
@@ -237,10 +239,11 @@ export class JanusVideoRoomService {
       this.$q.all(forwardPromises).then(() => {
         this.$log.info('VideoRoom - all remote feeds forwarded successfully');
         deferred.resolve(shidurState);
-      }, (error: string) => {
+      }, (error: string) => {        
+        var error_title = "One or more forwards failed";
         var error_msg = `One or more forwards failed (${error}), saving shidur state ${JSON.stringify(shidurState)}.`;
-        this.$log.error(error_msg);
-        deferred.reject(error_msg);
+        this.$log.error(error_title, error_msg);
+        deferred.reject(error_title, error_msg);
       });
 
       return deferred.promise;
@@ -277,6 +280,7 @@ export class JanusVideoRoomService {
       videoPort: number,
       audioPort: number): ng.IPromise<any> {
     // Stop (if exists) => Start => Update state => Callback.
+    
 
     var deferred = this.$q.defer();
 
@@ -344,6 +348,7 @@ export class JanusVideoRoomService {
         channel.joinedCallback(p.display);
       });
     });
+    
   }
 
   // Helper method to call client (channel) on user events,
@@ -385,10 +390,16 @@ export class JanusVideoRoomService {
 
       // Update channels on leaving user
       this.applyOnUserChannels(login, (channel: IChannel) => {
-        channel.leftCallback(login);
+        var returnObj = {
+             login: login,
+             deleteStatus: this.updatePublisherStatusOnDelete(login),
+        };
+        channel.leftCallback(returnObj);
       });
     }
   }
+
+
 
   /* Local Handle Methods */
 
@@ -494,6 +505,8 @@ export class JanusVideoRoomService {
         } else if (message.leaving) {
           this.deletePublisherByJanusId(message.leaving);
         } else if (message.unpublished) {
+          updatePublisherStatus: UpdatePublisherStatus = new UpdatePublisherStatus()
+          UpdatePublisherStatus.onDisconnect();
           this.deletePublisherByJanusId(message.unpublished);
         }
         break;
@@ -568,11 +581,25 @@ export class JanusVideoRoomService {
       error: (response: any) => {
         if (response === 'No capture device found') {
           this.toastr.error('We can\'t see you, please connect your camera.');
-        } else {
+        } else if(response.name === 'PermissionDeniedError' || response.name === 'PermissionDismissedError') {
+          var msg = `Error: ${response.message} <br />
+            Please allow media permissions.
+            <a href="https://support.google.com/chrome/answer/2693767?hl=en">
+              For more details.
+            </a>`;          
+          this.toastr.error(msg);
+        } else if(response.name === 'MediaDeviceNotSupported') {          
+          this.$log.error(response.name, response);
+          this.toastr.error(`Your browser not support video. </br>
+            Please use 
+            <a href="//www.google.com/chrome/browser/desktop/">
+              chrome
+            </a>.`);
+        } else if(response !== undefined) {
+          //don't do nothing if was resolved before
           this.$log.error('Error creating SDP offer', response);
           this.toastr.error(`Bummers, can't share video: ${response.message}`);
         }
-
       }
     });
   }
@@ -664,6 +691,7 @@ export class JanusVideoRoomService {
   private startSdiForwarding(login: string, forwardIp: string, videoPort: number, audioPort: number): ng.IPromise<any> {
     var deferred = this.$q.defer();
 
+console.log(JSON.stringify(this.publishers));    
     var forward: any = {
       request: 'rtp_forward',
       publisher_id: this.publishers[login].id,
