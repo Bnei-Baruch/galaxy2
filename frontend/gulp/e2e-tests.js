@@ -26,6 +26,8 @@ function runProtractor (done) {
     }))
     .on('error', function (err) {
       // Make sure failed tests cause gulp to exit non-zero
+      console.log('Protractor failed:');
+      console.log(err);
       throw err;
     })
     .on('end', function () {

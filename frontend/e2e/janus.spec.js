@@ -1,6 +1,6 @@
 var utils = require('./utils');
 var fs = require('fs');
-var HttpBackend = require('httpbackend');
+var mock = require('protractor-http-mock');
 
 function readConfig(path) {
   var buf = fs.readFileSync(path, "utf8").toString();
@@ -79,22 +79,45 @@ describe('Janus video room', function () {
     });
   });
 
+  var ngMockE2E = require('ng-mock-e2e');
+  var $httpBackend = ngMockE2E.$httpBackend;
+
+  beforeEach(function () {
+    //browser.ignoreSynchronization = true;
+    //console.log('angular');
+    //var a = $();
+    //for(var propName in a) {
+    //  var propValue = a[propName];
+    //  console.log(propName, propValue);
+    //}
+    //console.log('angular');
+
+    ngMockE2E.addMockModule();
+    ngMockE2E.addAsDependencyForModule('frontend');
+    ngMockE2E.embedScript('../bower_components/angular-mocks/angular-mocks.js');
+  });
+
+  afterEach(function () {
+    ngMockE2E.clearMockModules();
+
+    //browser.manage().logs().get('browser').then(function(browserLog) {
+    //  console.log('log: ' + require('util').inspect(browserLog));
+    //});
+  });
+
   it('should test mock http', function() {
-    var backend = new HttpBackend(browser);
-    backend.whenPOST(/.*rest\/shidur_state.*/).respond(function(method,url,data) {
-      console.log("Getting sdi");
-      return [200, "TTT"];
-    });
-    backend.whenGET(/.*rest\/shidur_state.*/).respond(function(method,url,data) {
-      console.log("Getting sdi");
-      return [200, "TTT"];
-    });
-    backend.whenGET(/.*/).passThrough();
-    backend.whenPOST(/.*/).passThrough();
+
+    //$httpBackend.when('GET', /\.*/).respond(function() { return [200, 'TTT']; });
+    //$httpBackend.when('POST', /\.*/).respond(function() { return [200, 'TTT']; });
+    //$httpBackend.when('POST', /\.*/).passThrough();
+
+    ngMockE2E.$httpBackend.passThrough();
 
     var testing_config = 'config.testing.json';
     var config = readConfig(testing_config);
     var large1_port = config.janus.sdiPorts.large1.video.program;
+
+    console.log('Here');
 
     // Open user
     browser.get('/#/user')

@@ -3,6 +3,8 @@ var EC = protractor.ExpectedConditions;
 exports.login = function() {
   'use strict'
 
+  console.log('Login');
+
   var login = element(by.model('vm.login'));
   var password = element(by.model('vm.password'));
   var submit = element(by.tagName('button'));
@@ -10,6 +12,8 @@ exports.login = function() {
   login.sendKeys('e2e');
   password.sendKeys('e2eARVUT2014');
   submit.click();
+
+  console.log('Login sent.');
 
   return browser.sleep(3500);
 }
@@ -37,27 +41,14 @@ exports.waitForVideo = function(cssSelector) {
 
 exports.openNewWindow = function(url) {
   'use strict';
+  console.log('OpenNewWindow ' + url);
 
   return browser.driver.executeScript("$(window.open('" + url + "'))");
 };
 
-exports.switchToSpecificHandle = function(handle) {
-  'use strict';
-  var deferred = protractor.promise.defer();
-  browser.switchTo().window(handle).then(function () {
-    //console.log("Switched to window:", handles[number]);
-    browser.driver.executeScript('window.focus();').then(function() {
-      browser.getCurrentUrl().then(function(url) {
-        console.log('Switch to ' + url);
-        deferred.fulfill();
-      });
-    });
-  });
-  return deferred.promise;
-};
-
 exports.switchToWindow = function(number, url_contains) {
   'use strict';
+  console.log('switchToWindow ' + number + ' ' + url_contains);
 
   var deferred = protractor.promise.defer();
 
@@ -81,6 +72,8 @@ exports.switchToWindow = function(number, url_contains) {
 
 exports.closeOtherWindows = function() {
   'use strict';
+
+  console.log('closeOtherWindows');
 
   browser.getAllWindowHandles().then(function (handles) {
     if (!handles.length) {

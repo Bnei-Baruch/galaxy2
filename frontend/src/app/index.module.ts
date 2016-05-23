@@ -35,7 +35,8 @@ module frontend {
     'ngMaterial',
     'toastr',
     'ng-token-auth',
-    'tandibar/ng-rollbar'
+    'tandibar/ng-rollbar'// ,
+    // 'ngMockE2E'
   ];
 
   angular.module('frontend', dependencies)
@@ -43,6 +44,11 @@ module frontend {
     .config(config)
     .config(routerConfig)
     .run(runBlock)
+//    .run(function($httpBackend: any) {
+      // pass through template requests
+//      $httpBackend.whenGET(/\.*/).passThrough();
+//      $httpBackend.whenPOST(/\.*/).passThrough();
+//    })
     .service('janus', JanusService)
     .service('videoRoom', JanusVideoRoomService)
     .service('streaming', JanusStreamingService)
