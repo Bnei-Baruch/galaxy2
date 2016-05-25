@@ -8,7 +8,7 @@ var browserSync = require('browser-sync');
 var browserSyncSpa = require('browser-sync-spa');
 
 var util = require('util');
-var port_util = require('./port')
+var portUtil = require('./port')
 
 var proxyMiddleware = require('http-proxy-middleware');
 
@@ -40,13 +40,10 @@ function browserSyncInit(baseDir, browser) {
     server: server,
     ghostMode: false,
     browser: browser === undefined ? 'default' : browser,
-    https: {
-      key: '/home/negus/ssl/server.key',
-      cert: '/home/negus/ssl/server.crt'
-    }
+    https: true
   };
 
-  var port = port_util.getPortFromCommandLine();
+  var port = portUtil.getPortFromCommandLine();
   if (port) {
     options.port = port;
   }
@@ -67,11 +64,11 @@ gulp.task('serve:dist', ['config', 'build'], function () {
 });
 
 gulp.task('serve:e2e', ['config:e2e', 'inject'], function () {
-  port_util.requirePortOnCommandLine();
+  portUtil.requirePortOnCommandLine();
   browserSyncInit([conf.paths.tmp + '/serve', conf.paths.src], []);
 });
 
 gulp.task('serve:e2e-dist', ['config:e2e', 'build'], function () {
-  port_util.requirePortOnCommandLine();
+  portUtil.requirePortOnCommandLine();
   browserSyncInit(conf.paths.dist, []);
 });
