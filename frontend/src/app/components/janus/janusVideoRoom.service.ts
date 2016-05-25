@@ -234,13 +234,9 @@ export class JanusVideoRoomService {
         return this.stopAndStartSdiForwarding(shidurState, user, forwardIp, videoPorts[index], audioPort, changeTitle);
       });
 
-      this.$q.all(forwardPromises).then(() => {
-        this.$log.info('VideoRoom - all remote feeds forwarded successfully');
+      (<any> this.$q).allSettled(forwardPromises).then(() => {
+        this.$log.info('VideoRoom - all remote feeds forwarding finished');
         deferred.resolve(shidurState);
-      }, (error: string) => {
-        var error_msg = `One or more forwards failed (${error}), saving shidur state ${JSON.stringify(shidurState)}.`;
-        this.$log.error(error_msg);
-        deferred.reject(error_msg);
       });
 
       return deferred.promise;

@@ -39,8 +39,8 @@ function browserSyncInit(baseDir, browser) {
     startPath: '/',
     server: server,
     ghostMode: false,
-    browser: browser === undefined ? 'default' : browser,
-    https: true
+    https: true,
+    browser: browser === undefined ? 'default' : browser
   };
 
   var port = portUtil.getPortFromCommandLine();
