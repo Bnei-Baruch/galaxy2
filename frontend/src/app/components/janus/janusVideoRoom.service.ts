@@ -4,7 +4,7 @@
 
 import { AuthService } from '../auth/auth.service';
 import { JanusService } from './janus.service';
-import{UpdatePublisherStatus} from './classes/UpdatePublisherStatus';
+import{ PublisherStatusTracker } from './publisherStatusTracker.service';
 
 declare var escape: any;
 
@@ -54,7 +54,6 @@ export class JanusVideoRoomService {
 
   localUserLogin: string;
   localStream: MediaStream;
-  localStorage: Storage;
 
   constructor(private $q: ng.IQService,
       private $log: ng.ILogService,
@@ -62,6 +61,7 @@ export class JanusVideoRoomService {
       private $http: ng.IHttpService,
       private authService: AuthService,
       private janus: JanusService,
+      private publisherStatus: PublisherStatusTracker,
       private toastr: any,
       private config: any) {
 
@@ -131,7 +131,6 @@ export class JanusVideoRoomService {
 
     var handleInst = null;
 
-    
     if (login in this.remoteHandles) {
       this.$log.info('VideoRoom - remote handle already attached', login);
       var loginHandle = this.remoteHandles[login];
@@ -239,11 +238,11 @@ export class JanusVideoRoomService {
       this.$q.all(forwardPromises).then(() => {
         this.$log.info('VideoRoom - all remote feeds forwarded successfully');
         deferred.resolve(shidurState);
-      }, (error: string) => {        
-        var error_title = "One or more forwards failed";
+      }, (error: string) => {
+        var error_title = 'One or more forwards failed';
         var error_msg = `One or more forwards failed (${error}), saving shidur state ${JSON.stringify(shidurState)}.`;
         this.$log.error(error_title, error_msg);
-        deferred.reject(error_title, error_msg);
+        // deferred.reject(error_title, error_msg);
       });
 
       return deferred.promise;
@@ -280,8 +279,6 @@ export class JanusVideoRoomService {
       videoPort: number,
       audioPort: number): ng.IPromise<any> {
     // Stop (if exists) => Start => Update state => Callback.
-    
-
     var deferred = this.$q.defer();
 
     var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
@@ -366,9 +363,25 @@ export class JanusVideoRoomService {
     }
   }
 
+  private publisherIdToLogin(janusId) {
+    var login = null;
+    for (var key in this.publishers) {
+      if (this.publishers.hasOwnProperty(key)) {
+        var publisher = this.publishers[key];
+        if (publisher.id === janusId) {
+          login = publisher.display;
+          break;
+        }
+      }
+    }
+    return login    
+  }
+
   // Cleans up when publisher is leaving. Call relevant channels with leftCallback.
-  private deletePublisherByJanusId(janusId: string): void {
+  private deletePublisherByJanusId(janusId: string, showUserStatus: boolean = true): void {
     this.$log.info('VideoRoom - delete publisher', janusId);
+
+    var login = this.publisherIdToLogin(janusId);
 
     var login = null;
     for (var key in this.publishers) {
@@ -389,12 +402,11 @@ export class JanusVideoRoomService {
       this.unsubscribeFromStream(login);
 
       // Update channels on leaving user
-      this.applyOnUserChannels(login, (channel: IChannel) => {
-        var returnObj = {
+      this.applyOnUserChannels(login, (channel: IChannel) => {        
+        channel.leftCallback({
              login: login,
-             deleteStatus: this.updatePublisherStatusOnDelete(login),
-        };
-        channel.leftCallback(returnObj);
+             showUserStatus: showUserStatus
+        });
       });
     }
   }
@@ -505,9 +517,8 @@ export class JanusVideoRoomService {
         } else if (message.leaving) {
           this.deletePublisherByJanusId(message.leaving);
         } else if (message.unpublished) {
-          updatePublisherStatus: UpdatePublisherStatus = new UpdatePublisherStatus()
-          UpdatePublisherStatus.onDisconnect();
-          this.deletePublisherByJanusId(message.unpublished);
+          var shouldDisable: boolean = (new PublisherStatusTracker(login)).onDisconnect();
+          this.deletePublisherByJanusId(message.unpublished, shouldDisable);
         }
         break;
     }
@@ -596,7 +607,7 @@ export class JanusVideoRoomService {
               chrome
             </a>.`);
         } else if(response !== undefined) {
-          //don't do nothing if was resolved before
+          // don't do nothing if was resolved before
           this.$log.error('Error creating SDP offer', response);
           this.toastr.error(`Bummers, can't share video: ${response.message}`);
         }
