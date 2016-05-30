@@ -10,7 +10,8 @@ export function config(
     RollbarProvider: any) {
 
   // Enable log
-  $logProvider.debugEnabled(config.environment !== 'production');
+  // $logProvider.debugEnabled(config.environment !== 'production');
+  $logProvider.debugEnabled(true);
 
   // Toastr
   toastrConfig.allowHtml = true;

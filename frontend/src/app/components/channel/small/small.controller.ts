@@ -116,29 +116,9 @@ export class SmallChannelController extends BaseChannelController {
     this.compositeIndex[slotName] = index;
     this.isForwarded[slotName] = false;
 
-    this.composite.forEach((user: IUser, userIndex: number) => {
-      logins[userIndex] = user.login;
-    });
-
     // TODO: move to base controller
     this.$log.info('Putting composite to slot', slotName, logins);
-    this.videoRoom.forwardRemoteFeeds(logins, portsConfig.forwardIp, videoPorts).then(() => {
-      // Forwarding succeeded, changing titles
-
-      if (program) {
-        logins.forEach((login: string, loginIndex: number) => {
-          var title: string;
-
-          if (this.usersByLogin[login]) {
-            title = this.usersByLogin[login].title;
-          } else {
-            title = '';
-          }
-
-          this.videoRoom.changeRemoteFeedTitle(title, videoPorts[loginIndex]);
-        });
-      }
-
+    this.videoRoom.forwardRemoteFeeds(this.composite, portsConfig.forwardIp, videoPorts, undefined, program).then(() => {
       this.isForwarded[slotName] = true;
 
       deffered.resolve();
@@ -205,7 +185,7 @@ export class SmallChannelController extends BaseChannelController {
       this.constructComposites();
 
       var newPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
-      if (!angular.equals(oldPrevComposite, newPrevComposite)) {
+      if (!this.areCompositesEqual(oldPrevComposite, newPrevComposite)) {
         this.putCompositeToSlot(this.compositeIndex.preview, false, true);
       }
     }
@@ -250,5 +230,15 @@ export class SmallChannelController extends BaseChannelController {
       .then((stream: MediaStream) => {
         attachMediaStream(slotElement, stream);
       });
+  }
+
+  private areCompositesEqual(first: IUser[], second: IUser[]) {
+    if (first === undefined || second  === undefined) {
+      return false;
+    }
+
+    return first.every((user: IUser, i: number) => {
+      return user.login === second[i].login;
+    });
   }
 }

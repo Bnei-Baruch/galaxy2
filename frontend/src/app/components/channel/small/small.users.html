@@ -7,7 +7,8 @@
     ng-repeat="composite in vm.composites"
     ng-class-odd="'oddComposite'"
     ng-class="$index === vm.compositeIndex.program ? 'program' : ($index === vm.compositeIndex.preview ? 'preview' : '')"
-    class="composite">
+    class="composite"
+    aria-label="Preview composite">
 
     <div layout="row" layout-wrap flex="100" class="userItem">
       <div layout="column md-caption" flex="50" ng-repeat="user in composite" class="compositeItem">
@@ -16,23 +17,11 @@
         <div ng-bind="user.title"
           ng-style="{fontSize: 14}"
           ng-class="user.completesComposite ? 'completesComposite' : ''"
+          data-context-menu="app/components/channel/user-context-menu/user-context-menu.html"
+          ng-controller="UserContextMenuController as contextMenu"
           layout="column"
           layout-align="center start"
           flex></div>
-
-        <md-button
-          ng-if="!user.completesComposite"
-          ng-click="vm.disableUser(user); $event.stopPropagation()"
-          title="Temporarily disable user"
-          layout="column"
-          aria-label="Disable user"
-          class="md-icon-button block">
-
-          <md-icon
-            ng-style="{color: '#9E9E9E', fontSize: 12, right: '0px'}"
-            class="material-icons">block</md-icon>
-
-        </md-button>
 
       </div>
     </div>

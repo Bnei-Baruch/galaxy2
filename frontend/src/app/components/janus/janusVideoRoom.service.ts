@@ -2,7 +2,7 @@
  * Library to handle communication with Janus.
  */
 
-import { AuthService } from '../auth/auth.service';
+import { AuthService, IUser  } from '../auth/auth.service';
 import { JanusService } from './janus.service';
 import{ PublisherStatusTracker } from './publisherStatusTracker.service';
 
@@ -226,25 +226,23 @@ export class JanusVideoRoomService {
    *
    * @returns List of promises for every video port provided
    */
-  forwardRemoteFeeds(logins: string[], forwardIp: string, videoPorts: number[], audioPorts?: number[]): ng.IPromise<any> {
+  forwardRemoteFeeds(users: IUser[], forwardIp: string, videoPorts: number[], audioPorts?: number[], changeTitle?: boolean): ng.IPromise<any> {
     return this.getAndUpdateShidurState((shidurState: IShidurState) => {
       var deferred = this.$q.defer();
 
-      var forwardPromises = logins.map((login: string, index: number) => {
+      var forwardPromises = users.map((user: IUser, index: number) => {
         var audioPort = (audioPorts || [])[index];
-        return this.stopAndStartSdiForwarding(shidurState, login, forwardIp, videoPorts[index], audioPort);
+        return this.stopAndStartSdiForwarding(shidurState, user, forwardIp, videoPorts[index], audioPort, changeTitle);
       });
 
-      this.$q.all(forwardPromises).then(() => {
-        this.$log.info('VideoRoom - all remote feeds forwarded successfully');
+      (<any> this.$q).allSettled(forwardPromises).then(() => {
+        this.$log.info('VideoRoom - all remote feeds forwarding finished');
         deferred.resolve(shidurState);
       }, (error: string) => {
         var error_title = 'One or more forwards failed';
         var error_msg = `One or more forwards failed (${error}), saving shidur state ${JSON.stringify(shidurState)}.`;
         this.$log.error(error_title, error_msg);
-        // deferred.reject(error_title, error_msg);
       });
-
       return deferred.promise;
     });
   }
@@ -273,11 +271,46 @@ export class JanusVideoRoomService {
     });
   }
 
+  stopSdiForwarding(forwardInfo: IFeedForwardInfo): ng.IPromise<any> {
+    var deferred = this.$q.defer();
+
+    if (forwardInfo) {
+      this.$log.info('VideoRoom - stop SDI forwarding', forwardInfo.publisherId);
+      this.$log.debug('VideoRoom - stop forwarding video', forwardInfo.videoStreamId);
+      this.$log.debug('VideoRoom - stop forwarding audio', forwardInfo.audioStreamId);
+
+      // Stop video and then audio forwarding
+      this.stopStreamForwarding(forwardInfo, forwardInfo.videoStreamId).then(() => {
+        if (forwardInfo.audioStreamId) {
+          this.stopStreamForwarding(forwardInfo, forwardInfo.audioStreamId).then(() => {
+            deferred.resolve();
+          }, () => {
+            this.$log.error('VideoRoom - error stopping audio stream.');
+            deferred.reject();
+          });
+        } else {
+          deferred.resolve();
+        }
+      }, () => {
+        var error = 'VideoRoom - error stopping video stream.';
+        this.$log.error(error);
+        deferred.reject(error);
+      });
+
+    } else {
+      // No forward info, no need to stop.
+      deferred.resolve();
+    }
+
+    return deferred.promise;
+  }
+
   private stopAndStartSdiForwarding(shidurState: IShidurState,
-      login: string,
+      user: IUser,
       forwardIp: string,
       videoPort: number,
-      audioPort: number): ng.IPromise<any> {
+      audioPort: number,
+      changeTitle: boolean): ng.IPromise<any> {
     // Stop (if exists) => Start => Update state => Callback.
     var deferred = this.$q.defer();
 
@@ -288,13 +321,18 @@ export class JanusVideoRoomService {
         delete shidurState.janus.portsFeedForwardInfo[audioPort];
       }
 
-      if (login) {
-        if (login in this.publishers) {
-          this.startSdiForwarding(login, forwardIp, videoPort, audioPort).then((forwardInfo: IFeedForwardInfo) => {
+      if (user.login) {
+        if (user.login in this.publishers) {
+          this.startSdiForwarding(user.login, forwardIp, videoPort, audioPort).then((forwardInfo: IFeedForwardInfo) => {
             shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
             if (audioPort) {
               shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
             }
+            // Forwarding succeeded, changing titles
+            if (changeTitle) {
+              this.changeRemoteFeedTitle(user.title, videoPort);
+            }
+
             deferred.resolve();
           }, () => {
             var error = 'VideoRoom - error starting SDI forward.';
@@ -302,8 +340,8 @@ export class JanusVideoRoomService {
             deferred.reject(error);
           });
         } else {
-          this.$log.error('Could not find publisher with login', login);
-          var error = `Could not find publisher with login ${login}`;
+          this.$log.error('Could not find publisher with login', user.login);
+          var error = `Could not find publisher with login ${user.login}`;
           this.toastr.error(error);
           deferred.reject(error);
         }
@@ -592,11 +630,16 @@ export class JanusVideoRoomService {
       error: (response: any) => {
         if (response === 'No capture device found') {
           this.toastr.error('We can\'t see you, please connect your camera.');
+<<<<<<< HEAD
         } else if(response.name === 'PermissionDeniedError' || response.name === 'PermissionDismissedError') {
+=======
+        } else if (response.name === 'PermissionDeniedError' || response.name === 'PermissionDismissedError') {
+>>>>>>> origin/staging
           var msg = `Error: ${response.message} <br />
             Please allow media permissions.
             <a href="https://support.google.com/chrome/answer/2693767?hl=en">
               For more details.
+<<<<<<< HEAD
             </a>`;          
           this.toastr.error(msg);
         } else if(response.name === 'MediaDeviceNotSupported') {          
@@ -608,6 +651,19 @@ export class JanusVideoRoomService {
             </a>.`);
         } else if(response !== undefined) {
           // don't do nothing if was resolved before
+=======
+            </a>`;
+          this.toastr.error(msg);
+        } else if (response.name === 'MediaDeviceNotSupported') {
+          this.$log.error(response.name, response);
+          this.toastr.error(`Your browser doesn't support video device. </br>
+            Please use
+            <a href="//www.google.com/chrome/browser/desktop/">
+              Chrome
+            </a>.`);
+        } else if (response !== undefined) {
+          // Don't do nothing if was resolved before
+>>>>>>> origin/staging
           this.$log.error('Error creating SDP offer', response);
           this.toastr.error(`Bummers, can't share video: ${response.message}`);
         }
@@ -741,40 +797,6 @@ console.log(JSON.stringify(this.publishers));
         deferred.reject();
       }
     });
-
-    return deferred.promise;
-  }
-
-  private stopSdiForwarding(forwardInfo: IFeedForwardInfo): ng.IPromise<any> {
-    var deferred = this.$q.defer();
-
-    if (forwardInfo) {
-      this.$log.info('VideoRoom - stop SDI forwarding', forwardInfo.publisherId);
-      this.$log.debug('VideoRoom - stop forwarding video', forwardInfo.videoStreamId);
-      this.$log.debug('VideoRoom - stop forwarding audio', forwardInfo.audioStreamId);
-
-      // Stop video and then audio forwarding
-      this.stopStreamForwarding(forwardInfo, forwardInfo.videoStreamId).then(() => {
-        if (forwardInfo.audioStreamId) {
-          this.stopStreamForwarding(forwardInfo, forwardInfo.audioStreamId).then(() => {
-            deferred.resolve();
-          }, () => {
-            this.$log.error('VideoRoom - error stopping audio stream.');
-            deferred.reject();
-          });
-        } else {
-          deferred.resolve();
-        }
-      }, () => {
-        var error = 'VideoRoom - error stopping video stream.';
-        this.$log.error(error);
-        deferred.reject(error);
-      });
-
-    } else {
-      // No forward info, no need to stop.
-      deferred.resolve();
-    }
 
     return deferred.promise;
   }
