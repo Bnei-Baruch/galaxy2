@@ -85,7 +85,7 @@ export class ControlChannelController extends SingleUserChannelController {
     }).then(() => {
       user.audioEnabled = !user.audioEnabled;
     }, (error: any) => {
-      this.$log.error(`Error sending toggle audio command for ${user.login}`, error);
+      this.$log.error('Error sending toggle audio command for', user.login, error);
       this.toastr.error('Unable to toggle audio, error response recorded');
     });
 

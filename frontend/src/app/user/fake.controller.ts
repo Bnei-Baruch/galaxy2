@@ -4,10 +4,10 @@ import { JanusVideoRoomService } from '../components/janus/janusVideoRoom.servic
 
 declare var attachMediaStream: any;
 
+/* @ngInject */
 export class FakeUserController {
   fakeUsers: string[];
 
-  /* @ngInject */
   constructor ($q: ng.IQService,
       $rootScope: ng.IRootScopeService,
       $timeout: ng.ITimeoutService,

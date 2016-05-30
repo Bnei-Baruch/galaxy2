@@ -24,12 +24,13 @@ export class JanusService {
       if (!Janus.isWebrtcSupported()) {
         this.toastr.error('Sorry, we need your browser to support WebRTC.');
         deffered.reject();
+        return deffered.promise;
       }
 
       this.$log.info('Initializing connection to Janus');
       this.session = new Janus({
         server: this.config.janus.serverUri,
-	      iceServers: [{url: this.config.janus.stunUri}],
+	      iceServers: this.config.janus.iceServers,
         success: () => {
           deffered.resolve();
         },
@@ -43,7 +44,7 @@ export class JanusService {
     };
 
     Janus.init({
-      debug: ['warn', 'error'],
+      debug: ['log', 'warn', 'error'],
       callback: () => {
         initCallback();
       }

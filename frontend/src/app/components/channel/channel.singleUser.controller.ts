@@ -140,13 +140,12 @@ export class SingleUserChannelController extends BaseChannelController {
       audioPorts = undefined;
     }
 
-    return this.videoRoom.forwardRemoteFeeds([this.programUser.login], sdiPorts.forwardIp, [sdiPorts.video.program], audioPorts)
+    return this.videoRoom.forwardRemoteFeeds([this.programUser], sdiPorts.forwardIp, [sdiPorts.video.program], audioPorts, true)
       .then(() => {
         this.isForwarded.program = true;
-        this.videoRoom.changeRemoteFeedTitle(this.programUser.title, sdiPorts.video.program);
       }, (err: string) => {
+        this.$log.error('Error forwarding program to SDI', this.programUser.login, err);
         var error = `Error forwarding program to SDI ${this.programUser.login} error is ${err}`;
-        this.$log.error(error);
         this.toastr.error(error);
         return error;
       });
