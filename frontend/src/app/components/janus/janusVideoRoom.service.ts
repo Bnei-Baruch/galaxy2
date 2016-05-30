@@ -15,14 +15,6 @@ interface IChannel {
   leftCallback: (login: string) => void;
 }
 
-interface IShidurState {
-  janus: {
-    portsFeedForwardInfo: {
-      (key: number): IFeedForwardInfo
-    }
-  };
-}
-
 interface IRemoteHandle {
   count: number;
   handle: any;  // Janus handle instance
@@ -34,6 +26,11 @@ interface IFeedForwardInfo {
   videoStreamId: string;
   audioStreamId: string;
 }
+
+interface IPortsForwardInfo {
+  (port: number): IFeedForwardInfo
+}
+
 
 /* @ngInject */
 export class JanusVideoRoomService {
@@ -661,6 +658,43 @@ export class JanusVideoRoomService {
         }
       });
     }
+  }
+
+  private getForwarders(): ng.IPromise<any> {
+    var deferred = this.$q.defer();
+
+    var request = {
+      request: 'listforwarders',
+      room: this.config.janus.roomId,
+      secret: this.config.janus.secret
+    };
+
+    this.localHandle.send({
+      message: request,
+      success: (data: any) => {
+        var portsForwardInfo: IFeedForwardInfo = {};
+
+        data.rtp_forwarders.forEach((rtpForwarder: any) => {
+
+          rtpForwarder.forEach((forwarder: any) => {
+
+            portsForwardInfo[forwarder.rtp_forwarder.port] = {
+              publisherId: forwarder.publisher_id,
+              videoStreamId: forwarder.video_stream_id,
+              audioStreamId: forwarder.audio_stream_id
+            };
+          });
+        });
+
+        deferred.resolve(portsForwardInfo);
+      },
+      error: (response: any) => {
+        this.$log.error('Error getting RTP forwarders', response);
+        deferred.reject(response);
+      },
+    });
+
+    return deferred.promise;
   }
 
   private getAndUpdateShidurState(useShidurState: (shidurState: IShidurState) => ng.IPromise<any>): ng.IPromise<any> {
