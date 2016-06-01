@@ -1,6 +1,5 @@
 var utils = require('./utils');
 var fs = require('fs');
-var mock = require('protractor-http-mock');
 
 function readConfig(path) {
   var buf = fs.readFileSync(path, "utf8").toString();
@@ -79,6 +78,7 @@ describe('Janus video room', function () {
     });
   });
 
+  //var mock = require('protractor-http-mock');
   var ngMockE2E = require('ng-mock-e2e');
   var $httpBackend = ngMockE2E.$httpBackend;
 
@@ -92,13 +92,13 @@ describe('Janus video room', function () {
     //}
     //console.log('angular');
 
-    ngMockE2E.addMockModule();
-    ngMockE2E.addAsDependencyForModule('frontend');
-    ngMockE2E.embedScript('../bower_components/angular-mocks/angular-mocks.js');
+    //ngMockE2E.addMockModule();
+    //ngMockE2E.addAsDependencyForModule('frontend');
+    //ngMockE2E.embedScript('../bower_components/angular-mocks/angular-mocks.js');
   });
 
   afterEach(function () {
-    ngMockE2E.clearMockModules();
+    //ngMockE2E.clearMockModules();
 
     //browser.manage().logs().get('browser').then(function(browserLog) {
     //  console.log('log: ' + require('util').inspect(browserLog));
@@ -107,11 +107,10 @@ describe('Janus video room', function () {
 
   it('should test mock http', function() {
 
-    //$httpBackend.when('GET', /\.*/).respond(function() { return [200, 'TTT']; });
-    //$httpBackend.when('POST', /\.*/).respond(function() { return [200, 'TTT']; });
+    //$httpBackend.when('GET', /\.*backend\.*/).respond(function() { return [200, 'TTT']; });
+    //$httpBackend.when('POST', /\.*backend\.*/).respond(function() { return [200, 'TTT']; });
     //$httpBackend.when('POST', /\.*/).passThrough();
-
-    ngMockE2E.$httpBackend.passThrough();
+    //ngMockE2E.$httpBackend.passThrough();
 
     var testing_config = 'config.testing.json';
     var config = readConfig(testing_config);
