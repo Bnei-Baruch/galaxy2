@@ -9,11 +9,6 @@ export class BaseChannelController {
 
   usersByLogin: { [login: string]: IUser } = {};
 
-  isForwarded: { program: boolean, preview: boolean } = {
-    program: true,
-    preview: false
-  };
-
   slotElement: { program: HTMLMediaElement, preview: HTMLMediaElement } = {
     program: null,
     preview: null
