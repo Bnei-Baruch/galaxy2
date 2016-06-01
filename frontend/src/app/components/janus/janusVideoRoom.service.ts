@@ -70,9 +70,11 @@ export class JanusVideoRoomService {
     // Create already resolved state by default
     this.shidurStateUpdated = $q.when([]);
 
-    $window.addEventListener('beforeunload', () => {
+    $window.addEventListener('beforeunload', (e: any) => {
       if (this.isForwardingInProgress) {
-        return 'SDI forwarding is in progress, closing Galaxy now can cause problems. Are you sure want to do it?';
+        var message = 'SDI forwarding is in progress, closing Galaxy now can cause problems. Are you sure want to do it?';
+        (e || $window.event).returnValue = message;
+        return message;
       } else {
         return undefined;
       }
