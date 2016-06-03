@@ -40,6 +40,7 @@ export class JanusVideoRoomService {
   localHandleAttached: ng.IPromise<any>;
   localStreamReady: ng.IPromise<any>;
   shidurStateUpdated: ng.IPromise<any> = null;
+  isForwardingInProgress: boolean = false;
 
   remoteHandles: { (login: string): IRemoteHandle } = <any>{};
   localHandle: any;
@@ -54,7 +55,8 @@ export class JanusVideoRoomService {
   localUserLogin: string;
   localStream: MediaStream;
 
-  constructor(private $q: ng.IQService,
+  constructor($window: ng.IWindowService,
+      private $q: ng.IQService,
       private $log: ng.ILogService,
       private $timeout: ng.ITimeoutService,
       private $http: ng.IHttpService,
@@ -64,8 +66,19 @@ export class JanusVideoRoomService {
       private config: any) {
 
     this.localHandleAttached = this.attachLocalHandle();
+
     // Create already resolved state by default
     this.shidurStateUpdated = $q.when([]);
+
+    $window.addEventListener('beforeunload', (e: any) => {
+      if (this.isForwardingInProgress) {
+        var message = 'SDI forwarding is in progress, closing Galaxy now can cause problems. Are you sure want to do it?';
+        (e || $window.event).returnValue = message;
+        return message;
+      } else {
+        return undefined;
+      }
+    });
   }
 
   /**
@@ -226,6 +239,8 @@ export class JanusVideoRoomService {
    * @returns List of promises for every video port provided
    */
   forwardRemoteFeeds(users: IUser[], forwardIp: string, videoPorts: number[], audioPorts?: number[], changeTitle?: boolean): ng.IPromise<any> {
+    this.isForwardingInProgress = true;
+
     return this.getAndUpdateShidurState((shidurState: IShidurState) => {
       var deferred = this.$q.defer();
 
@@ -240,6 +255,8 @@ export class JanusVideoRoomService {
       });
 
       return deferred.promise;
+    }).finally(() => {
+      this.isForwardingInProgress = false;
     });
   }
 
@@ -265,6 +282,40 @@ export class JanusVideoRoomService {
       this.$log.info('VideoRoom - toggle audio track', audioTrack.label, enabled);
       audioTrack.enabled = enabled;
     });
+  }
+
+  stopSdiForwarding(forwardInfo: IFeedForwardInfo): ng.IPromise<any> {
+    var deferred = this.$q.defer();
+
+    if (forwardInfo) {
+      this.$log.info('VideoRoom - stop SDI forwarding', forwardInfo.publisherId);
+      this.$log.debug('VideoRoom - stop forwarding video', forwardInfo.videoStreamId);
+      this.$log.debug('VideoRoom - stop forwarding audio', forwardInfo.audioStreamId);
+
+      // Stop video and then audio forwarding
+      this.stopStreamForwarding(forwardInfo, forwardInfo.videoStreamId).then(() => {
+        if (forwardInfo.audioStreamId) {
+          this.stopStreamForwarding(forwardInfo, forwardInfo.audioStreamId).then(() => {
+            deferred.resolve();
+          }, () => {
+            this.$log.error('VideoRoom - error stopping audio stream.');
+            deferred.reject();
+          });
+        } else {
+          deferred.resolve();
+        }
+      }, () => {
+        var error = 'VideoRoom - error stopping video stream.';
+        this.$log.error(error);
+        deferred.reject(error);
+      });
+
+    } else {
+      // No forward info, no need to stop.
+      deferred.resolve();
+    }
+
+    return deferred.promise;
   }
 
   private stopAndStartSdiForwarding(shidurState: IShidurState,
@@ -718,40 +769,6 @@ export class JanusVideoRoomService {
         deferred.reject();
       }
     });
-
-    return deferred.promise;
-  }
-
-  private stopSdiForwarding(forwardInfo: IFeedForwardInfo): ng.IPromise<any> {
-    var deferred = this.$q.defer();
-
-    if (forwardInfo) {
-      this.$log.info('VideoRoom - stop SDI forwarding', forwardInfo.publisherId);
-      this.$log.debug('VideoRoom - stop forwarding video', forwardInfo.videoStreamId);
-      this.$log.debug('VideoRoom - stop forwarding audio', forwardInfo.audioStreamId);
-
-      // Stop video and then audio forwarding
-      this.stopStreamForwarding(forwardInfo, forwardInfo.videoStreamId).then(() => {
-        if (forwardInfo.audioStreamId) {
-          this.stopStreamForwarding(forwardInfo, forwardInfo.audioStreamId).then(() => {
-            deferred.resolve();
-          }, () => {
-            this.$log.error('VideoRoom - error stopping audio stream.');
-            deferred.reject();
-          });
-        } else {
-          deferred.resolve();
-        }
-      }, () => {
-        var error = 'VideoRoom - error stopping video stream.';
-        this.$log.error(error);
-        deferred.reject(error);
-      });
-
-    } else {
-      // No forward info, no need to stop.
-      deferred.resolve();
-    }
 
     return deferred.promise;
   }

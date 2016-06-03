@@ -76,29 +76,6 @@ md-toolbar.md-default-theme {
     background-color: black;
 }
 
-section.jumbotron {
-    margin-bottom: 30px;
-    padding: 1px 30px;
-    background-color: #5aadbb;
-    text-align: center;
-    color: white;
-    h1 {
-        font-size: 3em;
-    }
-}
-
-.techs {
-    display: flex;
-    flex-flow: row wrap;
-    md-card {
-        width: 30%;
-        img.pull-right {
-            float: right;
-            width: 100px;
-        }
-    }
-}
-
 // show hide chat and top navigation
 header {
     .showHeader {
@@ -120,6 +97,14 @@ header {
     }
 }
 
+.o-context-menu {
+  p {
+    color: #000;
+    font-weight: normal;
+    font-size: 14px;
+  }
+  z-index: 10000;
+}
 
 /**
  *  Do not remove the comment below. It's the markers used by gulp-inject to inject
