@@ -37,6 +37,7 @@ export class JanusVideoRoomService {
   localHandleAttached: ng.IPromise<any>;
   localStreamReady: ng.IPromise<any>;
   shidurStateUpdated: ng.IPromise<any> = null;
+  isForwardingInProgress: boolean = false;
 
   remoteHandles: { (login: string): IRemoteHandle } = <any>{};
   localHandle: any;
@@ -51,7 +52,8 @@ export class JanusVideoRoomService {
   localUserLogin: string;
   localStream: MediaStream;
 
-  constructor(private $q: ng.IQService,
+  constructor($window: ng.IWindowService,
+      private $q: ng.IQService,
       private $log: ng.ILogService,
       private $timeout: ng.ITimeoutService,
       private $http: ng.IHttpService,
@@ -61,8 +63,19 @@ export class JanusVideoRoomService {
       private config: any) {
 
     this.localHandleAttached = this.attachLocalHandle();
+
     // Create already resolved state by default
     this.shidurStateUpdated = $q.when([]);
+
+    $window.addEventListener('beforeunload', (e: any) => {
+      if (this.isForwardingInProgress) {
+        var message = 'SDI forwarding is in progress, closing Galaxy now can cause problems. Are you sure want to do it?';
+        (e || $window.event).returnValue = message;
+        return message;
+      } else {
+        return undefined;
+      }
+    });
   }
 
   /**
@@ -223,6 +236,8 @@ export class JanusVideoRoomService {
    * @returns List of promises for every video port provided
    */
   forwardRemoteFeeds(users: IUser[], forwardIp: string, videoPorts: number[], audioPorts?: number[], changeTitle?: boolean): ng.IPromise<any> {
+    this.isForwardingInProgress = true;
+
     return this.getAndUpdateShidurState((shidurState: IShidurState) => {
       var deferred = this.$q.defer();
 
@@ -237,6 +252,8 @@ export class JanusVideoRoomService {
       });
 
       return deferred.promise;
+    }).finally(() => {
+      this.isForwardingInProgress = false;
     });
   }
 

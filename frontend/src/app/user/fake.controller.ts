@@ -8,7 +8,8 @@ declare var attachMediaStream: any;
 export class FakeUserController {
   fakeUsers: string[];
 
-  constructor ($q: ng.IQService,
+  constructor ($window: ng.IWindowService,
+      $q: ng.IQService,
       $rootScope: ng.IRootScopeService,
       $timeout: ng.ITimeoutService,
       $log: ng.ILogService,
@@ -25,7 +26,7 @@ export class FakeUserController {
         var mediaElement = <HTMLMediaElement>document.querySelector(`video[data-login="${login}"]`);
 
         var janus = new JanusService($q, $rootScope, $timeout, $log, toastr, config);
-        var videoRoom = new JanusVideoRoomService($q, $log, $timeout, $http, authService, janus, toastr, config);
+        var videoRoom = new JanusVideoRoomService($window, $q, $log, $timeout, $http, authService, janus, toastr, config);
 
         videoRoom.registerLocalUser(login, (stream: MediaStream) => {
           $log.debug('Attaching media stream for the fake user', login);
