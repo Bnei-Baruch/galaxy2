@@ -28,7 +28,7 @@ interface IFeedForwardInfo {
 }
 
 interface IPortsForwardInfo {
-  (port: number): IFeedForwardInfo
+  (port: number): IFeedForwardInfo;
 }
 
 
@@ -36,7 +36,10 @@ interface IPortsForwardInfo {
 export class JanusVideoRoomService {
   localHandleAttached: ng.IPromise<any>;
   localStreamReady: ng.IPromise<any>;
-  shidurStateUpdated: ng.IPromise<any> = null;
+  forwardingCompleted: ng.IPromise<any> = null;
+
+  // Angular promises don't allow to check promise state
+  // out of the box, thus using this flag
   isForwardingInProgress: boolean = false;
 
   remoteHandles: { (login: string): IRemoteHandle } = <any>{};
@@ -65,7 +68,7 @@ export class JanusVideoRoomService {
     this.localHandleAttached = this.attachLocalHandle();
 
     // Create already resolved state by default
-    this.shidurStateUpdated = $q.when([]);
+    this.forwardingCompleted = $q.when([]);
 
     $window.addEventListener('beforeunload', (e: any) => {
       if (this.isForwardingInProgress) {
@@ -236,25 +239,36 @@ export class JanusVideoRoomService {
    * @returns List of promises for every video port provided
    */
   forwardRemoteFeeds(users: IUser[], forwardIp: string, videoPorts: number[], audioPorts?: number[], changeTitle?: boolean): ng.IPromise<any> {
+    var deferred = this.$q.defer();
+
+    var previousCompleted = this.forwardingCompleted;
+
+    this.forwardingCompleted = deferred.promise;
     this.isForwardingInProgress = true;
 
-    return this.getAndUpdateShidurState((shidurState: IShidurState) => {
-      var deferred = this.$q.defer();
+    previousCompleted.finally(() => {
+      this.getForwarders().then((portsForwardInfo: IPortsForwardInfo) => {
+        debugger;
 
-      var forwardPromises = users.map((user: IUser, index: number) => {
-        var audioPort = (audioPorts || [])[index];
-        return this.stopAndStartSdiForwarding(shidurState, user, forwardIp, videoPorts[index], audioPort, changeTitle);
+        var forwardPromises = users.map((user: IUser, index: number) => {
+          var audioPort = (audioPorts || [])[index];
+          return this.stopAndStartSdiForwarding(portsForwardInfo, user, forwardIp, videoPorts[index], audioPort, changeTitle);
+        });
+
+        (<any> this.$q).allSettled(forwardPromises).then(() => {
+          this.$log.info('VideoRoom - all remote feeds forwarding finished');
+          this.isForwardingInProgress = false;
+          deferred.resolve();
+        });
+
+      }, (errorResponse: any) => {
+        this.isForwardingInProgress = false;
+        deferred.reject(`Error getting forwarded users: ${errorResponse}`);
       });
 
-      (<any> this.$q).allSettled(forwardPromises).then(() => {
-        this.$log.info('VideoRoom - all remote feeds forwarding finished');
-        deferred.resolve(shidurState);
-      });
-
-      return deferred.promise;
-    }).finally(() => {
-      this.isForwardingInProgress = false;
     });
+
+    return deferred.promise;
   }
 
   /**
@@ -315,7 +329,7 @@ export class JanusVideoRoomService {
     return deferred.promise;
   }
 
-  private stopAndStartSdiForwarding(shidurState: IShidurState,
+  private stopAndStartSdiForwarding(portsForwardInfo: IPortsForwardInfo,
       user: IUser,
       forwardIp: string,
       videoPort: number,
@@ -325,20 +339,12 @@ export class JanusVideoRoomService {
 
     var deferred = this.$q.defer();
 
-    var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
-    this.stopSdiForwarding(prevForwardInfo).then(() => {
-      delete shidurState.janus.portsFeedForwardInfo[videoPort];
-      if (audioPort) {
-        delete shidurState.janus.portsFeedForwardInfo[audioPort];
-      }
+    var prevForwardInfo = portsForwardInfo[videoPort];
 
+    this.stopSdiForwarding(prevForwardInfo).then(() => {
       if (user.login) {
         if (user.login in this.publishers) {
           this.startSdiForwarding(user.login, forwardIp, videoPort, audioPort).then((forwardInfo: IFeedForwardInfo) => {
-            shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
-            if (audioPort) {
-              shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
-            }
             // Forwarding succeeded, changing titles
             if (changeTitle) {
               this.changeRemoteFeedTitle(user.title, videoPort);
@@ -689,7 +695,7 @@ export class JanusVideoRoomService {
     this.localHandle.send({
       message: request,
       success: (data: any) => {
-        var portsForwardInfo: IFeedForwardInfo = {};
+        var portsForwardInfo: IPortsForwardInfo = <IPortsForwardInfo>{};
 
         data.rtp_forwarders.forEach((rtpForwarder: any) => {
 
@@ -708,55 +714,7 @@ export class JanusVideoRoomService {
       error: (response: any) => {
         this.$log.error('Error getting RTP forwarders', response);
         deferred.reject(response);
-      },
-    });
-
-    return deferred.promise;
-  }
-
-  private getAndUpdateShidurState(useShidurState: (shidurState: IShidurState) => ng.IPromise<any>): ng.IPromise<any> {
-    var deferred = this.$q.defer();
-    var previous = this.shidurStateUpdated;
-
-    this.shidurStateUpdated = deferred.promise;
-
-    previous.then(() => {
-
-      this.$http.get(this.config.backendUri + '/rest/shidur_state')
-        .error((data: string, status: number) => {
-          this.$log.error('Error fetching shidur state', status, data);
-          deferred.reject('Fetching shidur state returns error: ' + status + ' ' + data);
-        })
-        .success((shidurState: IShidurState) => {
-
-          if (!shidurState.janus) {
-            shidurState.janus = <any>{};
-          }
-          if (!shidurState.janus.portsFeedForwardInfo) {
-            shidurState.janus.portsFeedForwardInfo = <any>{};
-          }
-
-          // Post shidur state to the backend
-          var updateShidurState = () => {
-            return this.$http.post(this.config.backendUri + '/rest/shidur_state', shidurState)
-              .error((data: string, status: number) => {
-                this.$log.error('Error saving shidur state', status, data);
-                deferred.reject(`Updating shidur state returns error: ${status} ${data}`);
-              });
-          };
-
-          // Do something with shidur state and then update it
-          useShidurState(shidurState).then(() => {
-            updateShidurState().success(() => {
-              deferred.resolve();
-            });
-          }, (errMsg: string) => {
-            updateShidurState().success(() => {
-              deferred.reject(`Failed (${errMsg}) saving shidur state anyway.`);
-            });
-          });
-        });
-
+      }
     });
 
     return deferred.promise;
