@@ -4,7 +4,7 @@
 
 import { AuthService, IUser  } from '../auth/auth.service';
 import { JanusService } from './janus.service';
-import{ PublisherStatusTracker } from './publisherStatusTracker.service';
+import { PublisherStatusTrackerService } from './publisherStatusTracker.service';
 
 declare var escape: any;
 
@@ -13,7 +13,7 @@ interface IChannel {
   name: string;
   users: string[];
   joinedCallback: (login: string) => void;
-  leftCallback: (login: string) => void;
+  leftCallback: (login: string, isUnstableConnection: string) => void;
 }
 
 interface IShidurState {
@@ -61,7 +61,7 @@ export class JanusVideoRoomService {
       private $http: ng.IHttpService,
       private authService: AuthService,
       private janus: JanusService,
-      private publisherStatus: PublisherStatusTracker,
+      //private publisherStatus: PublisherStatusTrackerService,
       private toastr: any,
       private config: any) {
 
@@ -401,7 +401,7 @@ export class JanusVideoRoomService {
     }
   }
 
-  private publisherIdToLogin(janusId) {
+  private publisherIdToLogin(janusId: number) {
     var login = null;
     for (var key in this.publishers) {
       if (this.publishers.hasOwnProperty(key)) {
@@ -412,26 +412,11 @@ export class JanusVideoRoomService {
         }
       }
     }
-    return login
+    return login;
   }
 
   // Cleans up when publisher is leaving. Call relevant channels with leftCallback.
-  private deletePublisherByJanusId(janusId: string, showUserStatus: boolean = true): void {
-    this.$log.info('VideoRoom - delete publisher', janusId);
-
-    var login = this.publisherIdToLogin(janusId);
-
-    var login = null;
-    for (var key in this.publishers) {
-      if (this.publishers.hasOwnProperty(key)) {
-        var publisher = this.publishers[key];
-        if (publisher.id === janusId) {
-          login = publisher.display;
-          break;
-        }
-      }
-    }
-
+  private deletePublisher(login: string, isUnstableConnection: string = '0'): void {
     if (login) {
       this.$log.info('VideoRoom - deleting', login);
       delete this.publishers[login];
@@ -441,10 +426,7 @@ export class JanusVideoRoomService {
 
       // Update channels on leaving user
       this.applyOnUserChannels(login, (channel: IChannel) => {
-        channel.leftCallback({
-          login: login,
-          showUserStatus: showUserStatus
-        });
+        channel.leftCallback( login, isUnstableConnection);
       });
     }
   }
@@ -553,10 +535,12 @@ export class JanusVideoRoomService {
         if (message.publishers) {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
-          this.deletePublisherByJanusId(message.leaving);
+          this.$log.info('VideoRoom - delete publisher', message.leaving);
+          this.deletePublisher(this.publisherIdToLogin(message.leaving));
         } else if (message.unpublished) {
-          var shouldDisable: boolean = (new PublisherStatusTracker(login)).onDisconnect();
-          this.deletePublisherByJanusId(message.unpublished, shouldDisable);
+          var login: string = this.publisherIdToLogin(message.unpublished);
+          var isUnstableConnection: string = new PublisherStatusTrackerService(login).onDisconnect();
+          this.deletePublisher(login, isUnstableConnection);
         }
         break;
     }
@@ -629,13 +613,13 @@ export class JanusVideoRoomService {
       },
       error: (response: any) => {
         if (response === 'No capture device found') {
-          this.toastr.error('We can\'t see you, please connect your camera.');          
+          this.toastr.error ('We can\'t see you, please connect your camera.');
         } else if (response.name === 'PermissionDeniedError' || response.name === 'PermissionDismissedError') {
-            var msg = `Error: ${response.message} <br />
-            Please allow media permissions.
-            <a href="https://support.google.com/chrome/answer/2693767?hl=en">
-            For more details.
-            </a>`;
+          var msg = `Error: ${response.message} <br />
+          Please allow media permissions.
+          <a href="https://support.google.com/chrome/answer/2693767?hl=en">
+          For more details.
+          </a>`;
           this.toastr.error(msg);
         } else if (response.name === 'MediaDeviceNotSupported') {
           this.$log.error(response.name, response);
@@ -646,7 +630,7 @@ export class JanusVideoRoomService {
               </a>.`);
         } else if (response !== undefined) {
           // Don't do nothing if was resolved before
-            this.$log.error('Error creating SDP offer', response);
+          this.$log.error('Error creating SDP offer', response);
           this.toastr.error(`Bummers, can't share video: ${response.message}`);
         }
       }

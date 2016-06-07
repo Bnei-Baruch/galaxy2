@@ -44,8 +44,8 @@ export class SmallChannelController extends BaseChannelController {
     this.addUserToComposites(login);
   }
 
-  userLeft(login: string) {
-    super.userLeft(login);
+  userLeft(login: string, isUnstableConnection: string) {
+    super.userLeft(login,isUnstableConnection);
     this.removeUserFromComposites(login);
   }
 

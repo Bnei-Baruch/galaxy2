@@ -45,8 +45,8 @@ export class BaseChannelController {
       joinedCallback: (login: string) => {
         this.userJoined(login);
       },
-      leftCallback: (login: string) => {
-        this.userLeft(login);
+      leftCallback: (login: string, isUnstableConnection: string) => {
+        this.userLeft(login, isUnstableConnection);
       }
     });
   }
@@ -88,11 +88,12 @@ export class BaseChannelController {
     user.disabled = false;
   }
 
-  userLeft(login: string) {
+  userLeft(login: string, isUnstableConnection: string) {
     this.$log.info('User left', this.name, login);
     var user = this.usersByLogin[login];
     user.joined = null;
     user.stream = null;
+    user.isUnstableConnection = isUnstableConnection;
   }
 
   trigger() {
