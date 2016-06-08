@@ -7,11 +7,17 @@ var conf = require('./common');
 var browserSync = require('browser-sync');
 var browserSyncSpa = require('browser-sync-spa');
 
+var argv = require('yargs').argv;
 var util = require('util');
-var portUtil = require('./port')
 
 var proxyMiddleware = require('http-proxy-middleware');
 
+
+function ensurePortPresence() {
+  if (!argv.port) {
+    throw "Port not set, please run --port=9876";
+  }
+}
 
 function browserSyncInit(baseDir, browser) {
   var routes = null;
@@ -43,9 +49,15 @@ function browserSyncInit(baseDir, browser) {
     browser: browser === undefined ? 'default' : browser
   };
 
-  var port = portUtil.getPortFromCommandLine();
-  if (port) {
-    options.port = port;
+  if (argv.port) {
+    options.port = argv.port;
+  }
+
+  if (argv.sslKey && argv.sslCert) {
+    options.https = {
+      key: argv.sslKey,
+      cert: argv.sslCert
+    }
   }
 
   browserSync.instance = browserSync.init(options);
@@ -64,11 +76,11 @@ gulp.task('serve:dist', ['config', 'build'], function () {
 });
 
 gulp.task('serve:e2e', ['config:e2e', 'inject'], function () {
-  portUtil.requirePortOnCommandLine();
+  ensurePortPresence();
   browserSyncInit([conf.paths.tmp + '/serve', conf.paths.src], []);
 });
 
 gulp.task('serve:e2e-dist', ['config:e2e', 'build'], function () {
-  portUtil.requirePortOnCommandLine();
+  ensurePortPresence();
   browserSyncInit(conf.paths.dist, []);
 });
