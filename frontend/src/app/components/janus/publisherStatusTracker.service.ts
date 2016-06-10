@@ -29,14 +29,10 @@ export enum InternetConnectionType {
 export class PublisherStatusTrackerService {
   /*
      This class keeps track of how  many times a group disconnect in a given tine interval.status
-     Everything we measure is on a per minute basis.
 
-     How to use:
-     create new with parameter - login:string
-     publisherStatusTracker  = new PublisherStatusTracker (login)
-     var isUserHide: boolean = publisherStatusTracker.onDisconnect()
+     connectStatus: InternetConnectionType  = status of user internet stable
 
-     disconnectHistory: asdfasdfa
+     disconnectHistory: 1234
      where every letter - disconnection state (by DisconnectType )
 
      for checking status use list of Regural Expression (regShablons)
