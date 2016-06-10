@@ -5,6 +5,7 @@ import { routerConfig } from './index.route';
 import { runBlock } from './index.run';
 import { galaxyNavbar } from '../app/components/navbar/navbar.directive';
 import { JanusService } from '../app/components/janus/janus.service';
+import { PublisherStatusTrackerService } from '../app/components/janus/publisherStatusTracker.service';
 import { JanusVideoRoomService } from '../app/components/janus/janusVideoRoom.service';
 import { JanusStreamingService } from '../app/components/janus/janusStreaming.service';
 import { ShidurController } from './shidur/shidur.controller';
@@ -21,6 +22,7 @@ import { slotWidget } from '../app/components/channel/slot/slot.directive';
 import { LargeChannelWidget } from '../app/components/channel/large/large.directive';
 import { SmallChannelWidget } from '../app/components/channel/small/small.directive';
 import { ControlChannelWidget } from '../app/components/channel/control/control.directive';
+
 
 module frontend {
   'use strict';
@@ -48,6 +50,7 @@ module frontend {
     .run(runBlock)
     .service('janus', JanusService)
     .service('videoRoom', JanusVideoRoomService)
+    .service('publisherStatus', PublisherStatusTrackerService)
     .service('streaming', JanusStreamingService)
     .service('shidur', ShidurService)
     .service('authService', AuthService)

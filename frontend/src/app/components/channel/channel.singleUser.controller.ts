@@ -18,8 +18,8 @@ export class SingleUserChannelController extends BaseChannelController {
     }
   }
 
-  userLeft(login: string, isUnstableConnection: string) {
-    super.userLeft(login, isUnstableConnection);
+  userLeft(login: string) {
+    super.userLeft(login);
 
     var user = this.usersByLogin[login];
 

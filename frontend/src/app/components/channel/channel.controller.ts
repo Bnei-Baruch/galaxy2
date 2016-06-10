@@ -1,4 +1,5 @@
 import { JanusVideoRoomService } from '../janus/janusVideoRoom.service';
+import { PublisherStatusTrackerService, EnumInternetConnectionType } from '../janus/publisherStatusTracker.service';
 import { IUser } from '../auth/auth.service';
 
 /** @ngInject */
@@ -26,6 +27,7 @@ export class BaseChannelController {
   toastr: any;
   config: any;
   cssUserListHeightCalc: number;
+  publisherStatus: PublisherStatusTrackerService;
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
@@ -35,6 +37,7 @@ export class BaseChannelController {
     this.videoRoom = $injector.get('videoRoom');
     this.toastr = $injector.get('toastr');
     this.config = $injector.get('config');
+    this.publisherStatus = $injector.get('publisherStatus');
 
     // Mapping users by login for convenience
     this.mapUsersByLogin();
@@ -45,8 +48,8 @@ export class BaseChannelController {
       joinedCallback: (login: string) => {
         this.userJoined(login);
       },
-      leftCallback: (login: string, isUnstableConnection: string) => {
-        this.userLeft(login, isUnstableConnection);
+      leftCallback: (login: string ) => {
+        this.userLeft(login );
       }
     });
   }
@@ -64,6 +67,9 @@ export class BaseChannelController {
     // Set users list height
 
     this.bindHotkey();
+
+    // check internet connection status of users
+    this.publisherStatus.setAllUsersStatus(this.usersByLogin, this.disableUser);
   }
 
   setUserListHeight(element: ng.IAugmentedJQuery) {
@@ -85,15 +91,15 @@ export class BaseChannelController {
 
     // TODO: The timestamp should be better taken from Janus point of view
     user.joined = moment();
-    user.disabled = false;
+    user.disabled = this.publisherStatus.connectStatusByLogin(login) === EnumInternetConnectionType.danger;
   }
 
-  userLeft(login: string, isUnstableConnection: string) {
+  userLeft(login: string) {
     this.$log.info('User left', this.name, login);
     var user = this.usersByLogin[login];
     user.joined = null;
     user.stream = null;
-    user.isUnstableConnection = isUnstableConnection;
+    user.connectionStatus = this.publisherStatus.connectStatusByLogin(login);
   }
 
   trigger() {

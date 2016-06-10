@@ -13,7 +13,7 @@ interface IChannel {
   name: string;
   users: string[];
   joinedCallback: (login: string) => void;
-  leftCallback: (login: string, isUnstableConnection: string) => void;
+  leftCallback: (login: string ) => void;
 }
 
 interface IShidurState {
@@ -61,7 +61,7 @@ export class JanusVideoRoomService {
       private $http: ng.IHttpService,
       private authService: AuthService,
       private janus: JanusService,
-      //private publisherStatus: PublisherStatusTrackerService,
+      private publisherStatus: PublisherStatusTrackerService,
       private toastr: any,
       private config: any) {
 
@@ -416,7 +416,7 @@ export class JanusVideoRoomService {
   }
 
   // Cleans up when publisher is leaving. Call relevant channels with leftCallback.
-  private deletePublisher(login: string, isUnstableConnection: string = '0'): void {
+  private deletePublisher(login: string): void {
     if (login) {
       this.$log.info('VideoRoom - deleting', login);
       delete this.publishers[login];
@@ -426,7 +426,7 @@ export class JanusVideoRoomService {
 
       // Update channels on leaving user
       this.applyOnUserChannels(login, (channel: IChannel) => {
-        channel.leftCallback( login, isUnstableConnection);
+        channel.leftCallback( login );
       });
     }
   }
@@ -539,8 +539,8 @@ export class JanusVideoRoomService {
           this.deletePublisher(this.publisherIdToLogin(message.leaving));
         } else if (message.unpublished) {
           var login: string = this.publisherIdToLogin(message.unpublished);
-          var isUnstableConnection: string = new PublisherStatusTrackerService(login).onDisconnect();
-          this.deletePublisher(login, isUnstableConnection);
+          this.publisherStatus.onDisconnect(login);
+          this.deletePublisher(login);
         }
         break;
     }

@@ -26,8 +26,8 @@ export class FakeUserController {
         var mediaElement = <HTMLMediaElement>document.querySelector(`video[data-login="${login}"]`);
 
         var janus = new JanusService($q, $rootScope, $timeout, $log, toastr, config);
-        var publisherStatus = new PublisherStatusTrackerService('ashdod');
-        var videoRoom = new JanusVideoRoomService($q, $log, $timeout, $http, authService, janus, toastr, config);
+        var publisherStatus = new PublisherStatusTrackerService();
+        var videoRoom = new JanusVideoRoomService($q, $log, $timeout, $http, authService, janus, publisherStatus, toastr, config);
 
         videoRoom.registerLocalUser(login, (stream: MediaStream) => {
           $log.debug('Attaching media stream for the fake user', login);
