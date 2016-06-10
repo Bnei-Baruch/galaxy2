@@ -77,6 +77,9 @@ export class PublisherStatusTrackerService {
   public setAllUsersStatus(usersByLogin: { [login: string]: IUser }/*, disableUserCallback: (user: IUser) => any*/): void {
     var userStatusByLogin = JSON.parse(localStorage.getItem('publisherDeleteStatus'));
     for (var login in usersByLogin ) {
+      if (!usersByLogin.hasOwnProperty(login)) {
+        continue;
+      }
       var user: IUser = usersByLogin[login];
       var userStatus: IPublisherStatus = userStatusByLogin[login];
       if (!userStatus) {
