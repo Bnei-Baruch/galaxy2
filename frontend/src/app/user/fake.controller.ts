@@ -9,7 +9,8 @@ declare var attachMediaStream: any;
 export class FakeUserController {
   fakeUsers: string[];
 
-  constructor ($q: ng.IQService,
+  constructor ($window: ng.IWindowService,
+      $q: ng.IQService,
       $rootScope: ng.IRootScopeService,
       $timeout: ng.ITimeoutService,
       $log: ng.ILogService,
@@ -27,7 +28,7 @@ export class FakeUserController {
 
         var janus = new JanusService($q, $rootScope, $timeout, $log, toastr, config);
         var publisherStatus = new PublisherStatusTrackerService();
-        var videoRoom = new JanusVideoRoomService($q, $log, $timeout, $http, authService, janus, publisherStatus, toastr, config);
+        var videoRoom = new JanusVideoRoomService($window, $q, $log, $timeout, $http, authService, janus, publisherStatus, toastr, config);
 
         videoRoom.registerLocalUser(login, (stream: MediaStream) => {
           $log.debug('Attaching media stream for the fake user', login);

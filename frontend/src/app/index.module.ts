@@ -37,6 +37,8 @@ module frontend {
     'ui.router',
     'ngMaterial',
     'toastr',
+    // Important: use version 0.3.6 of ngContextMenu because of
+    // https://github.com/Wildhoney/ngContextMenu/issues/24
     'ngContextMenu',
     'ng-token-auth',
     'ngPromiseExtras',
