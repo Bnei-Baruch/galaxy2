@@ -22,12 +22,11 @@
           layout="column"
           layout-align="center start"
           flex></div>
-          {{user.isUnstableConnection}}
      <md-icon 
       layout="column" 
       aria-label="" 
-      ng-style="{'color': (user.isUnstableConnection == '2') ? 'red' : (user.isUnstableConnection == '1') ? 'orange': 'green'}" 
-      class="material-icons">signal_wifi_4_bar</md-icon>
+      ng-style="{'color': (user.connectionStatus == '3') ? 'red' : (user.connectionStatus == '2') ? 'orange': 'green'}" 
+      class="material-icons userConnectStatus">signal_wifi_4_bar</md-icon>
 
 
       </div>

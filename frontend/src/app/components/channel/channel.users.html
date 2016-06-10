@@ -23,7 +23,6 @@
       ng-click="vm.putUserToPreview(user)"
       ng-repeat="user in vm.users | filter : {joined: '', disabled: false} | orderBy : 'joined' track by user.id"
       class="userItem">
-
     <md-icon layout="column" aria-label="" ng-style="{color: '#4CAF50'}" class="material-icons ">lens</md-icon>   
 
     <div class="md-list-item-text" layout="column" flex>
@@ -34,8 +33,8 @@
      <md-icon 
       layout="column" 
       aria-label="" 
-      ng-style="{color: user.isUnstableConnection == '0'? 'green' user.isUnstableConnection == '1'? 'orange': 'red'}" 
-      class="material-icons ">signal_wifi_4_bar</md-icon>
+      ng-style="{'color': (user.connectionStatus == '3') ? 'red' : (user.connectionStatus == '2') ? 'orange': 'green'} 
+      class="material-icons userConnectStatus">signal_wifi_4_bar</md-icon>
 
     <ng-include src="'#removeUserTemplate'"></ng-include>
 
@@ -46,7 +45,6 @@
   <!-- Offline users -->
   <md-list-item ng-repeat="user in vm.users | filter : {joined: '!', disabled: '!'} | orderBy : 'title' track by user.id"
       class="userItem">
-
     <md-icon layout="column" aria-label="" ng-style="{color: '#9E9E9E'}" class="material-icons">lens</md-icon>
 
     <div class="md-list-item-text" layout="column" flex>

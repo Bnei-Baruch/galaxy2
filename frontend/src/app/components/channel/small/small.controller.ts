@@ -41,7 +41,9 @@ export class SmallChannelController extends BaseChannelController {
 
   userJoined(login: string) {
     super.userJoined(login);
-    this.addUserToComposites(login);
+    if (!this.usersByLogin[login].disabled) {
+      this.addUserToComposites (login);
+    }
   }
 
   userLeft(login: string ) {

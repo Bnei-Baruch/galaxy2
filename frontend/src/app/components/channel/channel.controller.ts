@@ -1,5 +1,5 @@
 import { JanusVideoRoomService } from '../janus/janusVideoRoom.service';
-import { PublisherStatusTrackerService, EnumInternetConnectionType } from '../janus/publisherStatusTracker.service';
+import { PublisherStatusTrackerService, InternetConnectionType } from '../janus/publisherStatusTracker.service';
 import { IUser } from '../auth/auth.service';
 
 /** @ngInject */
@@ -28,6 +28,7 @@ export class BaseChannelController {
   config: any;
   cssUserListHeightCalc: number;
   publisherStatus: PublisherStatusTrackerService;
+  internetConnectionType: InternetConnectionType;
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
@@ -69,7 +70,7 @@ export class BaseChannelController {
     this.bindHotkey();
 
     // check internet connection status of users
-    this.publisherStatus.setAllUsersStatus(this.usersByLogin, this.disableUser);
+    this.publisherStatus.setAllUsersStatus(this.usersByLogin);
   }
 
   setUserListHeight(element: ng.IAugmentedJQuery) {
@@ -91,7 +92,10 @@ export class BaseChannelController {
 
     // TODO: The timestamp should be better taken from Janus point of view
     user.joined = moment();
-    user.disabled = this.publisherStatus.connectStatusByLogin(login) === EnumInternetConnectionType.danger;
+    console.log(this.publisherStatus.connectStatusByLogin(login));
+    console.log('--');
+    console.log(InternetConnectionType.danger);
+    user.disabled = this.publisherStatus.connectStatusByLogin(login) === InternetConnectionType.danger;
   }
 
   userLeft(login: string) {

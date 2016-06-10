@@ -49,8 +49,7 @@
       <md-list-item
         ng-click="vm.putUserToPreview(user)"
         ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true} | orderBy : 'title') "
-        class="userItem"
-        ng-class="unstableConnection: user.isUnstableConnection">
+        class="userItem">
         <md-icon
           layout="column"
           aria-label=""
@@ -62,7 +61,12 @@
             <p ng-bind="user.title"
               class="{{user === vm.previewUser ? 'preview' : ''}}">
             </p>
-          </div>
+          </div>          
+         <md-icon 
+          layout="column" 
+          aria-label="" 
+          ng-style="{'color': (user.connectionStatus == '3') ? 'red' : (user.connectionStatus == '2') ? 'orange': 'green'}" 
+          class="material-icons userConnectStatus">signal_wifi_4_bar</md-icon>          
           <ng-include src="'#removeUserTemplate'"></ng-include>
         </md-list-item>
     </div>

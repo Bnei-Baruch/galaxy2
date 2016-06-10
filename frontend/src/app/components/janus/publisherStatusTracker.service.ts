@@ -19,10 +19,10 @@ enum DisconnectType {
   'sec_600_' = 5
 }
 
-export enum EnumInternetConnectionType {
-  danger = 1,
+export enum InternetConnectionType {
+  danger = 3,
   warning = 2,
-  normal = 3
+  normal = 1
 }
 
 /** @ngInject */
@@ -51,8 +51,8 @@ export class PublisherStatusTrackerService {
   // if after last disconnection was more than this time - it's a new session. 3.5 hours (morning lesson)
   private resetStatusInterval: number = 3.5 * 60 * 60 * 1000;
   // private localStorage: any;
-  private warningShablons: Array<RegExp> = [/1/, /22/, /3*3/];
-  private errorShablons: Array<RegExp> = [/11/, /222/, /3*3*3/];
+  private warningShablons: Array<RegExp> = [/1/, /22/, /333/];
+  private errorShablons: Array<RegExp> = [/11/, /222/, /3333/];
 
   constructor() {
     // this.login = login;
@@ -64,40 +64,44 @@ export class PublisherStatusTrackerService {
     }
   }
 
-  public onDisconnect(login: string): EnumInternetConnectionType {
+  public onDisconnect(login: string): InternetConnectionType {
     var status: IPublisherStatus = this.userStatusByLogin(login);
 
     var deltaMls: number = new Date().getTime() - new Date(status.lastDisconnectDate.toString()).getTime();
     status.lastDisconnectDate = new Date();
 
     if (deltaMls > this.resetStatusInterval) {
-      status = this.getDefaultStatusObj(login);
+      status = this.getDefaultStatus(login);
     }
     status.disconnectHistory = status.disconnectHistory + this.getDisconnectType(deltaMls);
     this.save(status, login);
     return this.verifyStatus(status.disconnectHistory);
   }
 
-  public setAllUsersStatus(usersByLogin: { [login: string]: IUser }, disableUserCallback: (user: IUser) => any): void {
+  public setAllUsersStatus(usersByLogin: { [login: string]: IUser }/*, disableUserCallback: (user: IUser) => any*/): void {
     var userStatusByLogin = JSON.parse(localStorage.getItem('publisherDeleteStatus'));
     for (var login in usersByLogin ) {
-      var connectionStaus: number = this.verifyStatus(userStatusByLogin[login].disconnectHistory);
       var user: IUser = usersByLogin[login];
+      var userStatus: IPublisherStatus = userStatusByLogin[login];
+      if (!userStatus) {
+        userStatus = this.getDefaultStatus(login);
+        this.save(userStatus, login);
+      }
+      user.connectionStatus = this.verifyStatus(userStatus.disconnectHistory);
 
-      user.connectionStatus = connectionStaus;
-      switch (connectionStaus) {
-        case EnumInternetConnectionType.danger:
-          disableUserCallback(user);
+      switch (user.connectionStatus) {
+        case InternetConnectionType.danger:
+          user.disabled = true;
           break;
-        case EnumInternetConnectionType.warning:
+        case InternetConnectionType.warning:
           break;
-        case EnumInternetConnectionType.normal:
+        case InternetConnectionType.normal:
           break;
       }
     }
   }
 
-  public connectStatusByLogin(login: string): EnumInternetConnectionType {
+  public connectStatusByLogin(login: string): InternetConnectionType {
     var userStatus = this.userStatusByLogin(login);
     return this.verifyStatus(userStatus.disconnectHistory);
   }
@@ -105,7 +109,7 @@ export class PublisherStatusTrackerService {
     var userStatusByLogin = JSON.parse(localStorage.getItem('publisherDeleteStatus'));
     var status: IPublisherStatus = userStatusByLogin[login];
     if ( status === undefined ) {
-      status = this.getDefaultStatusObj(login);
+      status = this.getDefaultStatus(login);
     }
     return status;
   }
@@ -116,7 +120,7 @@ export class PublisherStatusTrackerService {
     localStorage.setItem('publisherDeleteStatus', JSON.stringify(userStatusByLogin));
   }
 
-  private getDefaultStatusObj(login: string): IPublisherStatus {
+  private getDefaultStatus(login: string): IPublisherStatus {
     return {
       login: login,
       disconnectHistory: '',
@@ -138,7 +142,7 @@ export class PublisherStatusTrackerService {
     }
   }
 
-  private verifyStatus(history: string): EnumInternetConnectionType {
+  private verifyStatus(history: string): InternetConnectionType {
     if (
         this.errorShablons.some(
           function(regExp: RegExp) {
@@ -146,7 +150,7 @@ export class PublisherStatusTrackerService {
             return _has;
           })
        ) {
-         return EnumInternetConnectionType.danger;
+         return InternetConnectionType.danger;
        } else if (
            this.warningShablons.some(
              function(regExp: RegExp) {
@@ -154,8 +158,8 @@ export class PublisherStatusTrackerService {
                return _has;
              })
            ) {
-             return EnumInternetConnectionType.warning;
+             return InternetConnectionType.warning;
            }
-    return EnumInternetConnectionType.normal;
+    return InternetConnectionType.normal;
   }
 }
