@@ -47,8 +47,8 @@ export class PublisherStatusTrackerService {
   // if after last disconnection was more than this time - it's a new session. 3.5 hours (morning lesson)
   private resetStatusInterval: number = 3.5 * 60 * 60 * 1000;
   // private localStorage: any;
-  private warningShablons: Array<RegExp> = [/1/, /22/, /333/];
-  private errorShablons: Array<RegExp> = [/11/, /222/, /3333/];
+  private warningShablons: Array<RegExp> = [/1/, /[1-2]{2}/, /[1-3]{3}/,];
+  private errorShablons: Array<RegExp> = [/11/, /[1-2]{3}/, /[1-3]{4}/];
 
   constructor() {
     // this.login = login;
@@ -82,10 +82,15 @@ export class PublisherStatusTrackerService {
       }
       var user: IUser = usersByLogin[login];
       var userStatus: IPublisherStatus = userStatusByLogin[login];
-      if (!userStatus) {
-        userStatus = this.getDefaultStatus(login);
-        this.save(userStatus, login);
+
+      if (!userStatus ||
+          (new Date().getTime() - new Date(userStatus.lastDisconnectDate.toString()).getTime()) > this.resetStatusInterval) {
+        userStatusByLogin[login] = this.getDefaultStatus(login);
+        continue;
       }
+
+
+
       user.connectionStatus = this.verifyStatus(userStatus.disconnectHistory);
 
       switch (user.connectionStatus) {
@@ -97,7 +102,8 @@ export class PublisherStatusTrackerService {
         case InternetConnectionType.normal:
           break;
       }
-    }
+    }    
+    localStorage.setItem('publisherDeleteStatus', JSON.stringify(userStatusByLogin));
   }
 
   public connectStatusByLogin(login: string): InternetConnectionType {
