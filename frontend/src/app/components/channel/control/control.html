@@ -61,7 +61,12 @@
             <p ng-bind="user.title"
               class="{{user === vm.previewUser ? 'preview' : ''}}">
             </p>
-          </div>
+          </div>          
+         <md-icon 
+          layout="column" 
+          aria-label="" 
+          ng-style="{'color': (user.connectionStatus == '3') ? 'red' : (user.connectionStatus == '2') ? 'orange': 'green'}" 
+          class="material-icons userConnectStatus">wifi</md-icon>          
           <ng-include src="'#removeUserTemplate'"></ng-include>
         </md-list-item>
     </div>
