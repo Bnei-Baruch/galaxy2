@@ -4,6 +4,7 @@
 
 import { AuthService, IUser  } from '../auth/auth.service';
 import { JanusService } from './janus.service';
+import { PublisherStatusTrackerService } from './publisherStatusTracker.service';
 
 declare var escape: any;
 
@@ -12,7 +13,7 @@ interface IChannel {
   name: string;
   users: string[];
   joinedCallback: (login: string) => void;
-  leftCallback: (login: string) => void;
+  leftCallback: (login: string ) => void;
 }
 
 interface IShidurState {
@@ -26,7 +27,7 @@ interface IShidurState {
 interface IRemoteHandle {
   count: number;
   handle: any;  // Janus handle instance
-  stream?: MediaStream;
+          stream?: MediaStream;
 }
 
 interface IFeedForwardInfo {
@@ -62,6 +63,7 @@ export class JanusVideoRoomService {
       private $http: ng.IHttpService,
       private authService: AuthService,
       private janus: JanusService,
+      private publisherStatus: PublisherStatusTrackerService,
       private toastr: any,
       private config: any) {
 
@@ -110,7 +112,6 @@ export class JanusVideoRoomService {
   registerChannel(channel: IChannel) {
     this.channels[channel.name] = channel;
     this.updateChannelUsers(channel.name, channel.users);
-
     // TODO: User publishers list and call userJoined method
     // for relevant channels
   }
@@ -157,8 +158,8 @@ export class JanusVideoRoomService {
       success: (pluginHandle: any) => {
         handleInst = pluginHandle;
         var handleContainer: IRemoteHandle = {
-          count: 1,
-          handle: handleInst
+        count: 1,
+      handle: handleInst
         };
         this.remoteHandles[login] = handleContainer;
 
@@ -169,9 +170,9 @@ export class JanusVideoRoomService {
           handleInst.send({
             'message': {
               'request': 'join',
-              'room': this.config.janus.roomId,
-              'ptype': 'listener',
-              'feed': this.publishers[login].id
+            'room': this.config.janus.roomId,
+            'ptype': 'listener',
+            'feed': this.publishers[login].id
             },
             error: (response: any) => this.$log.error('Error joining remote handle as listener', response)
           });
@@ -192,7 +193,7 @@ export class JanusVideoRoomService {
       },
       onremotestream: (stream: MediaStream) => {
         this.$log.info('VideoRoom - got remote stream', login, stream);
-				this.$log.debug(`Remote feed:`, handleInst);
+        this.$log.debug(`Remote feed:`, handleInst);
 
         if (login in this.remoteHandles) {
           this.remoteHandles[login].stream = stream;
@@ -245,15 +246,18 @@ export class JanusVideoRoomService {
       var deferred = this.$q.defer();
 
       var forwardPromises = users.map((user: IUser, index: number) => {
-        var audioPort = (audioPorts || [])[index];
-        return this.stopAndStartSdiForwarding(shidurState, user, forwardIp, videoPorts[index], audioPort, changeTitle);
+      var audioPort = (audioPorts || [])[index];
+      return this.stopAndStartSdiForwarding(shidurState, user, forwardIp, videoPorts[index], audioPort, changeTitle);
       });
 
       (<any> this.$q).allSettled(forwardPromises).then(() => {
         this.$log.info('VideoRoom - all remote feeds forwarding finished');
         deferred.resolve(shidurState);
+      }, (error: string) => {
+        var error_title = 'One or more forwards failed';
+        var error_msg = `One or more forwards failed (${error}), saving shidur state ${JSON.stringify(shidurState)}.`;
+        this.$log.error(error_title, error_msg);
       });
-
       return deferred.promise;
     }).finally(() => {
       this.isForwardingInProgress = false;
@@ -268,8 +272,8 @@ export class JanusVideoRoomService {
     this.$log.info('VideoRoom - change title', title, port);
 
     var titleApiUrl = this.config.janus.titleApiUrl
-      .replace('%title%', escape(title))
-      .replace('%port%', port);
+    .replace('%title%', escape(title))
+    .replace('%port%', port);
 
     this.$http.get(titleApiUrl).error((data: any, st: any) => {
       this.$log.error('Error changing title', data, st);
@@ -324,53 +328,52 @@ export class JanusVideoRoomService {
       videoPort: number,
       audioPort: number,
       changeTitle: boolean): ng.IPromise<any> {
-    // Stop (if exists) => Start => Update state => Callback.
+        // Stop (if exists) => Start => Update state => Callback.
+        var deferred = this.$q.defer();
 
-    var deferred = this.$q.defer();
+        var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
+        this.stopSdiForwarding(prevForwardInfo).then(() => {
+          delete shidurState.janus.portsFeedForwardInfo[videoPort];
+          if (audioPort) {
+            delete shidurState.janus.portsFeedForwardInfo[audioPort];
+          }
 
-    var prevForwardInfo = shidurState.janus.portsFeedForwardInfo[videoPort];
-    this.stopSdiForwarding(prevForwardInfo).then(() => {
-      delete shidurState.janus.portsFeedForwardInfo[videoPort];
-      if (audioPort) {
-        delete shidurState.janus.portsFeedForwardInfo[audioPort];
-      }
+          if (user.login) {
+            if (user.login in this.publishers) {
+              this.startSdiForwarding(user.login, forwardIp, videoPort, audioPort).then((forwardInfo: IFeedForwardInfo) => {
+                shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
+                if (audioPort) {
+                  shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
+                }
+                // Forwarding succeeded, changing titles
+                if (changeTitle) {
+                  this.changeRemoteFeedTitle(user.title, videoPort);
+                }
 
-      if (user.login) {
-        if (user.login in this.publishers) {
-          this.startSdiForwarding(user.login, forwardIp, videoPort, audioPort).then((forwardInfo: IFeedForwardInfo) => {
-            shidurState.janus.portsFeedForwardInfo[videoPort] = forwardInfo;
-            if (audioPort) {
-              shidurState.janus.portsFeedForwardInfo[audioPort] = forwardInfo;
+                deferred.resolve();
+              }, () => {
+                var error = 'VideoRoom - error starting SDI forward.';
+                this.$log.error(error);
+                deferred.reject(error);
+              });
+            } else {
+              this.$log.error('Could not find publisher with login', user.login);
+              var error = `Could not find publisher with login ${user.login}`;
+              this.toastr.error(error);
+              deferred.reject(error);
             }
-            // Forwarding succeeded, changing titles
-            if (changeTitle) {
-              this.changeRemoteFeedTitle(user.title, videoPort);
-            }
-
-            deferred.resolve();
-          }, () => {
-            var error = 'VideoRoom - error starting SDI forward.';
+          } else {
+            var error = 'VideoRoom - error no login, cannot start SDI forward.';
             this.$log.error(error);
             deferred.reject(error);
-          });
-        } else {
-          this.$log.error('Could not find publisher with login', user.login);
-          var error = `Could not find publisher with login ${user.login}`;
-          this.toastr.error(error);
+          }
+        }, (error: string) => {
+          this.$log.error(error);
           deferred.reject(error);
-        }
-      } else {
-        var error = 'VideoRoom - error no login, cannot start SDI forward.';
-        this.$log.error(error);
-        deferred.reject(error);
-      }
-    }, (error: string) => {
-      this.$log.error(error);
-      deferred.reject(error);
-    });
+        });
 
-    return deferred.promise;
-  }
+        return deferred.promise;
+      }
 
   // Handles changes in publishers state and updates registered clients (channel) if needed.
   private updatePublishersAndTriggerJoined(publishers: any[]): void {
@@ -397,6 +400,7 @@ export class JanusVideoRoomService {
         channel.joinedCallback(p.display);
       });
     });
+
   }
 
   // Helper method to call client (channel) on user events,
@@ -414,10 +418,7 @@ export class JanusVideoRoomService {
     }
   }
 
-  // Cleans up when publisher is leaving. Call relevant channels with leftCallback.
-  private deletePublisherByJanusId(janusId: string): void {
-    this.$log.info('VideoRoom - delete publisher', janusId);
-
+  private publisherIdToLogin(janusId: number) {
     var login = null;
     for (var key in this.publishers) {
       if (this.publishers.hasOwnProperty(key)) {
@@ -428,7 +429,11 @@ export class JanusVideoRoomService {
         }
       }
     }
+    return login;
+  }
 
+  // Cleans up when publisher is leaving. Call relevant channels with leftCallback.
+  private deletePublisher(login: string): void {
     if (login) {
       this.$log.info('VideoRoom - deleting', login);
       delete this.publishers[login];
@@ -438,10 +443,12 @@ export class JanusVideoRoomService {
 
       // Update channels on leaving user
       this.applyOnUserChannels(login, (channel: IChannel) => {
-        channel.leftCallback(login);
+        channel.leftCallback( login );
       });
     }
   }
+
+
 
   /* Local Handle Methods */
 
@@ -461,9 +468,9 @@ export class JanusVideoRoomService {
           this.localHandle.send({
             'message': {
               request: 'join',
-              room: this.config.janus.roomId,
-              ptype: 'publisher',
-              display: this.localUserLogin
+            room: this.config.janus.roomId,
+            ptype: 'publisher',
+            display: this.localUserLogin
             },
             error: (response: any) => {
               this.$log.error('Error joining local handle', response);
@@ -545,9 +552,12 @@ export class JanusVideoRoomService {
         if (message.publishers) {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
-          this.deletePublisherByJanusId(message.leaving);
+          this.$log.info('VideoRoom - delete publisher', message.leaving);
+          this.deletePublisher(this.publisherIdToLogin(message.leaving));
         } else if (message.unpublished) {
-          this.deletePublisherByJanusId(message.unpublished);
+          var login: string = this.publisherIdToLogin(message.unpublished);
+          this.publisherStatus.onDisconnect(login);
+          this.deletePublisher(login);
         }
         break;
     }
@@ -576,7 +586,7 @@ export class JanusVideoRoomService {
 
   private handleMultipleLogins(message: any): boolean {
     var alreadyLoggedIn = message.publishers.filter((publisher: any) => {
-      return publisher.display === this.localUserLogin;
+    return publisher.display === this.localUserLogin;
     });
 
     if (alreadyLoggedIn.length) {
@@ -604,10 +614,10 @@ export class JanusVideoRoomService {
       media: {
         // Publishers are sendonly
         audioRecv: false,
-        videoRecv: false,
-        audioSend: true,
-        videoSend: true,
-        video: 'stdres-16:9'
+      videoRecv: false,
+      audioSend: true,
+      videoSend: true,
+      video: 'stdres-16:9'
       },
       success: (jsep: any) => {
         this.$log.info('VideoRoom - published local feed, configuring.');
@@ -620,21 +630,21 @@ export class JanusVideoRoomService {
       },
       error: (response: any) => {
         if (response === 'No capture device found') {
-          this.toastr.error('We can\'t see you, please connect your camera.');
+          this.toastr.error ('We can\'t see you, please connect your camera.');
         } else if (response.name === 'PermissionDeniedError' || response.name === 'PermissionDismissedError') {
           var msg = `Error: ${response.message} <br />
-            Please allow media permissions.
-            <a href="https://support.google.com/chrome/answer/2693767?hl=en">
-              For more details.
-            </a>`;
+          Please allow media permissions.
+          <a href="https://support.google.com/chrome/answer/2693767?hl=en">
+          For more details.
+          </a>`;
           this.toastr.error(msg);
         } else if (response.name === 'MediaDeviceNotSupported') {
           this.$log.error(response.name, response);
           this.toastr.error(`Your browser doesn't support video device. </br>
-            Please use
-            <a href="//www.google.com/chrome/browser/desktop/">
+              Please use
+              <a href="//www.google.com/chrome/browser/desktop/">
               Chrome
-            </a>.`);
+              </a>.`);
         } else if (response !== undefined) {
           // Don't do nothing if was resolved before
           this.$log.error('Error creating SDP offer', response);
@@ -689,39 +699,39 @@ export class JanusVideoRoomService {
     previous.then(() => {
 
       this.$http.get(this.config.backendUri + '/rest/shidur_state')
-        .error((data: string, status: number) => {
-          this.$log.error('Error fetching shidur state', status, data);
-          deferred.reject('Fetching shidur state returns error: ' + status + ' ' + data);
-        })
-        .success((shidurState: IShidurState) => {
+      .error((data: string, status: number) => {
+        this.$log.error('Error fetching shidur state', status, data);
+        deferred.reject('Fetching shidur state returns error: ' + status + ' ' + data);
+      })
+    .success((shidurState: IShidurState) => {
 
-          if (!shidurState.janus) {
-            shidurState.janus = <any>{};
-          }
-          if (!shidurState.janus.portsFeedForwardInfo) {
-            shidurState.janus.portsFeedForwardInfo = <any>{};
-          }
+      if (!shidurState.janus) {
+        shidurState.janus = <any>{};
+      }
+      if (!shidurState.janus.portsFeedForwardInfo) {
+        shidurState.janus.portsFeedForwardInfo = <any>{};
+      }
 
-          // Post shidur state to the backend
-          var updateShidurState = () => {
-            return this.$http.post(this.config.backendUri + '/rest/shidur_state', shidurState)
-              .error((data: string, status: number) => {
-                this.$log.error('Error saving shidur state', status, data);
-                deferred.reject(`Updating shidur state returns error: ${status} ${data}`);
-              });
-          };
+      // Post shidur state to the backend
+      var updateShidurState = () => {
+      return this.$http.post(this.config.backendUri + '/rest/shidur_state', shidurState)
+      .error((data: string, status: number) => {
+        this.$log.error('Error saving shidur state', status, data);
+        deferred.reject(`Updating shidur state returns error: ${status} ${data}`);
+      });
+      };
 
-          // Do something with shidur state and then update it
-          useShidurState(shidurState).then(() => {
-            updateShidurState().success(() => {
-              deferred.resolve();
-            });
-          }, (errMsg: string) => {
-            updateShidurState().success(() => {
-              deferred.reject(`Failed (${errMsg}) saving shidur state anyway.`);
-            });
-          });
+      // Do something with shidur state and then update it
+      useShidurState(shidurState).then(() => {
+        updateShidurState().success(() => {
+          deferred.resolve();
         });
+      }, (errMsg: string) => {
+        updateShidurState().success(() => {
+          deferred.reject(`Failed (${errMsg}) saving shidur state anyway.`);
+        });
+      });
+    });
 
     });
 
@@ -731,13 +741,14 @@ export class JanusVideoRoomService {
   private startSdiForwarding(login: string, forwardIp: string, videoPort: number, audioPort: number): ng.IPromise<any> {
     var deferred = this.$q.defer();
 
+    console.log(JSON.stringify(this.publishers));
     var forward: any = {
-      request: 'rtp_forward',
-      publisher_id: this.publishers[login].id,
-      room: this.config.janus.roomId,
-      secret: this.config.janus.secret,
-      host: forwardIp,
-      video_port: videoPort
+    request: 'rtp_forward',
+    publisher_id: this.publishers[login].id,
+    room: this.config.janus.roomId,
+    secret: this.config.janus.secret,
+    host: forwardIp,
+    video_port: videoPort
     };
     if (audioPort) {
       forward.audio_port = audioPort;
@@ -754,9 +765,9 @@ export class JanusVideoRoomService {
           this.$log.debug(JSON.stringify(data));
 
           var forwardInfo = <IFeedForwardInfo> {
-            publisherId: data.publisher_id,
-            videoStreamId: data.rtp_stream.video_stream_id,
-            audioStreamId: data.rtp_stream.audio_stream_id
+          publisherId: data.publisher_id,
+      videoStreamId: data.rtp_stream.video_stream_id,
+      audioStreamId: data.rtp_stream.audio_stream_id
           };
           deferred.resolve(forwardInfo);
         } else {
@@ -780,10 +791,10 @@ export class JanusVideoRoomService {
     this.localHandle.send({
       message: {
         request: 'stop_rtp_forward',
-        stream_id: streamId,
-        publisher_id: forwardInfo.publisherId,
-        room: this.config.janus.roomId,
-        secret: this.config.janus.secret
+      stream_id: streamId,
+      publisher_id: forwardInfo.publisherId,
+      room: this.config.janus.roomId,
+      secret: this.config.janus.secret
       },
       success: (data: any) => {
         deferred.resolve();

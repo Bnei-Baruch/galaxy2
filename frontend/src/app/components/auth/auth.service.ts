@@ -18,6 +18,7 @@ export interface IUser {
   audioEnabled?: boolean;
   completesComposite?: boolean;
   disabled?: boolean;
+  connectionStatus?: number;
 }
 
 

@@ -1,6 +1,7 @@
 import { AuthService } from '../components/auth/auth.service';
 import { JanusService } from '../components/janus/janus.service';
 import { JanusVideoRoomService } from '../components/janus/janusVideoRoom.service';
+import { PublisherStatusTrackerService } from '../components/janus/publisherStatusTracker.service';
 
 declare var attachMediaStream: any;
 
@@ -26,7 +27,8 @@ export class FakeUserController {
         var mediaElement = <HTMLMediaElement>document.querySelector(`video[data-login="${login}"]`);
 
         var janus = new JanusService($q, $rootScope, $timeout, $log, toastr, config);
-        var videoRoom = new JanusVideoRoomService($window, $q, $log, $timeout, $http, authService, janus, toastr, config);
+        var publisherStatus = new PublisherStatusTrackerService();
+        var videoRoom = new JanusVideoRoomService($window, $q, $log, $timeout, $http, authService, janus, publisherStatus, toastr, config);
 
         videoRoom.registerLocalUser(login, (stream: MediaStream) => {
           $log.debug('Attaching media stream for the fake user', login);
