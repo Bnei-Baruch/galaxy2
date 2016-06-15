@@ -255,7 +255,6 @@ export class JanusVideoRoomService {
 
     previousCompleted.finally(() => {
       this.getForwarders().then((portsForwardInfo: IPortsForwardInfo) => {
-        debugger;
 
         var forwardPromises = users.map((user: IUser, index: number) => {
           var audioPort = (audioPorts || [])[index];
@@ -706,10 +705,10 @@ export class JanusVideoRoomService {
 
         data.rtp_forwarders.forEach((rtpForwarder: any) => {
 
-          rtpForwarder.forEach((forwarder: any) => {
+          rtpForwarder.rtp_forwarder.forEach((forwarder: any) => {
 
-            portsForwardInfo[forwarder.rtp_forwarder.port] = {
-              publisherId: forwarder.publisher_id,
+            portsForwardInfo[forwarder.port] = {
+              publisherId: rtpForwarder.publisher_id,
               videoStreamId: forwarder.video_stream_id,
               audioStreamId: forwarder.audio_stream_id
             };
