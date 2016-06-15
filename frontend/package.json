@@ -4,6 +4,10 @@
   "scripts": {
     "test": "gulp test"
   },
+  "yargs": {
+    "camel-case-expansion": true,
+    "parse-numbers": true
+  },
   "devDependencies": {
     "awesome-typescript-loader": "~0.14.0",
     "browser-sync": "~2.9.11",
@@ -60,5 +64,8 @@
   },
   "engines": {
     "node": ">=0.10.0"
+  },
+  "dependencies": {
+    "yargs": "^4.7.1"
   }
 }
