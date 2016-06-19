@@ -17,7 +17,8 @@ export class FakeUserController {
       $http: ng.IHttpService,
       authService: AuthService,
       toastr: any,
-      config: any) {
+      config: any,
+      $injector: any) {
 
     this.fakeUsers = ['ashdod', 'arava', 'eilat', 'afula', 'naharia', 'ashkelon', 'arad'];
     // this.fakeUsers = ['afula', 'arad', 'guadalajara', 'dnepropetrovsk', 'krasnodar', 'krasnoyarsk'];
@@ -27,7 +28,7 @@ export class FakeUserController {
         var mediaElement = <HTMLMediaElement>document.querySelector(`video[data-login="${login}"]`);
 
         var janus = new JanusService($q, $rootScope, $timeout, $log, toastr, config);
-        var publisherStatus = new PublisherStatusTrackerService();
+        var publisherStatus = new PublisherStatusTrackerService($injector);
         var videoRoom = new JanusVideoRoomService($window, $q, $log, $timeout, $http, authService, janus, publisherStatus, toastr, config);
 
         videoRoom.registerLocalUser(login, (stream: MediaStream) => {

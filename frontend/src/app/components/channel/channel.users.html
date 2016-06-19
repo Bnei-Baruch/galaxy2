@@ -33,8 +33,8 @@
      <md-icon 
       layout="column" 
       aria-label="" 
-      ng-style="{'color': (user.connectionStatus == '3') ? 'red' : (user.connectionStatus == '2') ? 'orange': 'green'}"
-      class="material-icons userConnectStatus">wifi</md-icon>
+      ng-class="(user.connectionStatus == '3') ? 'danger' : (user.connectionStatus == '2') ? 'warning': 'normal'" 
+      class="material-icons userConnectStatus">perm_scan_wifi</md-icon>
 
     <ng-include src="'#removeUserTemplate'"></ng-include>
 

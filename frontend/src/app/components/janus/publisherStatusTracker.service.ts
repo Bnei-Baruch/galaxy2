@@ -1,24 +1,5 @@
 import { IUser } from '../auth/auth.service';
 
-interface IPublisherStatus {
-  login: string;
-  disconnectHistory: string;
-  lastDisconnectDate: Date;
-}
-
-/*
-   for usually count disconnections with delta > once by any minuts (can be > 1 and < 100)
-   for onceMin - with  5 min > delta > 1 min
-   for onceSec  -  1 min > delta
- */
-enum DisconnectType {
-  'sec_0_1' = 1,
-  'sec_1_10' = 2,
-  'sec_10_60' = 3,
-  'sec_60_600' = 4,
-  'sec_600_' = 5
-}
-
 export enum InternetConnectionType {
   danger = 3,
   warning = 2,
@@ -29,69 +10,47 @@ export enum InternetConnectionType {
 export class PublisherStatusTrackerService {
   /*
      This class keeps track of how  many times a group disconnect in a given tine interval.status
-
-     connectStatus: InternetConnectionType  = status of user internet stable
-
-     disconnectHistory: 1234
-     where every letter - disconnection state (by DisconnectType )
-
-     for checking status use list of Regural Expression (regShablons)
-
    */
 
 
-
-
-  // minimum disconnections of user, aftre that need to disconnect user (minut/disconnect)
-  private minCoefDisconnect: number;
   // if after last disconnection was more than this time - it's a new session. 3.5 hours (morning lesson)
-  private resetStatusInterval: number = 3.5 * 60 * 60 * 1000;
-  // private localStorage: any;
-  private warningShablons: Array<RegExp> = [/1/, /[1-2]{2}/, /[1-3]{3}/,];
-  private errorShablons: Array<RegExp> = [/11/, /[1-2]{3}/, /[1-3]{4}/];
+  private resetStatusInterval: any = moment({ hour: 3, minute: 30 });
+  private toastr: any;
+  constructor($injector: any) {
+    this.toastr = $injector.get('toastr');
 
-  constructor() {
-    // this.login = login;
-    // once in 5 minuts
-    this.minCoefDisconnect = 5 / 1;
-
-    if ( !localStorage.getItem( 'publisherDeleteStatus' ) ) {
-      localStorage.setItem('publisherDeleteStatus', '{}');
+    if (!localStorage.getItem('disconnectHistoryByLogin')) {
+      localStorage.setItem('disconnectHistoryByLogin', '{}');
     }
   }
 
-  public onDisconnect(login: string): InternetConnectionType {
-    var status: IPublisherStatus = this.userStatusByLogin(login);
+  public disconnect(login: string): InternetConnectionType {
+    var history: Array<any> = this.userStatusByLogin(login);
+    history.push(moment());
+    this.save(history, login);
 
-    var deltaMls: number = new Date().getTime() - new Date(status.lastDisconnectDate.toString()).getTime();
-    status.lastDisconnectDate = new Date();
-
-    if (deltaMls > this.resetStatusInterval) {
-      status = this.getDefaultStatus(login);
-    }
-    status.disconnectHistory = status.disconnectHistory + this.getDisconnectType(deltaMls);
-    this.save(status, login);
-    return this.verifyStatus(status.disconnectHistory);
+    return this.statusByHistory(history, login);
   }
-
+/**
+Check all users statuses on brouser reload. 
+*/
   public setAllUsersStatus(usersByLogin: { [login: string]: IUser }/*, disableUserCallback: (user: IUser) => any*/): void {
-    var userStatusByLogin = JSON.parse(localStorage.getItem('publisherDeleteStatus'));
+    var historyByLogin = JSON.parse(localStorage.getItem('disconnectHistoryByLogin'));
     for (var login in usersByLogin ) {
       if (!usersByLogin.hasOwnProperty(login)) {
         continue;
       }
-      var user: IUser = usersByLogin[login];
-      var userStatus: IPublisherStatus = userStatusByLogin[login];
 
-      if (!userStatus ||
-          (new Date().getTime() - new Date(userStatus.lastDisconnectDate.toString()).getTime()) > this.resetStatusInterval) {
-        userStatusByLogin[login] = this.getDefaultStatus(login);
+      var user: IUser = usersByLogin[login];
+      var userHistory: Array<any> = historyByLogin[login] || [];
+      var lastDisconnect: any = userHistory[userHistory.length - 1];
+
+      if (!lastDisconnect || moment().startOf(lastDisconnect).fromNow() > this.resetStatusInterval) {
+        userHistory = [];
         continue;
       }
 
-
-
-      user.connectionStatus = this.verifyStatus(userStatus.disconnectHistory);
+      user.connectionStatus = this.statusByHistory(userHistory, login);
 
       switch (user.connectionStatus) {
         case InternetConnectionType.danger:
@@ -102,69 +61,41 @@ export class PublisherStatusTrackerService {
         case InternetConnectionType.normal:
           break;
       }
-    }    
-    localStorage.setItem('publisherDeleteStatus', JSON.stringify(userStatusByLogin));
+    }
+    localStorage.setItem('disconnectHistoryByLogin', JSON.stringify(historyByLogin));
   }
 
   public connectStatusByLogin(login: string): InternetConnectionType {
-    var userStatus = this.userStatusByLogin(login);
-    return this.verifyStatus(userStatus.disconnectHistory);
+    var history: Array<any> = this.userStatusByLogin(login);
+    return this.statusByHistory(history, login);
   }
-  private userStatusByLogin(login: string): IPublisherStatus {
-    var userStatusByLogin = JSON.parse(localStorage.getItem('publisherDeleteStatus'));
-    var status: IPublisherStatus = userStatusByLogin[login];
-    if ( status === undefined ) {
-      status = this.getDefaultStatus(login);
+
+  private save(history: Array<any>, login: string): void {
+    if (history.length > 100) {
+      history.splice(0, 10);
     }
-    return status;
+    var historyByLogin = JSON.parse(localStorage.getItem('disconnectHistoryByLogin'));
+    historyByLogin[login] = history;
+    localStorage.setItem('disconnectHistoryByLogin', JSON.stringify(historyByLogin));
   }
 
-  private save(newStatus: IPublisherStatus, login: string): void {
-    var userStatusByLogin = JSON.parse(localStorage.getItem('publisherDeleteStatus'));
-    userStatusByLogin[login] = newStatus;
-    localStorage.setItem('publisherDeleteStatus', JSON.stringify(userStatusByLogin));
-  }
-
-  private getDefaultStatus(login: string): IPublisherStatus {
-    return {
-      login: login,
-      disconnectHistory: '',
-      lastDisconnectDate: new Date()
-    };
-  }
-
-  private getDisconnectType(delta: number): string {
-    if (delta < 1000) {
-      return DisconnectType.sec_0_1.toString();
-    } else if (delta < 10 * 1000) {
-      return DisconnectType.sec_1_10.toString();
-    } else if (delta < 60 * 1000) {
-      return DisconnectType.sec_10_60.toString();
-    } else if (delta < 600 * 1000) {
-      return DisconnectType.sec_60_600.toString();
-    } else {
-      return DisconnectType.sec_600_.toString();
+  private statusByHistory(history: Array<any>, login: string): InternetConnectionType {
+    if (this.checkDisconnects(history, moment({ minute: -1 }), 3)) {
+      this.toastr.error(`The user - ${login} was disabled, The reason - internet connection is not stable.`);
+      return InternetConnectionType.danger;
+    } else if (this.checkDisconnects(history, moment({ minute: -10 }), 3)) {
+      return InternetConnectionType.warning;
     }
-  }
-
-  private verifyStatus(history: string): InternetConnectionType {
-    if (
-        this.errorShablons.some(
-          function(regExp: RegExp) {
-            var _has = regExp.test(history);
-            return _has;
-          })
-       ) {
-         return InternetConnectionType.danger;
-       } else if (
-           this.warningShablons.some(
-             function(regExp: RegExp) {
-               var _has = regExp.test(history);
-               return _has;
-             })
-           ) {
-             return InternetConnectionType.warning;
-           }
     return InternetConnectionType.normal;
+  }
+
+  private checkDisconnects(history: Array<any>, startOn: any, occurences: number): boolean {
+    var disconnectsWithin = history.filter((ts: string) => { return moment(ts).isAfter(startOn); });
+    return disconnectsWithin.length >= occurences;
+  }
+
+  private userStatusByLogin(login: string): Array<any> {
+    var userStatusByLogin = JSON.parse(localStorage.getItem('disconnectHistoryByLogin'));
+    return userStatusByLogin[login] || [];
   }
 }
