@@ -1,5 +1,5 @@
 import { PubSubService } from '../../pubSub/pubSub.service';
-import {IUser} from "../../auth/auth.service";
+import {IUser} from '../../auth/auth.service';
 
 /* @ngInject */
 export class UserContextMenuController {
@@ -20,11 +20,11 @@ export class UserContextMenuController {
       this.toastr.error(`Error reloading users in ${channelName} channel`);
     });
   }
-  
+
   reloadUser(user: IUser) {
     this.$log.debug('Reload user', user.login);
     this.pubSub.client.publish('/users/' + user.login, {
-      message: 'reload',
+      message: 'reload'
     }).then(() => {
       this.toastr.info(`Reloading ${user.title}`);
     }, (error: any) => {
