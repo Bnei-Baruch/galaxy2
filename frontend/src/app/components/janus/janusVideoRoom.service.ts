@@ -56,14 +56,14 @@ export class JanusVideoRoomService {
   localStream: MediaStream;
 
   constructor(private $q: ng.IQService,
-      private $log: ng.ILogService,
-      private $timeout: ng.ITimeoutService,
-      private $http: ng.IHttpService,
-      private authService: AuthService,
-      private janus: JanusService,
-      private publisherStatus: PublisherStatusTrackerService,
-      private toastr: any,
-      private config: any) {
+    private $log: ng.ILogService,
+    private $timeout: ng.ITimeoutService,
+    private $http: ng.IHttpService,
+    private authService: AuthService,
+    private janus: JanusService,
+    private publisherStatus: PublisherStatusTrackerService,
+    private toastr: any,
+    private config: any) {
 
     this.localHandleAttached = this.attachLocalHandle();
     // Create already resolved state by default
@@ -236,7 +236,7 @@ export class JanusVideoRoomService {
         return this.stopAndStartSdiForwarding(shidurState, user, forwardIp, videoPorts[index], audioPort, changeTitle);
       });
 
-      (<any> this.$q).allSettled(forwardPromises).then(() => {
+      (<any>this.$q).allSettled(forwardPromises).then(() => {
         this.$log.info('VideoRoom - all remote feeds forwarding finished');
         deferred.resolve(shidurState);
       });
@@ -304,11 +304,11 @@ export class JanusVideoRoomService {
   }
 
   private stopAndStartSdiForwarding(shidurState: IShidurState,
-      user: IUser,
-      forwardIp: string,
-      videoPort: number,
-      audioPort: number,
-      changeTitle: boolean): ng.IPromise<any> {
+    user: IUser,
+    forwardIp: string,
+    videoPort: number,
+    audioPort: number,
+    changeTitle: boolean): ng.IPromise<any> {
     // Stop (if exists) => Start => Update state => Callback.
 
     var deferred = this.$q.defer();
@@ -399,7 +399,7 @@ export class JanusVideoRoomService {
     }
   }
 
-  
+
   private publisherIdToLogin(janusId: number) {
     var login = null;
     for (var key in this.publishers) {
@@ -611,7 +611,7 @@ export class JanusVideoRoomService {
         this.$log.info('VideoRoom - published local feed, configuring.');
         this.$log.debug(jsep);
         this.localHandle.send({
-          'message': {'request': 'configure', 'audio': true, 'video': true},
+          'message': { 'request': 'configure', 'audio': true, 'video': true },
           'jsep': jsep,
           error: (response: any) => this.$log.error('Error configuring local feed', response)
         });
@@ -665,7 +665,7 @@ export class JanusVideoRoomService {
           this.$log.info('VideoRoom - got SDP, starting...', handle.getId());
           this.$log.debug(jsep);
           handle.send({
-            'message': {'request': 'start', 'room': this.config.janus.roomId},
+            'message': { 'request': 'start', 'room': this.config.janus.roomId },
             'jsep': jsep,
             error: (response: any) => this.$log.error('Error starting videoroom SDP answer', response)
           });
@@ -751,7 +751,7 @@ export class JanusVideoRoomService {
           this.$log.debug('VideoRoom - got rtp forward audio', data.rtp_stream.audio_stream_id);
           this.$log.debug(JSON.stringify(data));
 
-          var forwardInfo = <IFeedForwardInfo> {
+          var forwardInfo = <IFeedForwardInfo>{
             publisherId: data.publisher_id,
             videoStreamId: data.rtp_stream.video_stream_id,
             audioStreamId: data.rtp_stream.audio_stream_id
