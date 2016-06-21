@@ -181,7 +181,7 @@ export class JanusVideoRoomService {
       },
       onremotestream: (stream: MediaStream) => {
         this.$log.info('VideoRoom - got remote stream', login, stream);
-				this.$log.debug(`Remote feed:`, handleInst);
+        this.$log.debug(`Remote feed:`, handleInst);
 
         if (login in this.remoteHandles) {
           this.remoteHandles[login].stream = stream;
@@ -399,6 +399,7 @@ export class JanusVideoRoomService {
     }
   }
 
+  
   private publisherIdToLogin(janusId: number) {
     var login = null;
     for (var key in this.publishers) {
@@ -531,11 +532,9 @@ export class JanusVideoRoomService {
         if (message.publishers) {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
-          this.deletePublisher(this.publisherIdToLogin(message.leaving));
+          this.deletePublisherByJanusId(message.leaving);
         } else if (message.unpublished) {
-          var login: string = this.publisherIdToLogin(message.unpublished);
-          this.publisherStatus.disconnect(login);
-          this.deletePublisher(login);
+          this.deletePublisherByJanusId(message.unpublished);
         }
         break;
     }
@@ -558,6 +557,17 @@ export class JanusVideoRoomService {
       case 'destroyed':
         this.$log.error('VideoRoom - room destroyed', message);
         this.toastr.error('Oh crap! video room has been destroyed');
+        break;
+      case 'event':
+        if (message.publishers) {
+          this.updatePublishersAndTriggerJoined(message.publishers);
+        } else if (message.leaving) {
+          this.deletePublisher(this.publisherIdToLogin(message.leaving));
+        } else if (message.unpublished) {
+          var login: string = this.publisherIdToLogin(message.unpublished);
+          this.publisherStatus.disconnect(login);
+          this.deletePublisher(login);
+        }
         break;
     }
   }
@@ -650,7 +660,7 @@ export class JanusVideoRoomService {
       // noinspection TypeScriptValidateJSTypes
       handle.createAnswer({
         jsep: jsep,
-        media: { audioSend: false, videoSend: false },	// We want recvonly audio/video
+        media: { audioSend: false, videoSend: false },  // We want recvonly audio/video
         success: (jsep: any) => {
           this.$log.info('VideoRoom - got SDP, starting...', handle.getId());
           this.$log.debug(jsep);
