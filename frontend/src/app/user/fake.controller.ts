@@ -9,19 +9,17 @@ declare var attachMediaStream: any;
 export class FakeUserController {
   fakeUsers: string[];
 
-  constructor ($window: ng.IWindowService,
-      $q: ng.IQService,
-      $rootScope: ng.IRootScopeService,
-      $timeout: ng.ITimeoutService,
-      $log: ng.ILogService,
-      $http: ng.IHttpService,
-      authService: AuthService,
-      toastr: any,
-      config: any,
-      $injector: any) {
+  constructor($q: ng.IQService,
+    $rootScope: ng.IRootScopeService,
+    $timeout: ng.ITimeoutService,
+    $log: ng.ILogService,
+    $http: ng.IHttpService,
+    authService: AuthService,
+    toastr: any,
+    config: any,
+    $injector: any) {
 
-    this.fakeUsers = ['ashdod', 'arava', 'afula', 'arad'];
-    // this.fakeUsers = ['ashdod', 'arava', 'eilat', 'afula', 'naharia', 'ashkelon', 'arad'];
+    this.fakeUsers = ['ashdod', 'arava', 'eilat', 'afula', 'naharia', 'ashkelon', 'arad'];
     // this.fakeUsers = ['afula', 'arad', 'guadalajara', 'dnepropetrovsk', 'krasnodar', 'krasnoyarsk'];
 
     $timeout(() => {
@@ -30,7 +28,7 @@ export class FakeUserController {
 
         var janus = new JanusService($q, $rootScope, $timeout, $log, toastr, config);
         var publisherStatus = new PublisherStatusTrackerService($injector);
-        var videoRoom = new JanusVideoRoomService($window, $q, $log, $timeout, $http, authService, janus, publisherStatus, toastr, config);
+        var videoRoom = new JanusVideoRoomService($q, $log, $timeout, $http, authService, janus, toastr, config);
 
         videoRoom.registerLocalUser(login, (stream: MediaStream) => {
           $log.debug('Attaching media stream for the fake user', login);
