@@ -115,7 +115,7 @@ export class SingleUserChannelController extends BaseChannelController {
   }
 
   isReadyToSwitch() {
-    if (!this.previewUser || !this.isForwarded.program) {
+    if (!this.previewUser || this.videoRoom.isForwardingInProgress) {
       return false;
     }
 
@@ -131,8 +131,6 @@ export class SingleUserChannelController extends BaseChannelController {
     // Forward program to SDI and change video title
     var sdiPorts = this.config.janus.sdiPorts[this.name];
 
-    this.isForwarded.program = false;
-
     var audioPorts;
     if (sdiPorts.audio) {
       audioPorts = [sdiPorts.audio];
@@ -141,9 +139,7 @@ export class SingleUserChannelController extends BaseChannelController {
     }
 
     return this.videoRoom.forwardRemoteFeeds([this.programUser], sdiPorts.forwardIp, [sdiPorts.video.program], audioPorts, true)
-      .then(() => {
-        this.isForwarded.program = true;
-      }, (err: string) => {
+      .catch((err: string) => {
         this.$log.error('Error forwarding program to SDI', this.programUser.login, err);
         var error = `Error forwarding program to SDI ${this.programUser.login} error is ${err}`;
         this.toastr.error(error);
