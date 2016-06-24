@@ -69,7 +69,7 @@ export class AuthService {
 
   logout() {
     return this.$auth.signOut()
-      .then(this.onLogout)
+      .then(this.onLogout.bind(this))
       .catch((resp: any) => {
         this.$log.error('Error signing out', resp);
         this.toastr.error(`Unable to sign out: ${resp.errors}`);
@@ -91,6 +91,6 @@ export class AuthService {
   }
 
   onLogout() {
-    this.Rollbar.configure({payload: {person: null}});
+    this.Rollbar.Rollbar.configure({payload: {person: null}});
   }
 }

@@ -17,37 +17,31 @@
 <md-list class="users" dragula="'users'">
 
   <!-- Online users -->
-  <md-list-item ng-click="vm.putUserToPreview(user)"
-    ng-repeat="user in vm.users | filter : {joined: '', disabled: false} | orderBy : 'joined' track by user.id"
-    dragula-model="vm.users"
-    class="userItem">
+  <md-list-item
+      data-context-menu="app/components/channel/user-context-menu/user-context-menu.html"
+      ng-controller="UserContextMenuController as contextMenu"
+      ng-click="vm.putUserToPreview(user)"
+      ng-repeat="user in vm.users | filter : {joined: '', disabled: false} | orderBy : 'joined' track by user.id"
+      class="userItem">
+
     <md-icon layout="column" aria-label="" ng-style="{color: '#4CAF50'}" class="material-icons ">lens</md-icon>
+
     <div class="md-list-item-text" layout="column" flex>
       <p ng-bind="user.title"
         class="{{user === vm.programUser ? 'program' : (user === vm.previewUser ? 'preview' : '')}}">
       </p>
     </div>
 
-    <md-button
-      ng-click="vm.disableUser(user); $event.stopPropagation()"
-      title="Temporarily disable user"
-      layout="column"
-      aria-label="Disable user"
-      class="md-icon-button block noMarginRight">
-
-      <md-icon
-        ng-style="{color: '#9E9E9E'}"
-        class="material-icons">block</md-icon>
-
-    </md-button>
-
     <ng-include src="'#removeUserTemplate'"></ng-include>
+
   </md-list-item>
 
   <md-divider></md-divider>
 
   <!-- Offline users -->
-  <md-list-item ng-repeat="user in vm.users | filter : {joined: '!', disabled: '!'} | orderBy : 'title' track by user.id"  class="userItem">
+  <md-list-item ng-repeat="user in vm.users | filter : {joined: '!', disabled: '!'} | orderBy : 'title' track by user.id"
+      class="userItem">
+
     <md-icon layout="column" aria-label="" ng-style="{color: '#9E9E9E'}" class="material-icons">lens</md-icon>
 
     <div class="md-list-item-text" layout="column" flex>

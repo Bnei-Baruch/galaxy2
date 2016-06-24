@@ -30,7 +30,7 @@ module RailsDeviseRoles
 
     config.middleware.delete Rack::Lock
 
-    config.middleware.insert_before 0, "Rack::Cors" do
+    config.middleware.insert_before 0, 'Rack::Cors' do
       allow do
         origins '*'
         resource '*',
@@ -41,7 +41,7 @@ module RailsDeviseRoles
       end
     end
 
-    config.relative_url_root = "/galaxy2/backend"
+    config.relative_url_root = '/backend'
 
     config.assets.precompile += %w(rails_admin/rails_admin.css rails_admin/rails_admin.js)
 
