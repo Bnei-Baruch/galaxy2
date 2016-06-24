@@ -74,8 +74,7 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   isReadyToSwitch() {
-    if (this.compositeIndex.preview === null ||
-      !this.isForwarded.program || !this.isForwarded.preview) {
+    if (this.compositeIndex.preview === null || this.videoRoom.isForwardingInProgress) {
       return false;
     }
 
@@ -116,13 +115,10 @@ export class SmallChannelController extends BaseChannelController {
     var oldComposite = this.composite;
 
     this.compositeIndex[slotName] = index;
-    this.isForwarded[slotName] = false;
 
     // TODO: move to base controller
     this.$log.info('Putting composite to slot', slotName, logins);
     this.videoRoom.forwardRemoteFeeds(this.composite, portsConfig.forwardIp, videoPorts, undefined, program).then(() => {
-      this.isForwarded[slotName] = true;
-
       deffered.resolve();
     }, () => {
       // Reverting composite selection
@@ -235,7 +231,7 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   private areCompositesEqual(first: IUser[], second: IUser[]) {
-    if (first === undefined || second === undefined) {
+    if (first === undefined || second  === undefined) {
       return false;
     }
 
