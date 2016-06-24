@@ -1,7 +1,7 @@
 'use strict';
 
 var path = require('path');
-var conf = require('./gulp/conf');
+var conf = require('./gulp/common');
 
 var _ = require('lodash');
 var wiredep = require('wiredep');
@@ -18,7 +18,12 @@ function listFiles() {
 
   return wiredep(wiredepOptions).js
     .concat([
+      path.join(conf.paths.src, '/assets/scripts/adapter.js'),
+      path.join(conf.paths.src, '/assets/scripts/janus.nojquery.js'),
+      path.join(conf.paths.src, '/assets/scripts/config.js'),
+      path.join(conf.paths.src, '/assets/scripts/testing.js'),
       path.join(conf.paths.tmp, '/serve/app/index.module.js'),
+//      path.join(conf.paths.tmp, '/serve/app/index.config.js'),
     ])
     .concat(pathSrcHtml);
 }
