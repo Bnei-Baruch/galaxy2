@@ -9,9 +9,12 @@ export class AdminController {
   reloadAllUsers() {
     this.pubSub.client.publish('/admin', {
       message: 'reload'
+    }).then(() => {
+      this.toastr.info('Reloading all users');
+    }, (error: any) => {
+      this.toastr.error('Error reloading all users');
     });
 
-    this.toastr.info('Reload command has been sent to all users');
   }
 }
 

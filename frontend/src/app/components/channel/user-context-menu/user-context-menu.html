@@ -7,6 +7,10 @@
       <p>Disable {{user.title}} temporarily</p>
     </md-list-item>
     <md-menu-divider></md-menu-divider>
+    <md-list-item ng-click="contextMenu.reloadUser(user); $event.stopPropagation()">
+      <md-icon class="material-icons">cached</md-icon>
+      <p>Reload {{user.title}}</p>
+    </md-list-item>
     <md-list-item ng-click="contextMenu.reloadChannelUsers(vm.name); $event.stopPropagation()">
       <md-icon class="material-icons">cached</md-icon>
       <p>Reload channel users</p>
