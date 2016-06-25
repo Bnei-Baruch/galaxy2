@@ -423,7 +423,7 @@ export class JanusVideoRoomService {
       this.$log.warn('VideoRoom - not in any channel', login);
     }
   }
- 
+
   private publisherIdToLogin(janusId: number) {
     var login = null;
     for (var key in this.publishers) {

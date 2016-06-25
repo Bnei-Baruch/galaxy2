@@ -31,8 +31,8 @@ export class PublisherStatusTrackerService {
 
     return this.statusByHistory(history, login);
   }
-/**
-Check all users statuses on brouser reload. 
+/*
+ Check all users statuses on brouser reload.
 */
   public setAllUsersStatus(usersByLogin: { [login: string]: IUser }/*, disableUserCallback: (user: IUser) => any*/): void {
     var historyByLogin = JSON.parse(localStorage.getItem('disconnectHistoryByLogin'));
@@ -80,10 +80,10 @@ Check all users statuses on brouser reload.
   }
 
   private statusByHistory(history: Array<any>, login: string): InternetConnectionType {
-    if (this.checkDisconnects(history, moment({ minute: -1 }), 3)) {
+    if (this.checkDisconnects(history, moment({ minute: -10 }), 3)) {
       this.toastr.error(`The user - ${login} was disabled, The reason - internet connection is not stable.`);
       return InternetConnectionType.danger;
-    } else if (this.checkDisconnects(history, moment({ minute: -10 }), 3)) {
+    } else if (this.checkDisconnects(history, moment({ minute: -10 }), 2)) {
       return InternetConnectionType.warning;
     }
     return InternetConnectionType.normal;
