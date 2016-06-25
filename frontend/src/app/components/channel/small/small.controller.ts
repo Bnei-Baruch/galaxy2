@@ -79,6 +79,16 @@ export class SmallChannelController extends BaseChannelController {
     return true;
   }
 
+  fixTitles() {
+    if (this.composite) {
+      var portsConfig = this.config.janus.sdiPorts[this.name];
+      var videoPorts = portsConfig.video[this.getSlotName(true)];
+      this.composite.forEach((user: IUser, index: number) => {
+        this.videoRoom.changeRemoteFeedTitle(user.title, videoPorts[index]);
+      });
+    }
+  }
+
   // TODO: Handle HTTP errors and rollback to old state in case of an error
   private putCompositeToSlot(index: number, program: boolean, force: boolean = false): ng.IPromise<any> {
     var deffered = this.$q.defer();

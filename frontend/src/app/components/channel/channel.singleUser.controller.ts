@@ -158,4 +158,12 @@ export class SingleUserChannelController extends BaseChannelController {
     return onlineUsers[(userIndex + 1) % onlineUsers.length];
   }
 
+  fixTitles() {
+    if (this.programUser) {
+    return this.videoRoom.changeRemoteFeedTitle(
+      this.programUser.title,
+      this.config.janus.sdiPorts[this.name].video.program);
+    }
+  }
+
 }
