@@ -65,7 +65,7 @@ export class PublisherStatusTrackerService {
     localStorage.setItem('disconnectHistoryByLogin', JSON.stringify(historyByLogin));
   }
 
-  public connectStatusByLogin(login: string): InternetConnectionType {
+  public connectionStatusByLogin(login: string): InternetConnectionType {
     var history: Array<any> = this.userStatusByLogin(login);
     return this.statusByHistory(history, login);
   }
@@ -81,7 +81,11 @@ export class PublisherStatusTrackerService {
 
   private statusByHistory(history: Array<any>, login: string): InternetConnectionType {
     if (this.checkDisconnects(history, moment({ minute: -10 }), 3)) {
-      this.toastr.error(`The user - ${login} was disabled, The reason - internet connection is not stable.`);
+      try {
+        this.toastr.error(`The user - ${login} was disabled, The reason - internet connection is not stable.`);
+      } catch (e) {
+        console.log(`Problem with toastr.`);
+      }
       return InternetConnectionType.danger;
     } else if (this.checkDisconnects(history, moment({ minute: -10 }), 2)) {
       return InternetConnectionType.warning;

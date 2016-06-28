@@ -52,7 +52,7 @@ module frontend {
     .run(runBlock)
     .service('janus', JanusService)
     .service('videoRoom', JanusVideoRoomService)
-    .service('publisherStatus', PublisherStatusTrackerService)
+    .service('publisherStatusTracker', PublisherStatusTrackerService)
     .service('streaming', JanusStreamingService)
     .service('shidur', ShidurService)
     .service('authService', AuthService)

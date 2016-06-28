@@ -22,7 +22,7 @@ export class BaseChannelController {
   toastr: any;
   config: any;
   cssUserListHeightCalc: number;
-  publisherStatus: PublisherStatusTrackerService;
+  publisherStatusTracker: PublisherStatusTrackerService;
   internetConnectionType: InternetConnectionType;
 
   // Using $injector manually to allow easier constructor overloads
@@ -33,7 +33,7 @@ export class BaseChannelController {
     this.videoRoom = $injector.get('videoRoom');
     this.toastr = $injector.get('toastr');
     this.config = $injector.get('config');
-    this.publisherStatus = $injector.get('publisherStatus');
+    this.publisherStatusTracker = $injector.get('publisherStatusTracker');
 
     // Mapping users by login for convenience
     this.mapUsersByLogin();
@@ -44,8 +44,8 @@ export class BaseChannelController {
       joinedCallback: (login: string) => {
         this.userJoined(login);
       },
-      leftCallback: (login: string ) => {
-        this.userLeft(login );
+      leftCallback: (login: string) => {
+        this.userLeft(login);
       }
     });
   }
@@ -65,7 +65,7 @@ export class BaseChannelController {
     this.bindHotkey();
 
     // check internet connection status of users
-    this.publisherStatus.setAllUsersStatus(this.usersByLogin);
+    this.publisherStatusTracker.setAllUsersStatus(this.usersByLogin);
   }
 
   setUserListHeight(element: ng.IAugmentedJQuery) {
@@ -87,7 +87,7 @@ export class BaseChannelController {
 
     // TODO: The timestamp should be better taken from Janus point of view
     user.joined = moment();
-    user.disabled = this.publisherStatus.connectStatusByLogin(login) === InternetConnectionType.danger;
+    user.disabled = this.publisherStatusTracker.connectionStatusByLogin(login) === InternetConnectionType.danger;
   }
 
   userLeft(login: string) {
@@ -95,7 +95,7 @@ export class BaseChannelController {
     var user = this.usersByLogin[login];
     user.joined = null;
     user.stream = null;
-    user.connectionStatus = this.publisherStatus.connectStatusByLogin(login);
+    user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
   }
 
   trigger() {

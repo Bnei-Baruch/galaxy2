@@ -62,7 +62,7 @@ export class JanusVideoRoomService {
       private $http: ng.IHttpService,
       private authService: AuthService,
       private janus: JanusService,
-      private publisherStatus: PublisherStatusTrackerService,
+      private publisherStatusTracker: PublisherStatusTrackerService,
       private toastr: any,
       private config: any) {
 
@@ -559,7 +559,7 @@ export class JanusVideoRoomService {
           this.deletePublisher(this.publisherIdToLogin(message.leaving));
         } else if (message.unpublished) {
           var login: string = this.publisherIdToLogin(message.unpublished);
-          this.publisherStatus.disconnect(login);
+          this.publisherStatusTracker.disconnect(login);
           this.deletePublisher(login);
         }
         break;

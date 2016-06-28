@@ -33,7 +33,7 @@
     <md-icon
       layout="column"
       aria-label=""
-      ng-class="(user.connectionStatus == '3') ? 'danger' : (user.connectionStatus == '2') ? 'warning': 'normal'"
+      ng-class="(user.connectionStatus == 3) ? 'danger' : (user.connectionStatus == 2) ? 'warning': 'normal'"
       class="material-icons userConnectStatus">perm_scan_wifi</md-icon>
 
     <ng-include src="'#removeUserTemplate'"></ng-include>

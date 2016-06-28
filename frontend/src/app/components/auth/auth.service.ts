@@ -1,3 +1,5 @@
+
+import { InternetConnectionType } from '../janus/publisherStatusTracker.service';
 // Implementation follows guidelines from:
 // http://brewhouse.io/blog/2014/12/09/authentication-made-simple-in-single-page-angularjs-applications.html
 
@@ -18,7 +20,7 @@ export interface IUser {
   audioEnabled?: boolean;
   completesComposite?: boolean;
   disabled?: boolean;
-  connectionStatus?: number;
+  connectionStatus?: InternetConnectionType;
 }
 
 
