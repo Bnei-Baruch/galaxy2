@@ -11,6 +11,15 @@ module Rest
       render json: User.find(params[:id])
     end
 
+    def edit
+      user = User.find(params[:id])
+
+      user.channel = params[:channel]
+      user.save!
+
+      render json: {}
+    end
+
   end
 end
 
