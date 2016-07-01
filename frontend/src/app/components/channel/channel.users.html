@@ -14,7 +14,7 @@
   </md-button>
 </script>
 
-<md-list class="users" dragula="'users'">
+<md-list class="users">
 
   <!-- Online users -->
   <md-list-item
@@ -26,7 +26,10 @@
 
     <md-icon layout="column" aria-label="" ng-style="{color: '#4CAF50'}" class="material-icons ">lens</md-icon>
 
-    <div class="md-list-item-text" layout="column" flex>
+    <div
+
+      dragula="'users'"
+      class="md-list-item-text" layout="column" flex>
       <p ng-bind="user.title"
         class="{{user === vm.programUser ? 'program' : (user === vm.previewUser ? 'preview' : '')}}">
       </p>
