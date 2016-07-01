@@ -21,6 +21,16 @@ export function routerConfig($stateProvider: ng.ui.IStateProvider) {
         minRole: 'user'
       }
     })
+    .state('chat', {
+      url: '/chat',
+      templateUrl: 'app/chat/chat.html',
+      controller: 'ChatController',
+      controllerAs: 'chat',
+      data: {
+        requireLogin: true,
+        minRole: 'user'
+      }
+    })
     .state('help', {
       url: '/help',
       templateUrl: 'app/help/shidur.html',

@@ -10,6 +10,10 @@ import { JanusStreamingService } from '../app/components/janus/janusStreaming.se
 import { ShidurController } from './shidur/shidur.controller';
 import { ShidurService } from './shidur/shidur.service';
 import { UserController } from './user/user.controller';
+import { ChatService } from './chat/chat.service';
+import { ChatController } from './chat/chat.controller';
+import { ChatDialogController } from './chat/chat.dialog.controller';
+import { chatDialog } from './chat/chat.dialog.directive';
 import { FakeUserController } from './user/fake.controller';
 import { AdminController } from './admin/admin.controller';
 import { FakeSDIController } from './e2e/sdi.controller';
@@ -54,8 +58,12 @@ module frontend {
     .service('shidur', ShidurService)
     .service('authService', AuthService)
     .service('pubSub', PubSubService)
+    .service('chat', ChatService)
+    .directive('chatDialog', chatDialog)
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
+    .controller('ChatController', ChatController)
+    .controller('ChatDialogController', ChatDialogController)
     .controller('FakeUserController', FakeUserController)
     .controller('AdminController', AdminController)
     .controller('FakeSDIController', FakeSDIController)
