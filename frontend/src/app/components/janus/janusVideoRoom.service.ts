@@ -4,9 +4,9 @@
 
 import { AuthService, IUser  } from '../auth/auth.service';
 import { JanusService } from './janus.service';
+import { PublisherStatusTrackerService } from './publisherStatusTracker.service';
 
 declare var escape: any;
-
 
 interface IChannel {
   name: string;
@@ -62,6 +62,7 @@ export class JanusVideoRoomService {
       private $http: ng.IHttpService,
       private authService: AuthService,
       private janus: JanusService,
+      private publisherStatusTracker: PublisherStatusTrackerService,
       private toastr: any,
       private config: any) {
 
@@ -423,10 +424,7 @@ export class JanusVideoRoomService {
     }
   }
 
-  // Cleans up when publisher is leaving. Call relevant channels with leftCallback.
-  private deletePublisherByJanusId(janusId: string): void {
-    this.$log.info('VideoRoom - delete publisher', janusId);
-
+  private publisherIdToLogin(janusId: number) {
     var login = null;
     for (var key in this.publishers) {
       if (this.publishers.hasOwnProperty(key)) {
@@ -437,7 +435,11 @@ export class JanusVideoRoomService {
         }
       }
     }
+    return login;
+  }
 
+  // Cleans up when publisher is leaving. Call relevant channels with leftCallback.
+  private deletePublisher(login: string): void {
     if (login) {
       this.$log.info('VideoRoom - deleting', login);
       delete this.publishers[login];
@@ -554,9 +556,11 @@ export class JanusVideoRoomService {
         if (message.publishers) {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
-          this.deletePublisherByJanusId(message.leaving);
+          this.deletePublisher(this.publisherIdToLogin(message.leaving));
         } else if (message.unpublished) {
-          this.deletePublisherByJanusId(message.unpublished);
+          var login: string = this.publisherIdToLogin(message.unpublished);
+          this.publisherStatusTracker.disconnect(login);
+          this.deletePublisher(login);
         }
         break;
     }

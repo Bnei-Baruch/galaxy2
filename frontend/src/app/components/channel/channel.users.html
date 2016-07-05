@@ -18,12 +18,11 @@
 
   <!-- Online users -->
   <md-list-item
-      data-context-menu="app/components/channel/user-context-menu/user-context-menu.html"
-      ng-controller="UserContextMenuController as contextMenu"
-      ng-click="vm.putUserToPreview(user)"
-      ng-repeat="user in vm.users | filter : {joined: '', disabled: false} | orderBy : 'joined' track by user.id"
-      class="userItem">
-
+    data-context-menu="app/components/channel/user-context-menu/user-context-menu.html"
+    ng-controller="UserContextMenuController as contextMenu"
+    ng-click="vm.putUserToPreview(user)"
+    ng-repeat="user in vm.users | filter : {joined: '', disabled: false} | orderBy : 'joined' track by user.id"
+    class="userItem">
     <md-icon layout="column" aria-label="" ng-style="{color: '#4CAF50'}" class="material-icons ">lens</md-icon>
 
     <div class="md-list-item-text" layout="column" flex>
@@ -31,6 +30,11 @@
         class="{{user === vm.programUser ? 'program' : (user === vm.previewUser ? 'preview' : '')}}">
       </p>
     </div>
+    <md-icon
+      layout="column"
+      aria-label=""
+      ng-class="(user.connectionStatus == 3) ? 'danger' : (user.connectionStatus == 2) ? 'warning': 'normal'"
+      class="material-icons userConnectStatus">perm_scan_wifi</md-icon>
 
     <ng-include src="'#removeUserTemplate'"></ng-include>
 
@@ -40,8 +44,7 @@
 
   <!-- Offline users -->
   <md-list-item ng-repeat="user in vm.users | filter : {joined: '!', disabled: '!'} | orderBy : 'title' track by user.id"
-      class="userItem">
-
+    class="userItem">
     <md-icon layout="column" aria-label="" ng-style="{color: '#9E9E9E'}" class="material-icons">lens</md-icon>
 
     <div class="md-list-item-text" layout="column" flex>
