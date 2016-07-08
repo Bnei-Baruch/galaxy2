@@ -7,9 +7,9 @@
 
   <md-card-content>
     <md-list flex>
-      <md-list-item class="md-3-line" ng-repeat="message in dialog.messages" ng-click="dialog.quote(message)">
+      <md-list-item class="md-3-line" ng-repeat="message in dialog.messages track by $index" ng-click="dialog.quote(message)">
         <div class="md-list-item-text" layout="column">
-          <h3>{{ message.user.title }}</h3>
+          <h3>{{ message.from.title }}</h3>
           <h4>{{ message.text }}</h4>
         </div>
       </md-list-item>
@@ -20,6 +20,10 @@
     <md-input-container flex>
       <textarea ng-model="dialog.messageText" rows="2"></textarea>
     </md-input-container>
-    <md-button ng-click="" class="md-primary md-raised" title="Send message (Ctrl+Enter)">Send</md-button>
+
+    <md-button ng-click="dialog.send()"
+      class="md-primary md-raised"
+      title="Send message (Ctrl+Enter)">Send</md-button>
+
   </md-card-actions>
 </md-card>

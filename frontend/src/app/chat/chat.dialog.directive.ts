@@ -6,10 +6,8 @@ export function chatDialog(): ng.IDirective {
   return {
     restrict: 'E',
     scope: {
-      user: '='
-    },
-    link: (scope: ng.IScope, element: ng.IAugmentedJQuery, attrs?: ng.IAttributes, ctrl?: ChatDialogController) => {
-      ctrl.onLink(scope, element);
+      user: '=',
+      messages: '='
     },
     templateUrl: 'app/chat/chat.dialog.html',
     controller: ChatDialogController,

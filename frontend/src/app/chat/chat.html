@@ -1,1 +1,2 @@
-<chat-dialog ng-repeat="(login, user) in chat.users | orderBy: 'login'" user="user"></chat-dialog>
+<chat-dialog ng-repeat="(login, item) in chat.chats | orderBy: 'login'"
+  user="item.user" messages="item.messages"></chat-dialog>
