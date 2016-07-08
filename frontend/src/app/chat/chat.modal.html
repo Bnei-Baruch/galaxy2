@@ -1,0 +1,23 @@
+<md-dialog aria-label="Chat dialog" flex="60">
+  <md-dialog-content>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>Chat</h2>
+        <span flex></span>
+      </div>
+    </md-toolbar>
+
+    <md-dialog-content>
+      <div class="md-dialog-content">
+        <chat-dialog ng-repeat="(login, item) in chat.chats | orderBy: 'login'"
+          user="item.user" messages="item.messages"></chat-dialog>
+      </div>
+    </md-dialog-content>
+
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button class="md-raised md-primary">Close</md-button>
+    </md-dialog-actions>
+
+  </md-dialog-content>
+</md-dialog>

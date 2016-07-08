@@ -7,8 +7,14 @@ export class ChatController {
   // users: { (login: string): IUser } = <any>{};
   chats: any = {};
 
-  constructor ($scope: ng.IScope, $timeout: any) {
-    var parentScope = (<any>window).opener.angular.element('body').scope();
+  constructor ($rootScope: ng.IRootScopeService, $timeout: any) {
+    var opener = (<any>window).opener;
+
+    if (opener) {
+      var parentScope = opener.angular.element('body').scope();
+    } else {
+      parentScope = $rootScope;
+    }
 
     parentScope.$on('chat.create', (e: any, user: IUser) => {
       $timeout(() => {

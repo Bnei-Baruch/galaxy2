@@ -11,20 +11,16 @@ export class ChatService {
               private $q: ng.IQService,
               private $state: ng.ui.IStateService,
               private $window: ng.IWindowService,
+              private $mdDialog: angular.material.IDialogService,
               private authService: AuthService,
               private pubSub: PubSubService,
               private toastr: any) {
 
-    if (authService.can('operator')) {
-      var channel = 'operator';
-    } else {
-      var channel = 'users/' + authService.user.login;
-    }
-
-    pubSub.client.subscribe(`/chat/${channel}`, (message: any) => {
+    pubSub.client.subscribe(this.getMyChannel(), (message: any) => {
       this.onMessage(message);
     });
 
+    // Close chat popup on parent close
     $window.addEventListener('unload', () => {
       if (this.popupWindow) {
         this.popupWindow.close();
@@ -40,32 +36,22 @@ export class ChatService {
     var deferred = this.$q.defer();
     this.popupInitialized = deferred.promise;
 
-    if (this.popupWindow === null) {
-      var chatUrl = this.$state.href('chat', {}, {absolute: true});
-      this.popupWindow = this.$window.open(chatUrl, 'chat');
-
-      this.popupWindow.addEventListener('unload', () => {
-        //this.popupWindow = null;
-        //this.popupInitialized = null;
-      });
-
-      this.$rootScope.$on('chat.popup-initialized', () => {
-        this.$rootScope.$broadcast('chat.create', user);
-        deferred.resolve();
-      });
+    if (this.authService.can('operator')) {
+      this.openPopup();
+    } else {
+      this.openModal();
     }
+
+    this.$rootScope.$on('chat.popup-initialized', () => {
+      this.$rootScope.$broadcast('chat.create', user);
+      deferred.resolve();
+    });
 
     return this.popupInitialized;
   }
 
   send(user: IUser, messageText: string) {
-    var channel;
-
-    if (this.authService.can('operator')) {
-      channel = `/chat/users/${user.login}`;
-    } else {
-      channel = '/chat/operator';
-    }
+    var channel = this.getUserChannel(user);
 
     var message =  {
       text: messageText,
@@ -73,7 +59,7 @@ export class ChatService {
     };
 
     this.pubSub.client.publish(channel, message).then(() => {
-      console.debug('Chat message sent:', channel, message);
+      this.$log.debug('Chat message sent:', channel, message);
     }, (error: any) => {
       var errorMessage = 'Error sending chat message';
 
@@ -87,6 +73,27 @@ export class ChatService {
     });
   }
 
+  private openPopup() {
+    if (this.popupWindow === null) {
+      var chatUrl = this.$state.href('chat', {}, {absolute: true});
+      this.popupWindow = this.$window.open(chatUrl, 'chat');
+
+      this.popupWindow.addEventListener('unload', () => {
+        //this.popupWindow = null;
+        //this.popupInitialized = null;
+      });
+    }
+  }
+
+  private openModal() {
+    this.$mdDialog.show({
+      clickOutsideToClose: false,
+      templateUrl: 'app/chat/chat.modal.html',
+      controller: 'ChatController',
+      controllerAs: 'chat'
+    });
+  }
+
   private onMessage(message: any) {
     console.log('onMessage!');
     console.log(message);
@@ -95,5 +102,25 @@ export class ChatService {
       console.log(message);
       this.$rootScope.$broadcast('chat.message', message);
     }, () => { console.log('!!!'); });
+  }
+
+  private getMyChannel() {
+    if (this.authService.can('operator')) {
+      var channel = 'operator';
+    } else {
+      var channel = 'users/' + this.authService.user.login;
+    }
+
+    return `/chat/${channel}`;
+  }
+
+  private getUserChannel(user: IUser) {
+    if (this.authService.can('operator')) {
+      var channel = 'users/' + user.login;
+    } else {
+      var channel = 'operator';
+    }
+
+    return `/chat/${channel}`;
   }
 }

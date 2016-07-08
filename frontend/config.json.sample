@@ -58,6 +58,5 @@
   "backendUri": "https://rt-dev.kbb1.com:5000/backend",
   "environment": "development",
   "rollbarToken": "rollbar-access-token-comes-here",
-  "codeVersion": "git-sha1-deployed-should-be-here",
-  "chatUri": "https://chat1.kbb1.com/?label=galaxy2"
+  "codeVersion": "git-sha1-deployed-should-be-here"
 }
