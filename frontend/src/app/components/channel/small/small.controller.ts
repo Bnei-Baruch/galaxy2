@@ -82,10 +82,11 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   fixTitles() {
-    if (this.composite) {
+    var composite = this.composites[this.compositeIndex.program];
+    if (composite) {
       var portsConfig = this.config.janus.sdiPorts[this.name];
       var videoPorts = portsConfig.video[this.getSlotName(true)];
-      this.composite.forEach((user: IUser, index: number) => {
+      composite.forEach((user: IUser, index: number) => {
         this.videoRoom.changeRemoteFeedTitle(user.title, videoPorts[index]);
       });
     }
