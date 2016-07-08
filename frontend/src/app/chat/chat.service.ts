@@ -78,9 +78,10 @@ export class ChatService {
       var chatUrl = this.$state.href('chat', {}, {absolute: true});
       this.popupWindow = this.$window.open(chatUrl, 'chat');
 
-      this.popupWindow.addEventListener('unload', () => {
-        //this.popupWindow = null;
-        //this.popupInitialized = null;
+      this.popupWindow.addEventListener('beforeunload', (e: any) => {
+        console.debug('beforeunload', e, this);
+        this.popupWindow = null;
+        this.popupInitialized = null;
       });
     }
   }
@@ -91,7 +92,10 @@ export class ChatService {
       templateUrl: 'app/chat/chat.modal.html',
       controller: 'ChatController',
       controllerAs: 'chat'
+    }).finally(() => {
+      this.popupInitialized = null;
     });
+
   }
 
   private onMessage(message: any) {
@@ -101,7 +105,7 @@ export class ChatService {
       console.log('THEN!');
       console.log(message);
       this.$rootScope.$broadcast('chat.message', message);
-    }, () => { console.log('!!!'); });
+    });
   }
 
   private getMyChannel() {
