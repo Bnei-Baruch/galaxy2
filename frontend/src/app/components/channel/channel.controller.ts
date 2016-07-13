@@ -21,6 +21,7 @@ export class BaseChannelController {
   toastr: any;
   config: any;
   cssUserListHeightCalc: number;
+  $http: ng.IHttpService;
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
@@ -30,6 +31,7 @@ export class BaseChannelController {
     this.videoRoom = $injector.get('videoRoom');
     this.toastr = $injector.get('toastr');
     this.config = $injector.get('config');
+    this.$http = $injector.get('$http');
 
     // Mapping users by login for convenience
     this.mapUsersByLogin();
@@ -140,5 +142,22 @@ export class BaseChannelController {
     });
 
     return onlineUsers;
+  }
+  onUserDrop(channelId: string, user: IUser, users: Array<IUser>) {
+    this.$http.put(this.config.backendUri + '/rest/users/' + user.id, {channel: channelId})
+      .then((r: any) => {
+        users.push(user);
+      });
+
+  }
+
+  onUserDropSuccess(login: string, users: Array<IUser>) {
+    users.some((user: IUser, index: number) => {
+      if (user.login === login) {
+        users.splice(index, 1);
+        return true;
+      }
+      return false;
+    });
   }
 }

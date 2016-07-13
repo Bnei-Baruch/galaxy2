@@ -51,6 +51,15 @@ video {
         .noMarginRight md-icon.material-icons:first-child {
             margin-right: 0;
         }
+        .material-icons.drag {
+            margin-top: -10px;
+            color: #cccccc;
+            cursor: move;
+
+          &:hover{
+              color: black;
+          }
+        }
     }
     .md-icon-button {
         height: auto;

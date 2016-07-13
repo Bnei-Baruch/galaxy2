@@ -22,7 +22,6 @@ import { LargeChannelWidget } from '../app/components/channel/large/large.direct
 import { SmallChannelWidget } from '../app/components/channel/small/small.directive';
 import { ControlChannelWidget } from '../app/components/channel/control/control.directive';
 
-declare var angularDragula: any;
 
 module frontend {
   'use strict';
@@ -36,7 +35,7 @@ module frontend {
     'ngAria',
     'ui.router',
     'ngMaterial',
-    angularDragula(angular),
+    'ang-drag-drop',
     'toastr',
     // Important: use version 0.3.6 of ngContextMenu because of
     // https://github.com/Wildhoney/ngContextMenu/issues/24

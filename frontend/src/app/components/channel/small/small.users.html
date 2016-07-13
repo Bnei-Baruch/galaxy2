@@ -10,7 +10,7 @@
     class="composite"
     aria-label="Preview composite">
 
-    <div layout="row" layout-wrap flex="100" class="userItem">
+    <div layout="row" layout-wrap flex="100" class="userItem"  ui-on-drop="vm.onUserDrop(vm.name,$data,composite)">
       <div layout="column md-caption" flex="50" ng-repeat="user in composite" class="compositeItem">
         <md-icon layout="column" ng-style="{color: '#4CAF50', fontSize: 12, marginRight: '8px'}" class="material-icons">lens</md-icon>
 
@@ -22,6 +22,13 @@
           layout="column"
           layout-align="center start"
           flex></div>
+
+        <md-icon class="material-icons drag"
+          ui-draggable="true"
+          drag="user"
+          on-drop-success="vm.onUserDropSuccess(user.login, composite)">
+          reorder
+        </md-icon>
 
       </div>
     </div>

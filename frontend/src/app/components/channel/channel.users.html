@@ -14,7 +14,7 @@
   </md-button>
 </script>
 
-<md-list class="users">
+<md-list class="users" ui-on-drop="vm.onUserDrop(vm.name, $data, vm.users)">
 
   <!-- Online users -->
   <md-list-item
@@ -36,6 +36,13 @@
     </div>
 
     <ng-include src="'#removeUserTemplate'"></ng-include>
+
+    <md-icon class="material-icons drag"
+      ui-draggable="true"
+      drag="user"
+      on-drop-success="vm.onUserDropSuccess(user.login, vm.users)">
+      reorder
+    </md-icon>
 
   </md-list-item>
 
