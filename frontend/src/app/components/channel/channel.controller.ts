@@ -143,12 +143,19 @@ export class BaseChannelController {
 
     return onlineUsers;
   }
+
   onUserDrop(channelId: string, user: IUser, users: Array<IUser>) {
+    users.push(user);
+    if (channelId === 'control') {
+      return;
+    }
+
     this.$http.put(this.config.backendUri + '/rest/users/' + user.id, {channel: channelId})
       .then((r: any) => {
-        users.push(user);
+        //
+      }, (e: any) => {
+        // error
       });
-
   }
 
   onUserDropSuccess(login: string, users: Array<IUser>) {
