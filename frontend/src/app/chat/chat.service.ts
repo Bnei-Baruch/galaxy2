@@ -4,7 +4,6 @@ import { PubSubService } from '../components/pubSub/pubSub.service';
 /** @ngInject */
 export class ChatService {
   popupInitialized: ng.IPromise<any>;
-  popupWindow: any = null;
 
   constructor(private $rootScope: ng.IRootScopeService,
               private $log: ng.ILogService,
@@ -18,13 +17,6 @@ export class ChatService {
 
     pubSub.client.subscribe(this.getMyChannel(), (message: any) => {
       this.onMessage(message);
-    });
-
-    // Close chat popup on parent close
-    $window.addEventListener('unload', () => {
-      if (this.popupWindow) {
-        this.popupWindow.close();
-      }
     });
 
   }
@@ -73,19 +65,6 @@ export class ChatService {
     });
   }
 
-  private openPopup() {
-    if (this.popupWindow === null) {
-      var chatUrl = this.$state.href('chat', {}, {absolute: true});
-      this.popupWindow = this.$window.open(chatUrl, 'chat');
-
-      this.popupWindow.addEventListener('beforeunload', (e: any) => {
-        console.debug('beforeunload', e, this);
-        this.popupWindow = null;
-        this.popupInitialized = null;
-      });
-    }
-  }
-
   private openModal() {
     this.$mdDialog.show({
       clickOutsideToClose: false,
@@ -99,11 +78,7 @@ export class ChatService {
   }
 
   private onMessage(message: any) {
-    console.log('onMessage!');
-    console.log(message);
     this.start(message.from).then(() => {
-      console.log('THEN!');
-      console.log(message);
       this.$rootScope.$broadcast('chat.message', message);
     });
   }

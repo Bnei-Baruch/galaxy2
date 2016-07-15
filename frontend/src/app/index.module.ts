@@ -11,7 +11,6 @@ import { ShidurController } from './shidur/shidur.controller';
 import { ShidurService } from './shidur/shidur.service';
 import { UserController } from './user/user.controller';
 import { ChatService } from './chat/chat.service';
-import { ChatController } from './chat/chat.controller';
 import { ChatDialogController } from './chat/chat.dialog.controller';
 import { chatDialog } from './chat/chat.dialog.directive';
 import { FakeUserController } from './user/fake.controller';
@@ -62,7 +61,6 @@ module frontend {
     .directive('chatDialog', chatDialog)
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
-    .controller('ChatController', ChatController)
     .controller('ChatDialogController', ChatDialogController)
     .controller('FakeUserController', FakeUserController)
     .controller('AdminController', AdminController)
