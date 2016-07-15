@@ -58,14 +58,14 @@ export class BaseChannelController {
 
     this.$timeout(() => {
       this.setUserListHeight(element);
+      // check internet connection status of users
+      this.publisherStatusTracker.setAllUsersStatus(this.usersByLogin);
     }, 0, false);
 
     // Set users list height
 
     this.bindHotkey();
 
-    // check internet connection status of users
-    this.publisherStatusTracker.setAllUsersStatus(this.usersByLogin);
   }
 
   setUserListHeight(element: ng.IAugmentedJQuery) {

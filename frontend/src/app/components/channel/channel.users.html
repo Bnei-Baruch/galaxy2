@@ -1,19 +1,3 @@
-<script type="text/ng-template" id="#removeUserTemplate">
-  <md-button
-    ng-if="vm.allowRemoveUsers"
-    ng-click="vm.removeUser(user); $event.stopPropagation()"
-    title="Remove user"
-    layout="column"
-    aria-label="Remove user"
-    class="md-icon-button launch">
-
-    <md-icon
-      ng-style="{color: '#9E9E9E'}"
-      class="material-icons">clear</md-icon>
-
-  </md-button>
-</script>
-
 <md-list class="users">
 
   <!-- Online users -->
@@ -36,7 +20,7 @@
       ng-class="(user.connectionStatus == 3) ? 'danger' : (user.connectionStatus == 2) ? 'warning': 'normal'"
       class="material-icons userConnectStatus">perm_scan_wifi</md-icon>
 
-    <ng-include src="'#removeUserTemplate'"></ng-include>
+    <ng-include src="app/components/channel/channel.removeUser.html"></ng-include>
 
   </md-list-item>
 
@@ -51,7 +35,7 @@
       <p ng-bind="user.title"></p>
     </div>
 
-    <ng-include src="'#removeUserTemplate'"></ng-include>
+    <ng-include src="app/components/channel/channel.removeUser.html"></ng-include>
   </md-list-item>
 
 </md-list>
