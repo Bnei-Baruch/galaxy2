@@ -20,7 +20,7 @@
       ng-class="(user.connectionStatus == 3) ? 'danger' : (user.connectionStatus == 2) ? 'warning': 'normal'"
       class="material-icons userConnectStatus">perm_scan_wifi</md-icon>
 
-    <ng-include src="app/components/channel/channel.removeUser.html"></ng-include>
+    <ng-include src="'app/components/channel/channel.removeUser.html'"></ng-include>
 
   </md-list-item>
 
@@ -35,7 +35,7 @@
       <p ng-bind="user.title"></p>
     </div>
 
-    <ng-include src="app/components/channel/channel.removeUser.html"></ng-include>
+    <ng-include src="'app/components/channel/channel.removeUser.html'"></ng-include>
   </md-list-item>
 
 </md-list>
