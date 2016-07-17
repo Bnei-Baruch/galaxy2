@@ -145,11 +145,16 @@ export class BaseChannelController {
   }
 
   onUserDrop(channelId: string, user: IUser, users: Array<IUser>) {
-    users.push(user);
-    if (channelId === 'control') {
+    if (channelId === 'disabled') {
+      this.disableUser(this.usersByLogin[user.login]);
       return;
     }
 
+    users.push(user);
+
+    if (channelId === 'control') {
+      return;
+    }
     this.$http.put(this.config.backendUri + '/rest/users/' + user.id, {channel: channelId})
       .then((r: any) => {
         //

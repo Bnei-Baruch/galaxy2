@@ -43,7 +43,7 @@
     <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="maxHeight50"></ng-include>
   </div>
 
-  <md-list ng-show="disabledUsers.length"  class="maxHeight50">
+  <md-list ng-show="disabledUsers.length"  class="maxHeight50" ui-on-drop="vm.onUserDrop('disabled', $data, disabledUsers)">
     <md-subheader class="md-no-sticky">Disabled users</md-subheader>
     <div class="users usersWithHeader">
       <md-list-item
@@ -63,6 +63,13 @@
             </p>
           </div>
           <ng-include src="'#removeUserTemplate'"></ng-include>
+
+          <md-icon class="material-icons drag"
+             ui-draggable="true"
+             drag="user"
+             on-drop-success="vm.onUserDropSuccess(user.login, disabledUsers)">
+            reorder
+          </md-icon>
         </md-list-item>
     </div>
   </md-list>
