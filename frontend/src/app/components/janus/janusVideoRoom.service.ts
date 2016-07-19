@@ -559,7 +559,7 @@ export class JanusVideoRoomService {
           this.deletePublisher(this.publisherIdToLogin(message.leaving));
         } else if (message.unpublished) {
           var login: string = this.publisherIdToLogin(message.unpublished);
-          this.publisherStatusTracker.disconnect(login);
+          // this.publisherStatusTracker.disconnect(login);
           this.deletePublisher(login);
         }
         break;
