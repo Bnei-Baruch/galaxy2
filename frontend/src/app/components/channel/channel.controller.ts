@@ -64,8 +64,8 @@ export class BaseChannelController {
 
     this.bindHotkey();
 
-    // check internet connection status of users
-    this.publisherStatusTracker.setAllUsersStatus(this.usersByLogin);
+      // check internet connection status of users
+      // this.publisherStatusTracker.setAllUsersStatus(this.usersByLogin);
   }
 
   setUserListHeight(element: ng.IAugmentedJQuery) {
