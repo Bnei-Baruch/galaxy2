@@ -1,10 +1,10 @@
 import { IUser } from '../../auth/auth.service';
 import { PubSubService } from '../../pubSub/pubSub.service';
 import { SingleUserChannelController } from '../channel.singleUser.controller';
+import { IDraggedData } from '../channel.controller';
 
 /** @ngInject */
 export class ControlChannelController extends SingleUserChannelController {
-  $rootScope: ng.IScope;
   pubSub: PubSubService;
 
   usersBreakdown: { [channel: string]: IUser[]; };
@@ -15,7 +15,6 @@ export class ControlChannelController extends SingleUserChannelController {
 
   constructor($injector: any) {
     super($injector);
-    this.$rootScope = $injector.get('$rootScope');
     this.pubSub = $injector.get('pubSub');
     this.users = [];
   }
@@ -115,4 +114,11 @@ export class ControlChannelController extends SingleUserChannelController {
     this.videoRoom.updateChannelUsers(this.name, this.getLoginsList());
   }
 
+  onDragUserTo(data:IDraggedData){
+    this.users.push(data.user);
+  }
+
+  onDragUserFrom(data: IDraggedData){
+    this.removeUser(data.user);
+  }
 }

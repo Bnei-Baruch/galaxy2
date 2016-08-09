@@ -1,6 +1,15 @@
 import { JanusVideoRoomService } from '../janus/janusVideoRoom.service';
 import { IUser } from '../auth/auth.service';
 
+
+export interface IDraggedData {
+  user: IUser,
+  channelFromId: string,
+  channelToId?: string
+  destinationType: string
+}
+
+
 /** @ngInject */
 export class BaseChannelController {
   name: string;
@@ -22,6 +31,7 @@ export class BaseChannelController {
   config: any;
   cssUserListHeightCalc: number;
   $http: ng.IHttpService;
+  $rootScope: ng.IRootScopeService;
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
@@ -32,7 +42,7 @@ export class BaseChannelController {
     this.toastr = $injector.get('toastr');
     this.config = $injector.get('config');
     this.$http = $injector.get('$http');
-
+    this.$rootScope = $injector.get('$rootScope');
     // Mapping users by login for convenience
     this.mapUsersByLogin();
 
@@ -61,6 +71,14 @@ export class BaseChannelController {
     // Set users list height
 
     this.bindHotkey();
+
+    scope.$on('channel.dragged', function (e:any, data: IDraggedData) {
+      if(e.currentScope.vm.name === data.channelFromId){
+        e.currentScope.vm.onDragUserFrom(data);
+      } else if(e.currentScope.vm.name === data.channelToId){
+        e.currentScope.vm.onDragUserTo(data);
+      }
+    });
   }
 
   setUserListHeight(element: ng.IAugmentedJQuery) {
@@ -144,32 +162,32 @@ export class BaseChannelController {
     return onlineUsers;
   }
 
-  onUserDrop(channelId: string, user: IUser, users: Array<IUser>) {
-    if (channelId === 'disabled') {
-      this.disableUser(this.usersByLogin[user.login]);
-      return;
-    }
+  onUserDrop(data: IDraggedData) {
+    data.channelToId = this.name;
+    this.$rootScope.$broadcast('channel.dragged', data);
+  }
 
-    users.push(user);
+  onDragUserFrom(data: IDraggedData){
+    this.users.some((user: IUser, index: any) => {
+      if (user.login === data.user.login) {
+        this.users.splice(index, 1);
+        return true;
+      }
+    });
+  }
 
-    if (channelId === 'control') {
-      return;
-    }
-    this.$http.put(this.config.backendUri + '/rest/users/' + user.id, {channel: channelId})
+  onDragUserTo(data:IDraggedData){
+    this.users.push(data.user);
+    this.saveUpdatedUserChannel(data.user.id,data.channelToId);
+  }
+
+  private saveUpdatedUserChannel(userId: Number,channelId: string ){
+
+    return this.$http.put(this.config.backendUri + '/rest/users/' + userId, {channel: channelId})
       .then((r: any) => {
-        //
+        return r;
       }, (e: any) => {
         // error
       });
-  }
-
-  onUserDropSuccess(login: string, users: Array<IUser>) {
-    users.some((user: IUser, index: number) => {
-      if (user.login === login) {
-        users.splice(index, 1);
-        return true;
-      }
-      return false;
-    });
   }
 }

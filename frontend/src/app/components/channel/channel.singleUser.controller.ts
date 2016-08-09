@@ -1,4 +1,4 @@
-import { BaseChannelController } from './channel.controller';
+import { BaseChannelController, IDraggedData } from './channel.controller';
 import { IUser } from '../auth/auth.service';
 
 declare var attachMediaStream: any;
@@ -122,7 +122,6 @@ export class SingleUserChannelController extends BaseChannelController {
     if (!this.previewUser.stream || this.previewUser.disabled) {
       return false;
     }
-
     return true;
   }
 
@@ -157,5 +156,9 @@ export class SingleUserChannelController extends BaseChannelController {
 
     return onlineUsers[(userIndex + 1) % onlineUsers.length];
   }
+  onDragUserFrom(data: IDraggedData){
+    super.onDragUserFrom(data);
 
+    //this.disableUser()
+  }
 }
