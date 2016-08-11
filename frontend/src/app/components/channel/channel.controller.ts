@@ -87,7 +87,7 @@ export class BaseChannelController {
 
     // TODO: The timestamp should be better taken from Janus point of view
     user.joined = moment();
-    user.disabled = this.publisherStatusTracker.connectionStatusByLogin(login) === InternetConnectionType.danger;
+    // user.disabled = this.publisherStatusTracker.connectionStatusByLogin(login) === InternetConnectionType.danger;
   }
 
   userLeft(login: string) {
@@ -95,7 +95,7 @@ export class BaseChannelController {
     var user = this.usersByLogin[login];
     user.joined = null;
     user.stream = null;
-    user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
+    // user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
   }
 
   trigger() {
