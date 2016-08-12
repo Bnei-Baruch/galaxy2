@@ -1,18 +1,25 @@
 import { JanusService } from './janus.service';
+import { AuthService } from '../auth/auth.service';
 
 /* @ngInject */
 export class JanusTextRoomService {
   pluginHandles: any[] = [];
+  initialized: ng.IPromise<any>;
+  handle: any;  // Janus handle instance.
 
   constructor(private $q: ng.IQService,
-      private $log: ng.ILogService,
-      private janus: JanusService,
-      private toastr: any) {
+              private $log: ng.ILogService,
+              private $rootScope: ng.IRootScopeService,
+              private janus: JanusService,
+              private authService: AuthService,
+              private config: any,
+              private toastr: any) {
+
+      this.initialized = this.attachTextRoomHandle();
   }
 
-  attachTextRoomHandle(): ng.IPromise<MediaStream> {
-    var deffered = this.$q.defer();
-    var handle;
+  attachTextRoomHandle(): ng.IPromise<any> {
+    var deferred = this.$q.defer();
 
     this.janus.initialized.then(() => {
       this.$log.info('TextRoom - attach handle');
@@ -21,44 +28,84 @@ export class JanusTextRoomService {
         error: (response: any) => {
           this.$log.error('Error attaching text room plugin', response);
           this.toastr.error(`Error attaching text room plugin: ${response}`);
-          deffered.reject(response);
+          deferred.reject(response);
         },
         webrtcState: (on: boolean) => {
           var upDown = (on ? 'up' : 'down');
-          this.$log(`Data channel WebRTC peer connection is ${upDown}.`);
+          this.$log.info(`Data channel WebRTC peer connection is ${upDown}.`);
           this.$rootScope.$broadcast('chat.enabled', on);
         },
         success: (pluginHandle: any) => {
-          handle = pluginHandle;
+          this.handle = pluginHandle;
           this.$log.info('Text room plugin attached');
 
           // Setup the DataChannel
           var body = { request: 'setup' };
-          handle.send({ message: body});
+          this.handle.send({ message: body});
+        },
+        onmessage: (msg: any, jsep: any) => {
+          this.onTextRoomMessage(msg, jsep);
         },
         ondataopen: (data: any) => {
-          this.$log('The data channel is available, entering the chat room...');
-          this.enterChatRoom();
+          this.$log.info('The data channel is available, entering the chat room...');
+          this.tryEnterChatRoom(deferred);
         },
+        ondata: (dataString: any) => {
+          var data = JSON.parse(dataString);
+          // Handle room join
+          if (data.transaction === 'join') {
+            if (data.textroom === 'error') {
+              deferred.reject(data.error);
+            } else {
+              deferred.resolve();
+            }
+          }
 
-        onmessage: (msg: any, jsep: any) => {
-          this.onTextRoomMessage(handle, msg, jsep);
-        },
-        onremotestream: (stream: MediaStream) => {
-          this.$log.info('Streaming - handle onremotestream', streamId, stream);
-          deffered.resolve(stream);
+          // Handle on chat message sent.
+          if (data.textroom === 'message') {
+            console.log('chat message received', data);
+            this.$rootScope.$broadcast('chat.message', data);
+          }
         },
         oncleanup: () => {
-          this.$log.info('Streaming - handle oncleanup', streamId);
+          this.$log.info('Streaming - handle oncleanup');
         }
       });
     });
 
-    return deffered.promise;
+    return deferred.promise;
   }
 
-  private onTextRoomMessage(handle: any, msg: any, jsep: any) {
-      this.$log.debug('Text room - handle message', handle.getId(), msg);
+  sendMessage(login: string, text: string) {
+    var deferred = this.$q.defer();
+
+    this.initialized.then(() => {
+      var message = {
+        textroom: 'message',
+        transaction: 'message_sent',
+        room: this.config.janus.textRoom.roomId,
+        // to: login,
+        text: text
+      };
+
+      this.handle.data({
+        text: JSON.stringify(message),
+        error: (reason: any) => {
+          this.$log.error('Error trying to send message', reason);
+          this.toastr.error('Unable to send message.');
+          deferred.reject(reason);
+        },
+        success: () => {
+          deferred.resolve();
+        }
+      });
+    });
+
+    return deferred.promise;
+  }
+
+  private onTextRoomMessage(msg: any, jsep: any) {
+      this.$log.debug('Text room - handle message', this.handle.getId(), msg);
 
       if (msg.error) {
         this.$log.error(msg.error);
@@ -67,14 +114,14 @@ export class JanusTextRoomService {
 
       if (jsep) {
         // Answer
-        textroom.createAnswer({
+        this.handle.createAnswer({
           jsep: jsep,
           media: { audio: false, video: false, data: true },  // We only use datachannels
           success: (jsep: any) => {
-            this.$log.info('Text room - got SDP, replying...', handle.getId());
+            this.$log.info('Text room - got SDP, replying...', this.handle.getId());
             this.$log.debug(jsep);
             var body = { request: 'ack' };
-            textroom.send({ message: body, jsep: jsep});
+            this.handle.send({ message: body, jsep: jsep});
           },
           error: (error: any) => {
             this.$log.error('Error creating text room SDP answer', error);
@@ -84,48 +131,20 @@ export class JanusTextRoomService {
       }
   }
 
-  private enterChatRoom() {
-    var transaction = randomString(12);
+  private tryEnterChatRoom(deferred: ng.IDeferred<any>) {
     var register = {
       textroom: 'join',
-      transaction: transaction,
-      room: config.janus.textRoom.roomId,
+      transaction: 'join',  // See if this workf without specifying transaction.
+      room: this.config.janus.textRoom.roomId,
       username: this.authService.user.login,
       display: this.authService.user.title
     };
-    transactions[transaction] = function(response) {
-      if(response["textroom"] === "error") {
-        // Something went wrong
-        bootbox.alert(response["error"]);
-        $('#username').removeAttr('disabled').val("");
-        $('#register').removeAttr('disabled').click(registerUsername);
-        return;
-      }
-      // We're in
-      $('#datasend').removeAttr('disabled');
-      // Any participants already in?
-      console.log("Participants:", response.participants);
-      if(response.participants && response.participants.length > 0) {
-        for(var i in response.participants) {
-          var p = response.participants[i];
-          participants[p.username] = p.display ? p.display : p.username;
-          if(p.username !== mychatid && $('#rp' + p.username).length === 0) {
-            // Add to the participants list
-            $('#list').append('<li id="rp' + p.username + '" class="list-group-item">' + participants[p.username].split("_")[0] + '</li>');
-            $('#rp' + p.username).css('cursor', 'pointer').click(function() {
-              var username = $(this).attr('id').split("rp")[1];
-              sendPrivateMsg(username);
-            });
-          }
-        }
-      }
-    };
-    textroom.data({
+    this.handle.data({
       text: JSON.stringify(register),
-      error: function(reason) {
-        bootbox.alert(reason);
-        $('#username').removeAttr('disabled').val("");
-        $('#register').removeAttr('disabled').click(registerUsername);
+      error: (reason: any) => {
+        this.$log.error('Error trying to join the chat room', reason);
+        this.toastr.error('Unable to join the chat room.');
+        deferred.reject();
       }
     });
   }

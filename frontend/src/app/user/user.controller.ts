@@ -1,7 +1,7 @@
 import { AuthService } from '../components/auth/auth.service';
 import { PubSubService } from '../components/pubSub/pubSub.service';
 import { JanusVideoRoomService } from '../components/janus/janusVideoRoom.service';
-import { ChatService } from '../chat/chat.service';
+import { ChatService } from '../components/chat/chat.service';
 
 declare var attachMediaStream: any;
 
@@ -50,13 +50,11 @@ export class UserController {
         }
         break;
     }
-
   }
 
   reload() {
     this.toastr.info('Admin asked us to reload');
     window.location.reload();
   }
-
 }
 

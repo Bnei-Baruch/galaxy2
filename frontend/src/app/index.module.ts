@@ -7,12 +7,12 @@ import { galaxyNavbar } from '../app/components/navbar/navbar.directive';
 import { JanusService } from '../app/components/janus/janus.service';
 import { JanusVideoRoomService } from '../app/components/janus/janusVideoRoom.service';
 import { JanusStreamingService } from '../app/components/janus/janusStreaming.service';
+import { JanusTextRoomService } from '../app/components/janus/janusTextRoom.service';
 import { ShidurController } from './shidur/shidur.controller';
 import { ShidurService } from './shidur/shidur.service';
 import { UserController } from './user/user.controller';
-import { ChatService } from './chat/chat.service';
-import { ChatDialogController } from './chat/chat.dialog.controller';
-import { chatDialog } from './chat/chat.dialog.directive';
+import { ChatService } from '../app/components/chat/chat.service';
+import { ChatDialogController } from '../app/components/chat/chat.dialog.controller';
 import { FakeUserController } from './user/fake.controller';
 import { AdminController } from './admin/admin.controller';
 import { FakeSDIController } from './e2e/sdi.controller';
@@ -54,11 +54,11 @@ module frontend {
     .service('janus', JanusService)
     .service('videoRoom', JanusVideoRoomService)
     .service('streaming', JanusStreamingService)
+    .service('textRoom', JanusTextRoomService)
     .service('shidur', ShidurService)
     .service('authService', AuthService)
     .service('pubSub', PubSubService)
     .service('chat', ChatService)
-    .directive('chatDialog', chatDialog)
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
     .controller('ChatDialogController', ChatDialogController)

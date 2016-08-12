@@ -30,6 +30,7 @@ export class JanusService {
       this.$log.info('Initializing connection to Janus');
       this.session = new Janus({
         server: this.config.janus.serverUri,
+	      // iceServers: [{ url: this.config.janus.stunUri }],
 	      iceServers: this.config.janus.iceServers,
         success: () => {
           deffered.resolve();

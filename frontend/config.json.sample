@@ -1,9 +1,9 @@
 {
   "janus": {
     "serverUri": "https://galaxy-dev.kbb1.com:8889/janus",
-    "iceServers": [
-      {"url": "stun:v4g.kbb1.com:3478"
-    ],
+    "stunUri": "stun://v4g.kbb1.com:3478",
+    "reconnectTimeout": 10,
+    "titleApiUrl": "https://not.existing.v4g.kbb1.com:8080/title.php?title=%title%&port=%port%",
     "secret": "adminpwd",
     "roomId": 3,
     "sdiPorts": {
@@ -52,8 +52,6 @@
         "audio": 50005
       }
     },
-    "reconnectTimeout": 10,
-    "titleApiUrl": "https://v4g.kbb1.com:8080/title.php?title=%title%&port=%port%"
   },
   "backendUri": "https://rt-dev.kbb1.com:5000/backend",
   "environment": "development",
