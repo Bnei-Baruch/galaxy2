@@ -1,0 +1,12 @@
+<md-button
+  ng-if="vm.allowRemoveUsers"
+  ng-click="vm.removeUser(user); $event.stopPropagation()"
+  title="Remove user"
+  layout="column"
+  aria-label="Remove user"
+  class="md-icon-button launch">
+
+  <md-icon
+    ng-style="{color: '#9E9E9E'}"
+    class="material-icons">clear</md-icon>
+</md-button>
