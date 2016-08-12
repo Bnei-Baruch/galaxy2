@@ -87,6 +87,7 @@ export class BaseChannelController {
 
     // TODO: The timestamp should be better taken from Janus point of view
     user.joined = moment();
+    user.disabled = false;
     // user.disabled = this.publisherStatusTracker.connectionStatusByLogin(login) === InternetConnectionType.danger;
   }
 
