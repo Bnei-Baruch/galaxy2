@@ -1,9 +1,11 @@
 import { PubSubService } from '../../pubSub/pubSub.service';
 import {IUser} from '../../auth/auth.service';
+import { ChatService } from '../../chat/chat.service';
 
 /* @ngInject */
 export class UserContextMenuController {
   constructor(private pubSub: PubSubService,
+              private chat: ChatService,
               private $log: ng.ILogService,
               private toastr: any) {
   }

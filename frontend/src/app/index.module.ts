@@ -8,9 +8,12 @@ import { JanusService } from '../app/components/janus/janus.service';
 import { PublisherStatusTrackerService } from '../app/components/janus/publisherStatusTracker.service';
 import { JanusVideoRoomService } from '../app/components/janus/janusVideoRoom.service';
 import { JanusStreamingService } from '../app/components/janus/janusStreaming.service';
+import { JanusTextRoomService } from '../app/components/janus/janusTextRoom.service';
 import { ShidurController } from './shidur/shidur.controller';
 import { ShidurService } from './shidur/shidur.service';
 import { UserController } from './user/user.controller';
+import { ChatService } from '../app/components/chat/chat.service';
+import { ChatDialogController } from '../app/components/chat/chat.dialog.controller';
 import { FakeUserController } from './user/fake.controller';
 import { AdminController } from './admin/admin.controller';
 import { FakeSDIController } from './e2e/sdi.controller';
@@ -54,11 +57,14 @@ module frontend {
     .service('videoRoom', JanusVideoRoomService)
     .service('publisherStatusTracker', PublisherStatusTrackerService)
     .service('streaming', JanusStreamingService)
+    .service('textRoom', JanusTextRoomService)
     .service('shidur', ShidurService)
     .service('authService', AuthService)
     .service('pubSub', PubSubService)
+    .service('chat', ChatService)
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
+    .controller('ChatDialogController', ChatDialogController)
     .controller('FakeUserController', FakeUserController)
     .controller('AdminController', AdminController)
     .controller('FakeSDIController', FakeSDIController)

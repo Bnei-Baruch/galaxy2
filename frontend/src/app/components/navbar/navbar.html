@@ -1,42 +1,41 @@
 <div>
-    <md-toolbar class="showHeader" ng-click="vm.openHeader()">
-        <md-icon ng-if="1" class="material-icons">menu</md-icon>
-    </md-toolbar>
-    <md-sidenav class="md-sidenav-top" md-component-id="headerNav">
-        <md-toolbar layout="row" layout-align="center center" md-component-id="" ng-click="vm.closeHeader()">
-            <md-button href="/">
-                <!-- <md&#45;icon md&#45;svg&#45;src="/assets/images/galaxy&#45;logo.svg" aria&#45;label="Galaxy 2 Logo"></md&#45;icon> -->
-                Galaxy 2
+  <md-toolbar class="showHeader" ng-click="vm.openHeader()">
+    <md-icon ng-if="1" class="material-icons">menu</md-icon>
+  </md-toolbar>
+  <md-sidenav class="md-sidenav-top" md-component-id="headerNav">
+    <md-toolbar layout="row" layout-align="center center" md-component-id="" ng-click="vm.closeHeader()">
+      <md-button href="/">
+        <!-- <md&#45;icon md&#45;svg&#45;src="/assets/images/galaxy&#45;logo.svg" aria&#45;label="Galaxy 2 Logo"></md&#45;icon> -->
+        Galaxy 2
+      </md-button>
+      <section flex layout="row" layout-align="left center">
+        <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="shidur" class="md-raised">Shidur</md-button>
+        <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="user" class="md-raised">User</md-button>
+        <md-button ng-if="$root.currentUser.role === 'admin'" href="/backend/admin" class="md-raised">Admin</md-button>
+        <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="help" class="md-raised">Help</md-button>
+      </section>
+      <md-menu class="galaxy-navbar-text" md-position-mode="target-right bottom">
+        <md-button ng-click="vm.openMenu($mdOpenMenu, $event)">
+          <md-icon class="material-icons">person</md-icon>
+          {{$root.currentUser.title}}
+        </md-button>
+        <md-menu-content width="4">
+          <md-menu-item>
+            <md-button ng-click="vm.logout()">
+              <md-icon class="material-icons">power_settings_new</md-icon>
+              Logout
             </md-button>
-            <section flex layout="row" layout-align="left center">
-                <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="shidur" class="md-raised">Shidur</md-button>
-                <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="user" class="md-raised">User</md-button>
-                <md-button ng-if="$root.currentUser.role === 'admin'" href="/backend/admin" class="md-raised">Admin</md-button>
-                <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="help" class="md-raised">Help</md-button>
-            </section>
-            <md-menu class="galaxy-navbar-text" md-position-mode="target-right bottom">
-                <md-button ng-click="vm.openMenu($mdOpenMenu, $event)">
-                    <md-icon class="material-icons">person</md-icon>
-                    {{$root.currentUser.title}}
+            <md-menu-content width="4">
+              <md-menu-item>
+                <md-button ng-click="vm.logout()">
+                  <md-icon class="material-icons">power_settings_new</md-icon>
+                  Logout
                 </md-button>
-                <md-menu-content width="4">
-                    <md-menu-item>
-                        <md-button ng-click="vm.logout()">
-                            <md-icon class="material-icons">power_settings_new</md-icon>
-                            Logout
-                        </md-button>
-                        <md-menu-content width="4">
-                            <md-menu-item>
-                                <md-button ng-click="vm.logout()">
-                                    <md-icon class="material-icons">power_settings_new</md-icon>
-                                    Logout
-                                </md-button>
-                            </md-menu-item>
-                        </md-menu-content>
-                    </md-menu-item>
-                </md-menu-content>
-            </md-menu>
-        </md-toolbar>
-        <iframe src="https://chat1.kbb1.com/?label=galaxy2" class="chat"></iframe>
-    </md-sidenav>
+              </md-menu-item>
+            </md-menu-content>
+          </md-menu-item>
+        </md-menu-content>
+      </md-menu>
+    </md-toolbar>
+  </md-sidenav>
 </div>
