@@ -2,7 +2,7 @@
   <md-toolbar class="showHeader" ng-click="vm.openHeader()">
     <md-icon ng-if="1" class="material-icons">menu</md-icon>
   </md-toolbar>
-  <md-sidenav class="md-sidenav-top" md-component-id="headerNav">
+  <md-sidenav class="md-sidenav-top" md-component-id="headerNav" md-is-locked-open="false" md-disable-backdrop="true">
     <md-toolbar layout="row" layout-align="center center" md-component-id="" ng-click="vm.closeHeader()">
       <md-button href="/">
         <!-- <md&#45;icon md&#45;svg&#45;src="/assets/images/galaxy&#45;logo.svg" aria&#45;label="Galaxy 2 Logo"></md&#45;icon> -->
@@ -13,6 +13,8 @@
         <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="user" class="md-raised">User</md-button>
         <md-button ng-if="$root.currentUser.role === 'admin'" href="/backend/admin" class="md-raised">Admin</md-button>
         <md-button ng-if="['operator', 'admin'].indexOf($root.currentUser.role) !== -1" href ui-sref="help" class="md-raised">Help</md-button>
+        <md-button href="https://docs.google.com/document/d/1qtKVTsYeSjZLGvbJ9XaBG9kbHhJKBCMvIqv2xJJV-6Y/edit"
+                   target="_blank" class="md-raised">Instruction</md-button>
       </section>
       <md-menu class="galaxy-navbar-text" md-position-mode="target-right bottom">
         <md-button ng-click="vm.openMenu($mdOpenMenu, $event)">
