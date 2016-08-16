@@ -129,7 +129,7 @@ export class SingleUserChannelController extends BaseChannelController {
   // TODO: Handle HTTP errors and rollback to old state in case of an error
   forwardProgramToSDI() {
     // Forward program to SDI and change video title
-    var sdiPorts = this.config.janus.sdiPorts[this.name];
+    var sdiPorts = this.config.janus.videoRoom.sdiPorts[this.name];
 
     var audioPorts;
     if (sdiPorts.audio) {
@@ -162,7 +162,7 @@ export class SingleUserChannelController extends BaseChannelController {
     if (this.programUser) {
     return this.videoRoom.changeRemoteFeedTitle(
       this.programUser.title,
-      this.config.janus.sdiPorts[this.name].video.program);
+      this.config.janus.videoRoom.sdiPorts[this.name].video.program);
     }
   }
 

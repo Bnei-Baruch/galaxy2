@@ -1,0 +1,32 @@
+<md-dialog aria-label="Chat dialog" flex="40" ng-keyup="$event.keyCode === 13 && dialog.send()">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>Chat</h2>
+      <span flex></span>
+    </div>
+  </md-toolbar>
+
+  <md-dialog-content class="chat-content">
+    <md-list flex>
+      <md-list-item ng-repeat="message in dialog.messages.slice().reverse()">
+        <div>
+          <span ng-if="dialog.login == message.from" style="color: #2fa4e7">{{ message.from }}</span>
+          <span ng-if="dialog.login !== message.from" style="color: #2fa4e7">bb_shidur</span>
+          <span> : {{ message.text }}</span>
+        </div>
+      </md-list-item>
+    </md-list>
+  </md-dialog-content>
+
+  <md-card-actions layout="row" layout-align="center center">
+    <md-input-container flex>
+      <input style="margin-top: 20px;" ng-model="dialog.messageText" md-autofocus></textarea>
+    </md-input-container>
+    <md-button ng-click="dialog.send()"
+               class="md-primary md-raised"
+               title="Send message (Enter)">
+      Send
+    </md-button>
+  </md-card-actions>
+
+</md-dialog>

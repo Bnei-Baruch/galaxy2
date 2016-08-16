@@ -1,6 +1,6 @@
 {
   "version": "v4",
-  "repo": "borisyankov/DefinitelyTyped",
+  "repo": "DefinitelyTyped/DefinitelyTyped",
   "ref": "master",
   "path": ".tmp/typings",
   "bundle": ".tmp/typings/tsd.d.ts",
@@ -21,7 +21,7 @@
       "commit": "bb051830df88f5a55dcf06b7fe85bf6b62cc97f2"
     },
     "angular-material/angular-material.d.ts": {
-      "commit": "bb051830df88f5a55dcf06b7fe85bf6b62cc97f2"
+      "commit": "e4933ee6fd02ce5cd53abcb260bb1e6972fb1123"
     },
     "angularjs/angular.d.ts": {
       "commit": "bb051830df88f5a55dcf06b7fe85bf6b62cc97f2"

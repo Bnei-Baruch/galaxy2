@@ -1,6 +1,7 @@
 import { AuthService } from '../components/auth/auth.service';
 import { PubSubService } from '../components/pubSub/pubSub.service';
 import { JanusVideoRoomService } from '../components/janus/janusVideoRoom.service';
+import { ChatService } from '../components/chat/chat.service';
 
 declare var attachMediaStream: any;
 
@@ -9,8 +10,9 @@ export class UserController {
   /* @ngInject */
   constructor (pubSub: PubSubService,
                private videoRoom: JanusVideoRoomService,
-               private toastr: any,
-               private authService: AuthService) {
+               private authService: AuthService,
+               private chat: ChatService,
+               private toastr: any) {
 
     pubSub.client.subscribe('/users/' + authService.user.login, (message: any) => {
       this.onMessage(message);
@@ -48,13 +50,11 @@ export class UserController {
         }
         break;
     }
-
   }
 
   reload() {
     this.toastr.info('Admin asked us to reload');
     window.location.reload();
   }
-
 }
 
