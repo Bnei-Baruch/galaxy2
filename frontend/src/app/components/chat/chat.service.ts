@@ -31,7 +31,7 @@ export class ChatService {
           messages: this.messages,
           login: this.authService.user.login
         },
-        templateUrl: 'app/components/chat/chat.modal.html',
+        templateUrl: 'app/components/chat/chat.dialog.html',
         controller: 'ChatDialogController',
         controllerAs: 'dialog',
         onRemoving: () => { this.showing = false; }
@@ -40,13 +40,10 @@ export class ChatService {
   }
 
   send(text: string) {
-    this.textRoom.sendMessage(this.authService.user.login, text).then(() => {
-      this.$log.debug('Chat message sent:', text);
-    });
+    this.textRoom.sendMessage(this.authService.user.login, text);
   }
 
   private onMessage(message: any) {
-    this.$log.debug('Message arrived:', message);
     if ((message.from && message.from.indexOf('bb_shidur') !== -1) ||
         message.from === this.authService.user.login) {
       this.$timeout(() => {

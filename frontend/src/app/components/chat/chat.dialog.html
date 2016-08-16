@@ -1,29 +1,32 @@
-<md-card style="width: 320px;" md-theme-watch layout-padding>
-  <md-card-title>
-    <md-card-title-text>
-      <span class="md-headline" ng-bind="dialog.user.title"></span>
-    </md-card-title-text>
-  </md-card-title>
+<md-dialog aria-label="Chat dialog" flex="40" ng-keyup="$event.keyCode === 13 && dialog.send()">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>Chat</h2>
+      <span flex></span>
+    </div>
+  </md-toolbar>
 
-  <md-card-content>
+  <md-dialog-content>
     <md-list flex>
-      <md-list-item class="md-3-line" ng-repeat="message in dialog.messages.reverse() track by $index" ng-click="dialog.quote(message)">
-        <div class="md-list-item-text" layout="column">
-          <h3>{{ message.from.title }}</h3>
-          <h4>{{ message.text }}</h4>
+      <md-list-item ng-repeat="message in dialog.messages.slice().reverse()">
+        <div>
+          <span ng-if="dialog.login == message.from" style="color: #2fa4e7" ng-bind="message.from"></span>
+          <span ng-if="dialog.login !== message.from" style="color: #2fa4e7">bb_shidur</span>
+          <span> : {{ message.text }}</span>
         </div>
       </md-list-item>
     </md-list>
-  </md-card-content>
+  </md-dialog-content>
 
-  <md-card-actions layout="row" layout-align="start start">
+  <md-card-actions layout="row" layout-align="center center">
     <md-input-container flex>
-      <textarea ng-model="dialog.messageText" rows="2"></textarea>
+      <input style="margin-top: 20px;" ng-model="dialog.messageText" md-autofocus="true" />
     </md-input-container>
-
     <md-button ng-click="dialog.send()"
-      class="md-primary md-raised"
-      title="Send message (Ctrl+Enter)">Send</md-button>
-
+               class="md-primary md-raised"
+               title="Send message (Enter)">
+      Send
+    </md-button>
   </md-card-actions>
-</md-card>
+
+</md-dialog>
