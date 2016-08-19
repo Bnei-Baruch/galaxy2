@@ -2,58 +2,87 @@
   "janus": {
     "serverUri": "https://galaxy-dev.kbb1.com:8889/janus",
     "stunUri": "stun://v4g.kbb1.com:3478",
+    "iceServers": [
+      {"url": "stun:v4g.kbb1.com:3478"},
+      {"url": "turn:v4g.kbb1.com", "credential": "tpass", "username": "tuser"}
+    ],
     "reconnectTimeout": 10,
     "titleApiUrl": "https://not.existing.v4g.kbb1.com:8080/title.php?title=%title%&port=%port%",
-    "secret": "adminpwd",
-    "roomId": 3,
-    "sdiPorts": {
-      "large1": {
-        "forwardIp": "51.254.244.44",
-        "video": {
-          "program": 10001,
-          "streamId": 11
-        }
-      },
-      "large2": {
-        "forwardIp": "51.254.244.44",
-        "video": {
-          "program": 10002,
-          "streamId": 12
-        }
-      },
-      "small1": {
-        "forwardIp": "127.0.0.1",
-        "streamIds": {
-          "program": 33,
-          "preview": 31
+    "videoRoom": {
+      "secret": "adminpwd",
+      "roomId": 46105,
+      "sdiPorts": {
+        "large1": {
+          "forwardIp": "51.254.244.44",
+          "video": {
+            "program": 46105,
+            "streamId": 46105
+          }
         },
-        "video": {
-          "program": [20001, 20002, 20003, 20004],
-          "preview": [40001, 40002, 40003, 40004]
-        }
-      },
-      "small2": {
-        "forwardIp": "127.0.0.1",
-        "streamIds": {
-          "program": 34,
-          "preview": 32
+        "large2": {
+          "forwardIp": "51.254.244.44",
+          "video": {
+            "program": 46106,
+            "streamId": 46106
+          }
         },
-        "video": {
-          "program": [30001, 30002, 30003, 30004],
-          "preview": [50001, 50002, 50005, 50004]
-        }
-      },
-      "control": {
-        "forwardIp": "51.254.244.44",
-        "video": {
-          "program": 10005,
-          "streamId": 17
+        "small1": {
+          "forwardIp": "51.254.244.44",
+          "streamIds": {
+            "program": 46107,
+            "preview": 46108
+          },
+          "video": {
+            "program": [
+              46107,
+              46108,
+              46109,
+              46110
+            ],
+            "preview": [
+              46111,
+              46112,
+              46113,
+              46114
+            ]
+          }
         },
-        "audio": 50005
+        "small2": {
+          "forwardIp": "51.254.244.44",
+          "streamIds": {
+            "program": 46109,
+            "preview": 46110
+          },
+          "video": {
+            "program": [
+              46115,
+              46116,
+              46117,
+              46118
+            ],
+            "preview": [
+              46119,
+              46120,
+              46121,
+              46122
+            ]
+          }
+        },
+        "control": {
+          "forwardIp": "51.254.244.44",
+          "video": {
+            "program": 46123,
+            "streamId": 46111
+          },
+          "audio": 46124
+        }
       }
     },
+    "textRoom": {
+      "roomId": 9999
+    }
   },
-  "backendUri": "https://rt-dev.kbb1.com:5000/backend",
+  "backendUri": "https://rt-dev.kbb1.com:5001/backend",
   "environment": "development",
   "rollbarToken": "rollbar-access-token-comes-here",
   "codeVersion": "git-sha1-deployed-should-be-here"
