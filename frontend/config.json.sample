@@ -1,7 +1,6 @@
 {
   "janus": {
     "serverUri": "https://galaxy-dev.kbb1.com:8889/janus",
-    "stunUri": "stun://v4g.kbb1.com:3478",
     "iceServers": [
       {"url": "stun:v4g.kbb1.com:3478"},
       {"url": "turn:v4g.kbb1.com", "credential": "tpass", "username": "tuser"}
