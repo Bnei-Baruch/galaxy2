@@ -1,9 +1,10 @@
 <md-dialog aria-label="Chat dialog" flex="40" ng-keyup="$event.keyCode === 13 && dialog.send()">
-  <md-toolbar>
-    <div class="md-toolbar-tools">
-      <h2>Chat</h2>
-      <span flex></span>
-    </div>
+  <md-toolbar class="md-toolbar-tools">
+    <h2>Chat</h2>
+    <span flex></span>
+    <md-button class="md-icon-button" ng-click="dialog.cancel()">
+      <md-icon class="material-icons" aria-label="Close dialog">close</md-icon>
+    </md-button>
   </md-toolbar>
 
   <md-dialog-content>

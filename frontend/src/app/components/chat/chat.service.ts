@@ -39,6 +39,10 @@ export class ChatService {
     }
   }
 
+  cancel() {
+    this.$mdDialog.cancel();
+  }
+
   send(text: string) {
     this.textRoom.sendMessage(this.authService.user.login, text);
   }

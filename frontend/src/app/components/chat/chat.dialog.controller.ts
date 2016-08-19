@@ -14,6 +14,10 @@ export class ChatDialogController {
     this.login = login;
   }
 
+  cancel() {
+    this.chat.cancel();
+  }
+
   send() {
     this.chat.send(this.messageText);
     this.messageText = '';
