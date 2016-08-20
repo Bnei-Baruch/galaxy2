@@ -33,7 +33,7 @@ export class AdminController {
   restartFours() {
     this.$log.warn('Restarting GStreamer Fours');
 
-    var url = 'https://v4g.kbb1.com:8081/restart/';
+    var url = 'https://v4g.kbb1.com:8082/restart/';
     this.$http.post(url, {})
       .error((data:any, st:any) => {
         this.$log.error('Restarting GStreamer Fours', data, st);
