@@ -1,12 +1,13 @@
 import { JanusVideoRoomService } from '../janus/janusVideoRoom.service';
 import { IUser } from '../auth/auth.service';
+import {SmallChannelController} from "./small/small.controller";
 
 
 export interface IDraggedData {
   user: IUser,
-  channelFromId: string,
-  channelToId?: string
-  destinationType: string
+    channelFromId: string,
+    channelToId?: string
+      destinationType?: string
 }
 
 
@@ -162,27 +163,29 @@ export class BaseChannelController {
     return onlineUsers;
   }
 
-  onUserDrop(data: IDraggedData) {
+  onUserDrop(data: IDraggedData, destinationType:string = 'channel') {
+    if(data.channelFromId === this.name){
+      return;
+    }
+    data.destinationType = (this.name === "control" && destinationType !== 'disable')? 'search':  destinationType;
     data.channelToId = this.name;
     this.$rootScope.$broadcast('channel.dragged', data);
   }
 
   onDragUserFrom(data: IDraggedData){
-    this.users.some((user: IUser, index: any) => {
-      if (user.login === data.user.login) {
-        this.users.splice(index, 1);
-        return true;
-      }
-    });
+    /*Just define  method*/
   }
-
   onDragUserTo(data:IDraggedData){
-    this.users.push(data.user);
-    this.saveUpdatedUserChannel(data.user.id,data.channelToId);
-  }
+    if(!this.usersByLogin[data.user.login]){
+      data.user.channel = this.name;
+      this.users.push(data.user);
+      this.usersByLogin = {};
+      this.mapUsersByLogin();
+    }
+    this.userJoined(data.user.login);
+    this.saveUpdatedUserChannel(data.user.id,data.channelToId);  }
 
-  private saveUpdatedUserChannel(userId: Number,channelId: string ){
-
+  saveUpdatedUserChannel(userId: Number,channelId: string ){
     return this.$http.put(this.config.backendUri + '/rest/users/' + userId, {channel: channelId})
       .then((r: any) => {
         return r;

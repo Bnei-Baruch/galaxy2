@@ -1,6 +1,6 @@
 import { IUser } from '../../auth/auth.service';
 import { JanusStreamingService } from '../../janus/janusStreaming.service';
-import { BaseChannelController } from '../channel.controller';
+import {BaseChannelController, IDraggedData} from '../channel.controller';
 
 declare var attachMediaStream: any;
 
@@ -166,7 +166,7 @@ export class SmallChannelController extends BaseChannelController {
    * @param login User login
    * @returns     Nothing
    */
-  private removeUserFromComposites(login: string): void {
+  public removeUserFromComposites(login: string): void {
     if (this.onlineUsers.indexOf(login) !== -1) {
       var userIndex = this.onlineUsers.indexOf(login);
       var lastLogin = this.onlineUsers.pop();
@@ -236,5 +236,25 @@ export class SmallChannelController extends BaseChannelController {
     return first.every((user: IUser, i: number) => {
       return user.login === second[i].login;
     });
+  }
+
+  onDragUserFrom(data: IDraggedData){
+    if(data.destinationType === 'search'){
+      return;
+    }
+
+    this.users.some((user: IUser) => {
+      if (user.login !== data.user.login){
+        return false;
+      }
+      if(data.destinationType === 'disable'){
+        this.disableUser(user);
+      } else {
+        this.removeUserFromComposites(user.login);
+      }
+      return true;
+    });
+    this.usersByLogin = {};
+    this.mapUsersByLogin();
   }
 }

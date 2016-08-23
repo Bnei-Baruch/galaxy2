@@ -53,13 +53,12 @@ video {
         }
         .material-icons.drag {
             margin-top: -10px;
-            color: #cccccc;
+            color: rgba(0,0,0,0);
             cursor: move;
-
-          &:hover{
-              color: black;
-          }
         }
+      &:hover .material-icons.drag{
+        color: black;
+      }
     }
     .md-icon-button {
         height: auto;

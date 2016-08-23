@@ -115,10 +115,8 @@ export class ControlChannelController extends SingleUserChannelController {
   }
 
   onDragUserTo(data:IDraggedData){
-    this.users.push(data.user);
-  }
-
-  onDragUserFrom(data: IDraggedData){
-    this.removeUser(data.user);
+    if(data.destinationType === 'search'){
+      this.searchText = data.user.login;
+    }
   }
 }

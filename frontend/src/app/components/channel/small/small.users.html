@@ -1,4 +1,4 @@
-<md-list class="users">
+<md-list class="users" ui-on-drop="vm.onUserDrop($data)">
 
   <!-- TODO: move styles to channel.scss -->
 
@@ -10,7 +10,7 @@
     class="composite"
     aria-label="Preview composite">
 
-    <div layout="row" layout-wrap flex="100" class="userItem"  ui-on-drop="vm.onUserDrop($data)">
+    <div layout="row" layout-wrap flex="100" class="userItem" >
       <div layout="column md-caption" flex="50" ng-repeat="user in composite" class="compositeItem">
         <md-icon layout="column" ng-style="{color: '#4CAF50', fontSize: 12, marginRight: '8px'}" class="material-icons">lens</md-icon>
 
@@ -25,7 +25,7 @@
 
         <md-icon class="material-icons drag"
           ui-draggable="true"
-          drag="{user: user, destinationType: 'chanel', channelFromId: vm.name}">
+          drag="{user: user, channelFromId: vm.name}">
           reorder
         </md-icon>
 

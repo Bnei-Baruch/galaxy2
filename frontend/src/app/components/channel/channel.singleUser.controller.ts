@@ -59,7 +59,7 @@ export class SingleUserChannelController extends BaseChannelController {
         }
       }, () => {
         this.toastr.error(`Error putting ${user.login} to program,
-        rolling back to ${oldProgramUser.login}`);
+          rolling back to ${oldProgramUser.login}`);
         this.$log.info('Rolling back program user', this.name, oldProgramUser.login);
         this.programUser = oldProgramUser;
       });
@@ -155,10 +155,5 @@ export class SingleUserChannelController extends BaseChannelController {
     }
 
     return onlineUsers[(userIndex + 1) % onlineUsers.length];
-  }
-  onDragUserFrom(data: IDraggedData){
-    super.onDragUserFrom(data);
-
-    //this.disableUser()
   }
 }
