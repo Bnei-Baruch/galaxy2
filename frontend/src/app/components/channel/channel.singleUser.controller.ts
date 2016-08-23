@@ -1,4 +1,4 @@
-import { BaseChannelController, IDraggedData } from './channel.controller';
+import { BaseChannelController } from './channel.controller';
 import { IUser } from '../auth/auth.service';
 
 declare var attachMediaStream: any;

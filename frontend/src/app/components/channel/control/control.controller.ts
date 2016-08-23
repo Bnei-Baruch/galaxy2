@@ -103,6 +103,12 @@ export class ControlChannelController extends SingleUserChannelController {
     return allUsers;
   }
 
+  onDragUserTo(data: IDraggedData) {
+    if (data.destinationType === 'search') {
+      this.searchText = data.user.login;
+    }
+  }
+
   private muteRemoteUser(user: IUser): void {
     if (user.audioEnabled) {
       this.toggleAudio(user);
@@ -112,11 +118,5 @@ export class ControlChannelController extends SingleUserChannelController {
   private onUsersListChanged(): void {
     this.mapUsersByLogin();
     this.videoRoom.updateChannelUsers(this.name, this.getLoginsList());
-  }
-
-  onDragUserTo(data:IDraggedData){
-    if(data.destinationType === 'search'){
-      this.searchText = data.user.login;
-    }
   }
 }
