@@ -4,9 +4,9 @@
 
 import { AuthService, IUser  } from '../auth/auth.service';
 import { JanusService } from './janus.service';
+import { PublisherStatusTrackerService } from './publisherStatusTracker.service';
 
 declare var escape: any;
-
 
 interface IChannel {
   name: string;
@@ -62,6 +62,7 @@ export class JanusVideoRoomService {
       private $http: ng.IHttpService,
       private authService: AuthService,
       private janus: JanusService,
+      private publisherStatusTracker: PublisherStatusTrackerService,
       private toastr: any,
       private config: any) {
 
@@ -176,7 +177,7 @@ export class JanusVideoRoomService {
           handleInst.send({
             'message': {
               'request': 'join',
-              'room': this.config.janus.roomId,
+              'room': this.config.janus.videoRoom.roomId,
               'ptype': 'listener',
               'feed': this.publishers[login].id
             },
@@ -423,10 +424,7 @@ export class JanusVideoRoomService {
     }
   }
 
-  // Cleans up when publisher is leaving. Call relevant channels with leftCallback.
-  private deletePublisherByJanusId(janusId: string): void {
-    this.$log.info('VideoRoom - delete publisher', janusId);
-
+  private publisherIdToLogin(janusId: number) {
     var login = null;
     for (var key in this.publishers) {
       if (this.publishers.hasOwnProperty(key)) {
@@ -437,7 +435,11 @@ export class JanusVideoRoomService {
         }
       }
     }
+    return login;
+  }
 
+  // Cleans up when publisher is leaving. Call relevant channels with leftCallback.
+  private deletePublisher(login: string): void {
     if (login) {
       this.$log.info('VideoRoom - deleting', login);
       delete this.publishers[login];
@@ -470,7 +472,7 @@ export class JanusVideoRoomService {
           this.localHandle.send({
             'message': {
               request: 'join',
-              room: this.config.janus.roomId,
+              room: this.config.janus.videoRoom.roomId,
               ptype: 'publisher',
               display: this.localUserLogin
             },
@@ -554,9 +556,11 @@ export class JanusVideoRoomService {
         if (message.publishers) {
           this.updatePublishersAndTriggerJoined(message.publishers);
         } else if (message.leaving) {
-          this.deletePublisherByJanusId(message.leaving);
+          this.deletePublisher(this.publisherIdToLogin(message.leaving));
         } else if (message.unpublished) {
-          this.deletePublisherByJanusId(message.unpublished);
+          var login: string = this.publisherIdToLogin(message.unpublished);
+          // this.publisherStatusTracker.disconnect(login);
+          this.deletePublisher(login);
         }
         break;
     }
@@ -676,7 +680,7 @@ export class JanusVideoRoomService {
           this.$log.info('VideoRoom - got SDP, starting...', handle.getId());
           this.$log.debug(jsep);
           handle.send({
-            'message': {'request': 'start', 'room': this.config.janus.roomId},
+            'message': {'request': 'start', 'room': this.config.janus.videoRoom.roomId},
             'jsep': jsep,
             error: (response: any) => this.$log.error('Error starting videoroom SDP answer', response)
           });
@@ -694,8 +698,8 @@ export class JanusVideoRoomService {
 
     var request = {
       request: 'listforwarders',
-      room: this.config.janus.roomId,
-      secret: this.config.janus.secret
+      room: this.config.janus.videoRoom.roomId,
+      secret: this.config.janus.videoRoom.secret
     };
 
     this.localHandle.send({
@@ -732,8 +736,8 @@ export class JanusVideoRoomService {
     var forward: any = {
       request: 'rtp_forward',
       publisher_id: this.publishers[login].id,
-      room: this.config.janus.roomId,
-      secret: this.config.janus.secret,
+      room: this.config.janus.videoRoom.roomId,
+      secret: this.config.janus.videoRoom.secret,
       host: forwardIp,
       video_port: videoPort
     };
@@ -780,8 +784,8 @@ export class JanusVideoRoomService {
         request: 'stop_rtp_forward',
         stream_id: streamId,
         publisher_id: forwardInfo.publisherId,
-        room: this.config.janus.roomId,
-        secret: this.config.janus.secret
+        room: this.config.janus.videoRoom.roomId,
+        secret: this.config.janus.videoRoom.secret
       },
       success: (data: any) => {
         deferred.resolve();

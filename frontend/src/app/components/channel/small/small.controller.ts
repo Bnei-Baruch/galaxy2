@@ -28,7 +28,7 @@ export class SmallChannelController extends BaseChannelController {
   onLink(scope: ng.IScope, element: ng.IAugmentedJQuery) {
     super.onLink(scope, element);
 
-    var streamIds = this.config.janus.sdiPorts[this.name].streamIds;
+    var streamIds = this.config.janus.videoRoom.sdiPorts[this.name].streamIds;
     this.attachStreamingHandle(this.slotElement.program, streamIds.program);
     this.attachStreamingHandle(this.slotElement.preview, streamIds.preview);
 
@@ -41,7 +41,9 @@ export class SmallChannelController extends BaseChannelController {
 
   userJoined(login: string) {
     super.userJoined(login);
-    this.addUserToComposites(login);
+    if (!this.usersByLogin[login].disabled) {
+      this.addUserToComposites(login);
+    }
   }
 
   userLeft(login: string) {
@@ -77,6 +79,17 @@ export class SmallChannelController extends BaseChannelController {
     }
 
     return true;
+  }
+
+  fixTitles() {
+    var composite = this.composites[this.compositeIndex.program];
+    if (composite) {
+      var portsConfig = this.config.janus.sdiPorts[this.name];
+      var videoPorts = portsConfig.video[this.getSlotName(true)];
+      composite.forEach((user: IUser, index: number) => {
+        this.videoRoom.changeRemoteFeedTitle(user.title, videoPorts[index]);
+      });
+    }
   }
 
   /**
@@ -156,7 +169,7 @@ export class SmallChannelController extends BaseChannelController {
 
     var logins: string[] = Array.apply(null, Array(this.compositeSize));
 
-    var portsConfig = this.config.janus.sdiPorts[this.name];
+    var portsConfig = this.config.janus.videoRoom.sdiPorts[this.name];
     var videoPorts = portsConfig.video[slotName];
 
     var oldCompositeIndex = this.compositeIndex[slotName];

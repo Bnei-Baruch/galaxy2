@@ -1,4 +1,5 @@
 import { JanusVideoRoomService } from '../janus/janusVideoRoom.service';
+import { PublisherStatusTrackerService, InternetConnectionType } from '../janus/publisherStatusTracker.service';
 import { IUser } from '../auth/auth.service';
 
 
@@ -30,6 +31,8 @@ export class BaseChannelController {
   toastr: any;
   config: any;
   cssUserListHeightCalc: number;
+  publisherStatusTracker: PublisherStatusTrackerService;
+  internetConnectionType: InternetConnectionType;
   $http: ng.IHttpService;
   $rootScope: ng.IRootScopeService;
 
@@ -43,6 +46,8 @@ export class BaseChannelController {
     this.config = $injector.get('config');
     this.$http = $injector.get('$http');
     this.$rootScope = $injector.get('$rootScope');
+    this.publisherStatusTracker = $injector.get('publisherStatusTracker');
+
     // Mapping users by login for convenience
     this.mapUsersByLogin();
 
@@ -71,6 +76,9 @@ export class BaseChannelController {
     // Set users list height
 
     this.bindHotkey();
+
+      // check internet connection status of users
+      // this.publisherStatusTracker.setAllUsersStatus(this.usersByLogin);
 
     scope.$on('channel.dragged', function (e: any, data: IDraggedData) {
       if (e.currentScope.vm.name === data.channelFromId) {
@@ -101,6 +109,7 @@ export class BaseChannelController {
     // TODO: The timestamp should be better taken from Janus point of view
     user.joined = moment();
     user.disabled = false;
+    // user.disabled = this.publisherStatusTracker.connectionStatusByLogin(login) === InternetConnectionType.danger;
   }
 
   userLeft(login: string) {
@@ -108,6 +117,7 @@ export class BaseChannelController {
     var user = this.usersByLogin[login];
     user.joined = null;
     user.stream = null;
+    // user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
   }
 
   trigger() {

@@ -78,7 +78,6 @@ function setUri(config) {
     config.janus.sdiPorts.small2.forwardIp = config.janus.sdiPorts.large1.forwardIp;
     config.janus.sdiPorts.control.forwardIp = config.janus.sdiPorts.large1.forwardIp;
     config.backendUri = prompt('Please insert backendUri', config.backendUri);
-    config.chatUri = prompt('Please insert chatUri', config.chatUri);
   } else {
     if (config.environment != 'production') {
       var dummy_title_api = 'https://not.existing.v4g.kbb1.com:8080/title.php?title=%title%&port=%port%';

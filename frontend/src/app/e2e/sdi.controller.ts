@@ -12,10 +12,10 @@ export class FakeSDIController {
     this.ports = {};
 
     angular.element(document).ready(() => {
-      for (var name in config.janus.sdiPorts) {
-        if (config.janus.sdiPorts.hasOwnProperty(name)) {
-          var video = config.janus.sdiPorts[name].video.program;
-          var streamId = config.janus.sdiPorts[name].video.streamId;
+      for (var name in config.janus.videoRoom.sdiPorts) {
+        if (config.janus.videoRoom.sdiPorts.hasOwnProperty(name)) {
+          var video = config.janus.videoRoom.sdiPorts[name].video.program;
+          var streamId = config.janus.videoRoom.sdiPorts[name].video.streamId;
           this.ports[video] = streamId;
         }
       }
