@@ -59,6 +59,14 @@ video {
     padding: 0;
   }
 
+  .material-icons.drag {
+    margin-top: -10px;
+    color: rgba(0,0,0,0);
+    cursor: move;
+  }
+  &:hover .material-icons.drag{
+    color: black;
+  }
   .userConnectStatus{
     font-size: 24px;
     margin: -2px 10px 0 0;

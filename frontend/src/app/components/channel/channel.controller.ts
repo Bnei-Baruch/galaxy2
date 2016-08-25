@@ -2,6 +2,15 @@ import { JanusVideoRoomService } from '../janus/janusVideoRoom.service';
 import { PublisherStatusTrackerService, InternetConnectionType } from '../janus/publisherStatusTracker.service';
 import { IUser } from '../auth/auth.service';
 
+
+export interface IDraggedData {
+  user: IUser;
+  channelFromId: string;
+  channelToId?: string;
+  destinationType?: string;
+}
+
+
 /** @ngInject */
 export class BaseChannelController {
   name: string;
@@ -24,6 +33,8 @@ export class BaseChannelController {
   cssUserListHeightCalc: number;
   publisherStatusTracker: PublisherStatusTrackerService;
   internetConnectionType: InternetConnectionType;
+  $http: ng.IHttpService;
+  $rootScope: ng.IRootScopeService;
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
@@ -33,6 +44,8 @@ export class BaseChannelController {
     this.videoRoom = $injector.get('videoRoom');
     this.toastr = $injector.get('toastr');
     this.config = $injector.get('config');
+    this.$http = $injector.get('$http');
+    this.$rootScope = $injector.get('$rootScope');
     this.publisherStatusTracker = $injector.get('publisherStatusTracker');
 
     // Mapping users by login for convenience
@@ -66,6 +79,14 @@ export class BaseChannelController {
 
       // check internet connection status of users
       // this.publisherStatusTracker.setAllUsersStatus(this.usersByLogin);
+
+    scope.$on('channel.dragged', function (e: any, data: IDraggedData) {
+      if (e.currentScope.vm.name === data.channelFromId) {
+        e.currentScope.vm.onDragUserFrom(data);
+      } else if (e.currentScope.vm.name === data.channelToId) {
+        e.currentScope.vm.onDragUserTo(data);
+      }
+    });
   }
 
   setUserListHeight(element: ng.IAugmentedJQuery) {
@@ -149,5 +170,37 @@ export class BaseChannelController {
     });
 
     return onlineUsers;
+  }
+
+  onUserDrop(data: IDraggedData, destinationType: string = 'channel') {
+    if (data.channelFromId === this.name) {
+      return;
+    }
+    data.destinationType = (this.name === 'control' && destinationType !== 'disable') ? 'search' :  destinationType;
+    data.channelToId = this.name;
+    this.$rootScope.$broadcast('channel.dragged', data);
+  }
+
+  onDragUserFrom(data: IDraggedData) {
+    /*Just define  method*/
+  }
+  onDragUserTo(data: IDraggedData) {
+    if (!this.usersByLogin[data.user.login]) {
+      data.user.channel = this.name;
+      this.users.push(data.user);
+      this.usersByLogin = {};
+      this.mapUsersByLogin();
+    }
+    this.userJoined(data.user.login);
+    this.saveUpdatedUserChannel(data.user.id, data.channelToId);
+  }
+
+  saveUpdatedUserChannel(userId: Number, channelId: string ) {
+    return this.$http.put(this.config.backendUri + '/rest/users/' + userId, {channel: channelId})
+      .then((r: any) => {
+        return r;
+      }, (e: any) => {
+        // error
+      });
   }
 }

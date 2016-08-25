@@ -39,6 +39,7 @@ module frontend {
     'ngAria',
     'ui.router',
     'ngMaterial',
+    'ang-drag-drop',
     'toastr',
     // Important: use version 0.3.6 of ngContextMenu because of
     // https://github.com/Wildhoney/ngContextMenu/issues/24

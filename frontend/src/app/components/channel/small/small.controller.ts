@@ -1,6 +1,6 @@
 import { IUser } from '../../auth/auth.service';
 import { JanusStreamingService } from '../../janus/janusStreaming.service';
-import { BaseChannelController } from '../channel.controller';
+import {BaseChannelController, IDraggedData} from '../channel.controller';
 
 declare var attachMediaStream: any;
 
@@ -92,6 +92,56 @@ export class SmallChannelController extends BaseChannelController {
     }
   }
 
+  /**
+   * Removes a user from the composites array.
+   * Rules:
+   *  - One or no composites present, just remove user from the first one.
+   *  - Two or more composites present, find a replacement for the user from the last composite.
+   *
+   * @param login User login
+   * @returns     Nothing
+   */
+  removeUserFromComposites(login: string): void {
+    if (this.onlineUsers.indexOf(login) !== -1) {
+      var userIndex = this.onlineUsers.indexOf(login);
+      var lastLogin = this.onlineUsers.pop();
+
+      if (login !== lastLogin) {
+        this.onlineUsers[userIndex] = lastLogin;
+      }
+
+      // save current preview composite
+      var oldPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
+
+      this.constructComposites();
+
+      var newPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
+      if (!this.areCompositesEqual(oldPrevComposite, newPrevComposite)) {
+        this.putCompositeToSlot(this.compositeIndex.preview, false, true);
+      }
+    }
+  }
+
+  onDragUserFrom(data: IDraggedData) {
+    if (data.destinationType === 'search') {
+      return;
+    }
+
+    this.users.some((user: IUser) => {
+      if (user.login !== data.user.login) {
+        return false;
+      }
+      if (data.destinationType === 'disable') {
+        this.disableUser(user);
+      } else {
+        this.removeUserFromComposites(user.login);
+      }
+      return true;
+    });
+    this.usersByLogin = {};
+    this.mapUsersByLogin();
+  }
+
   // TODO: Handle HTTP errors and rollback to old state in case of an error
   private putCompositeToSlot(index: number, program: boolean, force: boolean = false): ng.IPromise<any> {
     var deffered = this.$q.defer();
@@ -166,36 +216,6 @@ export class SmallChannelController extends BaseChannelController {
       // Forward first composite to preview once it's complete
       if (this.compositeIndex.preview === null && this.onlineUsers.length >= this.compositeSize) {
         this.putCompositeToPreview(0);
-      }
-    }
-  }
-
-  /**
-   * Removes a user from the composites array.
-   * Rules:
-   *  - One or no composites present, just remove user from the first one.
-   *  - Two or more composites present, find a replacement for the user from the last composite.
-   *
-   * @param login User login
-   * @returns     Nothing
-   */
-  private removeUserFromComposites(login: string): void {
-    if (this.onlineUsers.indexOf(login) !== -1) {
-      var userIndex = this.onlineUsers.indexOf(login);
-      var lastLogin = this.onlineUsers.pop();
-
-      if (login !== lastLogin) {
-        this.onlineUsers[userIndex] = lastLogin;
-      }
-
-      // save current preview composite
-      var oldPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
-
-      this.constructComposites();
-
-      var newPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
-      if (!this.areCompositesEqual(oldPrevComposite, newPrevComposite)) {
-        this.putCompositeToSlot(this.compositeIndex.preview, false, true);
       }
     }
   }
