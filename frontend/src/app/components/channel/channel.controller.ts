@@ -199,8 +199,9 @@ export class BaseChannelController {
     return this.$http.put(this.config.backendUri + '/rest/users/' + userId, {channel: channelId})
       .then((r: any) => {
         return r;
-      }, (e: any) => {
-        // error
+      }, (error: any) => {
+        this.toastr.error('Error move user with id to channel.');
+        this.$log.error(`Error move user with id ${userId} to channel ${channelId}. Exception = ${error}`);
       });
   }
 }
