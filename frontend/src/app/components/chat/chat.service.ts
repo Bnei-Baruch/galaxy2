@@ -53,8 +53,7 @@ export class ChatService {
     if ((message.from && message.from.indexOf('bb_shidur') !== -1) ||
         message.from === this.authService.user.login) {
       this.$timeout(() => {
-        var visProp = this.getHiddenProp();
-        if (document[visProp]) {
+        if (document[this.getHiddenProp()]) {
           this.notifyMe(message.from, message.text, false);
         }
         this.messages.push(message);
