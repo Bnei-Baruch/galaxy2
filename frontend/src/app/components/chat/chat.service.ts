@@ -1,6 +1,8 @@
 import { JanusTextRoomService } from '../janus/janusTextRoom.service';
 import { AuthService } from '../auth/auth.service';
 
+declare var Notification: any;
+
 /** @ngInject */
 export class ChatService {
   modalInitialized: ng.IPromise<any>;
@@ -51,10 +53,46 @@ export class ChatService {
     if ((message.from && message.from.indexOf('bb_shidur') !== -1) ||
         message.from === this.authService.user.login) {
       this.$timeout(() => {
+        var visProp = this.getHiddenProp();
+        if (document[visProp]) {
+          this.notifyMe(message.from, message.text, false);
+        }
         this.messages.push(message);
         this.start();
       });
     }
   }
+
+  private notifyMe(title: string, message: string, tout: boolean) {
+    if (!Notification) {
+      alert('Desktop notifications not available in your browser. Try Chromium.');
+      return;
+    }
+    if (Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    } else {
+      /* tslint:disable:no-unused-variable */
+      var n = new Notification(title + ':', {
+        icon: 'nlogo.png',
+        body: message,
+        requireInteraction: tout
+      });
+      /* tslint:enable:no-unused-variable */
+    }
+  }
+
+  private getHiddenProp() {
+    var prefixes = ['webkit', 'moz', 'ms', 'o'];
+    if ('hidden' in document) {
+      return 'hidden';
+    }
+    for (var i = 0; i < prefixes.length; i++) {
+      if ((prefixes[i] + 'Hidden') in document) {
+        return prefixes[i] + 'Hidden';
+      }
+    }
+    return null;
+  }
+
 
 }
