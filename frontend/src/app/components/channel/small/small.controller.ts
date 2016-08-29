@@ -123,23 +123,18 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   onDragUserFrom(data: IDraggedData) {
-    if (data.destinationType === 'search') {
-      return;
-    }
-
     this.users.some((user: IUser) => {
       if (user.login !== data.user.login) {
         return false;
       }
-      if (data.destinationType === 'disable') {
+      if (data.channelToId === 'control') {
         this.disableUser(user);
       } else {
         this.removeUserFromComposites(user.login);
       }
       return true;
     });
-    this.usersByLogin = {};
-    this.mapUsersByLogin();
+    super.onDragUserFrom(data);
   }
 
   // TODO: Handle HTTP errors and rollback to old state in case of an error
@@ -267,7 +262,7 @@ export class SmallChannelController extends BaseChannelController {
     }
 
     return first.every((user: IUser, i: number) => {
-      return user.login === second[i].login;
+      return angular.isDefined(second[i]) && user.login === second[i].login;
     });
   }
 }

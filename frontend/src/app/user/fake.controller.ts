@@ -20,10 +20,10 @@ export class FakeUserController {
       config: any,
       $injector: any) {
 
-    this.fakeUsers = ['afula'];
+    // this.fakeUsers = ['afula'];
     // this.fakeUsers = ['afula', 'kaliningrad', 'kiev'];
     // this.fakeUsers = ['ashdod', 'arava', 'afula', 'arad'];
-    // this.fakeUsers = ['ashdod', 'arava', 'eilat', 'afula', 'naharia', 'ashkelon', 'arad'];
+     this.fakeUsers = ['ashdod', 'arava', 'eilat', 'afula', 'naharia', 'ashkelon', 'arad'];
     // this.fakeUsers = ['afula', 'arad', 'guadalajara', 'dnepropetrovsk', 'krasnodar', 'krasnoyarsk'];
 
     $timeout(() => {

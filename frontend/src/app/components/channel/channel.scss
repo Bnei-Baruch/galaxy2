@@ -51,21 +51,21 @@ video {
     .noMarginRight md-icon.material-icons:first-child {
       margin-right: 0;
     }
+
+    .material-icons.drag {
+      margin-top: -10px;
+      color: rgba(0,0,0,0);
+      cursor: move;
+    }
+    &:hover .material-icons.drag{
+      color: black;
+    }
   }
   .md-icon-button {
     height: auto;
     min-height: auto;
     line-height: 0;
     padding: 0;
-  }
-
-  .material-icons.drag {
-    margin-top: -10px;
-    color: rgba(0,0,0,0);
-    cursor: move;
-  }
-  &:hover .material-icons.drag{
-    color: black;
   }
   .userConnectStatus{
     font-size: 24px;
@@ -96,6 +96,9 @@ video {
   &.usersWithHeader{
     min-height: calc(100% - 50px);
     height: calc(100% - 50px);
+  }
+  &.noDrop{
+    cursor: no-drop !important;
   }
 
   .composite > .md-button{

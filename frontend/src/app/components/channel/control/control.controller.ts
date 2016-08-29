@@ -104,9 +104,11 @@ export class ControlChannelController extends SingleUserChannelController {
   }
 
   onDragUserTo(data: IDraggedData) {
-    if (data.destinationType === 'search') {
-      this.searchText = data.user.login;
-    }
+    /*Don't do nothing, overload default method */
+  }
+
+  onDragUserFrom(data: IDraggedData) {
+    /*Don't do nothing, overload default method */
   }
 
   private muteRemoteUser(user: IUser): void {

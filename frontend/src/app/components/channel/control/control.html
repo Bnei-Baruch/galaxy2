@@ -39,7 +39,7 @@
     </md-autocomplete>
   </div>
 
-  <div class="userList"   style="height: {{vm.cssUserListHeightCalc}}px;">
+  <div class="userList"   style="height: {{vm.cssUserListHeightCalc}}px; min-height: 50px;"  ui-on-drop="vm.onUserDrop($data)">
 
     <div  class="users maxHeight50">
       <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="maxHeight50"></ng-include>

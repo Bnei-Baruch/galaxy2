@@ -13,21 +13,17 @@ export class LargeChannelController extends SingleUserChannelController {
   }
 
   onDragUserFrom(data: IDraggedData) {
-    if (data.destinationType === 'search') {
-      return;
-    }
     this.users.some((user: IUser, index: any) => {
       if (user.login !== data.user.login) {
         return false;
       }
-      if (data.destinationType === 'disable') {
+      if (data.channelToId === 'control') {
         this.disableUser(user);
       } else {
         this.users.splice(index, 1);
       }
       return true;
     });
-    this.usersByLogin = {};
-    this.mapUsersByLogin();
+    super.onDragUserFrom(data);
   }
 }

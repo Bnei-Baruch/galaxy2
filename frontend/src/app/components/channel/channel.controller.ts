@@ -7,7 +7,6 @@ export interface IDraggedData {
   user: IUser;
   channelFromId: string;
   channelToId?: string;
-  destinationType?: string;
 }
 
 
@@ -172,24 +171,22 @@ export class BaseChannelController {
     return onlineUsers;
   }
 
-  onUserDrop(data: IDraggedData, destinationType: string = 'channel') {
-    if (data.channelFromId === this.name) {
-      return;
-    }
-    data.destinationType = (this.name === 'control' && destinationType !== 'disable') ? 'search' :  destinationType;
+  onUserDrop(data: IDraggedData) {
     data.channelToId = this.name;
     this.$rootScope.$broadcast('channel.dragged', data);
   }
 
   onDragUserFrom(data: IDraggedData) {
-    /*Just define  method*/
+    if (data.channelToId !== 'control') {
+      delete this.usersByLogin[data.user.login];
+    }
   }
+
   onDragUserTo(data: IDraggedData) {
     if (!this.usersByLogin[data.user.login]) {
       data.user.channel = this.name;
       this.users.push(data.user);
-      this.usersByLogin = {};
-      this.mapUsersByLogin();
+      this.usersByLogin[data.user.login] = data.user;
     }
     this.userJoined(data.user.login);
     this.saveUpdatedUserChannel(data.user.id, data.channelToId);
