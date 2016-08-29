@@ -97,9 +97,6 @@ video {
     min-height: calc(100% - 50px);
     height: calc(100% - 50px);
   }
-  &.noDrop{
-    cursor: no-drop !important;
-  }
 
   .composite > .md-button{
     padding: 0;

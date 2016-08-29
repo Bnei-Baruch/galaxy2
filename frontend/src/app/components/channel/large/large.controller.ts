@@ -11,9 +11,9 @@ export class LargeChannelController extends SingleUserChannelController {
       this.putUserToPreview(nextUser);
     }
   }
-
+  //
   onDragUserFrom(data: IDraggedData) {
-    this.users.some((user: IUser, index: any) => {
+    this.users.forEach((user: IUser, index: any) => {
       if (user.login !== data.user.login) {
         return false;
       }

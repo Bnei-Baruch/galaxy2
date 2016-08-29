@@ -123,7 +123,7 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   onDragUserFrom(data: IDraggedData) {
-    this.users.some((user: IUser) => {
+    this.users.forEach((user: IUser) => {
       if (user.login !== data.user.login) {
         return false;
       }
