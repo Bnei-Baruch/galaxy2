@@ -121,7 +121,7 @@ export class SmallChannelController extends BaseChannelController {
       }
     }
   }
-
+//when user drug from this channel disable or remove from users
   onDragUserFrom(data: IDraggedData) {
     this.users.forEach((user: IUser) => {
       if (user.login !== data.user.login) {

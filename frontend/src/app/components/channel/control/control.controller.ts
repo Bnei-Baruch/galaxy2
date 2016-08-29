@@ -104,11 +104,11 @@ export class ControlChannelController extends SingleUserChannelController {
   }
 
   onDragUserTo(data: IDraggedData) {
-    /*Don't do nothing, overload default method */
+    /*This not abstract method. Overload default method for doing nothing*/
   }
 
   onDragUserFrom(data: IDraggedData) {
-    /*Don't do nothing, overload default method */
+    /*This not abstract method. Overload default method for doing nothing*/
   }
 
   private muteRemoteUser(user: IUser): void {
