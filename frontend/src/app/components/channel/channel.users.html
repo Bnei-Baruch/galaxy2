@@ -22,6 +22,12 @@
 
     <ng-include src="'app/components/channel/channel.removeUser.html'"></ng-include>
 
+    <md-icon class="material-icons drag"
+      ui-draggable="true"
+      drag="{user: user, channelFromId: vm.name}">
+      reorder
+    </md-icon>
+
   </md-list-item>
 
   <md-divider></md-divider>

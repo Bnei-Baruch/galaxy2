@@ -51,15 +51,14 @@ export class SingleUserChannelController extends BaseChannelController {
       this.programUser = user;
       this.forwardProgramToSDI().then(() => {
         attachMediaStream(this.slotElement.program, this.programUser.stream);
-
+        
         if (oldProgramUser) {
           this.$log.info('Unsubscribe (program)', this.name, oldProgramUser.login);
           this.videoRoom.unsubscribeFromStream(oldProgramUser.login);
           oldProgramUser.stream = null;
         }
       }, () => {
-        this.toastr.error(`Error putting ${user.login} to program,
-        rolling back to ${oldProgramUser.login}`);
+        this.toastr.error(`Error putting ${user.login} to program, rolling back to ${oldProgramUser.login}`);
         this.$log.info('Rolling back program user', this.name, oldProgramUser.login);
         this.programUser = oldProgramUser;
       });
@@ -122,7 +121,6 @@ export class SingleUserChannelController extends BaseChannelController {
     if (!this.previewUser.stream || this.previewUser.disabled) {
       return false;
     }
-
     return true;
   }
 
@@ -165,5 +163,4 @@ export class SingleUserChannelController extends BaseChannelController {
       this.config.janus.videoRoom.sdiPorts[this.name].video.program);
     }
   }
-
 }

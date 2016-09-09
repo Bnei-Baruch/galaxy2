@@ -1,10 +1,10 @@
 import { IUser } from '../../auth/auth.service';
 import { PubSubService } from '../../pubSub/pubSub.service';
 import { SingleUserChannelController } from '../channel.singleUser.controller';
+import { IDraggedData } from '../channel.controller';
 
 /** @ngInject */
 export class ControlChannelController extends SingleUserChannelController {
-  $rootScope: ng.IScope;
   pubSub: PubSubService;
 
   usersBreakdown: { [channel: string]: IUser[]; };
@@ -15,7 +15,6 @@ export class ControlChannelController extends SingleUserChannelController {
 
   constructor($injector: any) {
     super($injector);
-    this.$rootScope = $injector.get('$rootScope');
     this.pubSub = $injector.get('pubSub');
     this.users = [];
   }
@@ -104,6 +103,14 @@ export class ControlChannelController extends SingleUserChannelController {
     return allUsers;
   }
 
+  onDragUserTo(data: IDraggedData) {
+    /*This not abstract method. Overload default method for doing nothing*/
+  }
+
+  onDragUserFrom(data: IDraggedData) {
+    /*This not abstract method. Overload default method for doing nothing*/
+  }
+
   private muteRemoteUser(user: IUser): void {
     if (user.audioEnabled) {
       this.toggleAudio(user);
@@ -114,5 +121,4 @@ export class ControlChannelController extends SingleUserChannelController {
     this.mapUsersByLogin();
     this.videoRoom.updateChannelUsers(this.name, this.getLoginsList());
   }
-
 }

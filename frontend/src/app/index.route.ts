@@ -36,7 +36,7 @@ export function routerConfig($stateProvider: ng.ui.IStateProvider) {
       controllerAs: 'fake',
       data: {
         requireLogin: true,
-        minRole: 'admin'
+        minRole: 'operator'
       }
     })
     .state('admin', {
