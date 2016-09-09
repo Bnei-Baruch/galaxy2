@@ -1,4 +1,6 @@
 import { SingleUserChannelController } from '../channel.singleUser.controller';
+import {IDraggedData} from '../channel.controller';
+import {IUser} from '../../auth/auth.service';
 
 /** @ngInject */
 export class LargeChannelController extends SingleUserChannelController {
@@ -9,5 +11,19 @@ export class LargeChannelController extends SingleUserChannelController {
       this.putUserToPreview(nextUser);
     }
   }
-
+  //when user drug from this channel disable or remove from users
+  onDragUserFrom(data: IDraggedData) {
+    this.users.forEach((user: IUser, index: any) => {
+      if (user.login !== data.user.login) {
+        return false;
+      }
+      if (data.channelToId === 'control') {
+        this.disableUser(user);
+      } else {
+        this.users.splice(index, 1);
+      }
+      return true;
+    });
+    super.onDragUserFrom(data);
+  }
 }

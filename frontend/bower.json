@@ -18,6 +18,7 @@
     "jquery": "~2.1.4",
     "ng-token-auth": "~0.0.28",
     "faye-client": "~1.1.2",
+    "angular-native-dragdrop": "latest",
     "ng-rollbar": "~1.9.1",
     "ng-contextmenu": "~0.3.6",
     "angular-promise-extras": "^0.1.6"

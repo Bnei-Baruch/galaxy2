@@ -12,32 +12,34 @@
       show-audio-toggle="true"
       trigger="vm.trigger()"></slot-widget>
   </div>
-  <md-autocomplete
-    md-no-cache="true"
-    md-selected-item="vm.selectedUser"
-    md-search-text="vm.searchText"
-    md-selected-item-change="vm.pickUser(user)"
-    md-items="user in vm.getAllUsers() | filter: {disabled: false, login: vm.searchText, title: vm.searchText} | orderBy : ['joined', 'title']"
-    md-item-text="user.title"
-    md-min-length="0"
-    placeholder="Pick a user"
-    md-menu-class="autocomplete-custom-template userList">
-    <md-item-template>
-      <md-list-item layout="row" class="userItem">
-        <md-icon
-          aria-label="{{ user.title }}"
-          ng-style="user.joined ? {color: '#4CAF50'} : {color: '#9E9E9E'}"
-          class="material-icons">
-          lens
-        </md-icon>
-        <div class="md-list-item-text" layout="column" flex>
-          <p ng-bind="user.title"></p>
-        </div>
-      </md-list-item>
-    </md-item-template>
-  </md-autocomplete>
+  <div>
+    <md-autocomplete
+      md-no-cache="true"
+      md-selected-item="vm.selectedUser"
+      md-search-text="vm.searchText"
+      md-selected-item-change="vm.pickUser(user)"
+      md-items="user in vm.getAllUsers() | filter: {disabled: false, login: vm.searchText, title: vm.searchText} | orderBy : ['joined', 'title']"
+      md-item-text="user.title"
+      md-min-length="0"
+      placeholder="Pick a user"
+      md-menu-class="autocomplete-custom-template userList">
+      <md-item-template>
+        <md-list-item layout="row" class="userItem">
+          <md-icon
+            aria-label="{{ user.title }}"
+            ng-style="user.joined ? {color: '#4CAF50'} : {color: '#9E9E9E'}"
+            class="material-icons">
+            lens
+          </md-icon>
+          <div class="md-list-item-text" layout="column" flex>
+            <p ng-bind="user.title"></p>
+          </div>
+        </md-list-item>
+      </md-item-template>
+    </md-autocomplete>
+  </div>
 
-  <div class="userList"   style="height: {{vm.cssUserListHeightCalc}}px;">
+  <div class="userList"   style="height: {{vm.cssUserListHeightCalc}}px; min-height: 50px;"  ui-on-drop="vm.onUserDrop($data)">
 
     <div  class="users maxHeight50">
       <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="maxHeight50"></ng-include>

@@ -51,6 +51,15 @@ video {
     .noMarginRight md-icon.material-icons:first-child {
       margin-right: 0;
     }
+
+    .material-icons.drag {
+      margin-top: -10px;
+      color: rgba(0,0,0,0);
+      cursor: move;
+    }
+    &:hover .material-icons.drag{
+      color: black;
+    }
   }
   .md-icon-button {
     height: auto;
@@ -58,7 +67,6 @@ video {
     line-height: 0;
     padding: 0;
   }
-
   .userConnectStatus{
     font-size: 24px;
     margin: -2px 10px 0 0;

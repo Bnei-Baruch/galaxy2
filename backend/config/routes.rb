@@ -10,7 +10,7 @@ Rails.application.routes.draw do
       at: 'auth',
       skip: [:registrations, :passwords, :confirmations]
 
-    resources :users, only: [:show, :index]
+    resources :users, only: [:show, :index, :update]
     resources :shidur_state
   end
 
