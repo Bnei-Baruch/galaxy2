@@ -347,6 +347,13 @@ export class JanusVideoRoomService {
     var deferred = this.$q.defer();
 
     var prevForwardInfo = portsForwardInfo[videoPort];
+    var audioForwardInfo = portsForwardInfo[audioPort];
+    if (audioForwardInfo) {
+      prevForwardInfo.audioStreamId = audioForwardInfo.audioStreamId;
+    }
+
+    // TODO: Stop forwarding on the full list of forwarders, not only one of them
+    // There can be many forwarders for one port if stop failed due to network issues
 
     this.stopSdiForwarding(prevForwardInfo).then(() => {
       if (user.login) {
