@@ -20,9 +20,9 @@ export class LargeChannelController extends SingleUserChannelController {
       if (data.channelToId === 'control') {
         this.disableUser(user);
       } else {
+        this.removeFromPreview(user);
         this.users.splice(index, 1);
       }
-      return true;
     });
     super.onDragUserFrom(data);
   }
