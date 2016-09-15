@@ -11,7 +11,7 @@ export class LargeChannelController extends SingleUserChannelController {
       this.putUserToPreview(nextUser);
     }
   }
-  //when user drug from this channel disable or remove from users
+  // when user drug from this channel disable or remove from users
   onDragUserFrom(data: IDraggedData) {
     this.users.forEach((user: IUser, index: any) => {
       if (user.login !== data.user.login) {

@@ -172,7 +172,7 @@ export class BaseChannelController {
   }
 
   onUserDrop(data: IDraggedData) {
-    if(data.channelFromId === this.name){
+    if (data.channelFromId === this.name) {
       return;
     }
     data.channelToId = this.name;
