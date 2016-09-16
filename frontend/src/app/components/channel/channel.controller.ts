@@ -7,6 +7,7 @@ export interface IDraggedData {
   user: IUser;
   channelFromId: string;
   channelToId?: string;
+  isDropToSearch?: boolean;
 }
 
 
@@ -26,6 +27,8 @@ export class BaseChannelController {
   $log: ng.ILogService;
   $timeout: ng.ITimeoutService;
   $document: any;
+  toastr: any;
+  config: any;
   videoRoom: JanusVideoRoomService;
   cssUserListHeightCalc: number;
   publisherStatusTracker: PublisherStatusTrackerService;
@@ -36,6 +39,8 @@ export class BaseChannelController {
   constructor($injector: any) {
     this.$log = $injector.get('$log');
     this.$document = $injector.get('$document');
+    this.toastr = $injector.get('toastr');
+    this.config = $injector.get('config');
     this.$timeout = $injector.get('$timeout');
     this.videoRoom = $injector.get('videoRoom');
     this.$rootScope = $injector.get('$rootScope');
@@ -165,10 +170,11 @@ export class BaseChannelController {
     return onlineUsers;
   }
 
-  onUserDrop(data: IDraggedData) {
+  onUserDrop(data: IDraggedData, isDropToSearch: boolean, event: UIEvent) {
     if (data.channelFromId === this.name) {
       return;
     }
+    data.isDropToSearch = isDropToSearch;
     data.channelToId = this.name;
     this.$rootScope.$broadcast('channel.dragged', data);
   }

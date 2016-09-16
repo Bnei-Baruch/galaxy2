@@ -7,7 +7,7 @@ export class ChannelWidget implements ng.IDirective {
   scope = {
     name: '@',
     hotkey: '@',
-    users: '=',
+    users: '=?',
     usersBreakdown: '='
   };
 

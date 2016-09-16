@@ -127,10 +127,10 @@ export class SmallChannelController extends BaseChannelController {
       if (user.login !== data.user.login) {
         return false;
       }
-      if (data.channelToId === 'control') {
-        this.disableUser(user);
-      } else {
+      if (data.channelToId !== 'control') {
         this.removeUserFromComposites(user.login);
+      } else if (!data.isDropToSearch) {
+        this.disableUser(user);
       }
       return true;
     });

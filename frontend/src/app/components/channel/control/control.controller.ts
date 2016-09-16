@@ -20,7 +20,7 @@ export class ControlChannelController extends SingleUserChannelController {
   }
 
   pickUser(user: IUser): void {
-    if (user !== undefined && this.users.indexOf(user) === -1) {
+    if (user !== undefined && !this.usersByLogin[user.login]) {
       this.users.unshift(user);
 
       if (user.joined) {
@@ -63,13 +63,14 @@ export class ControlChannelController extends SingleUserChannelController {
 
     // Remove user from preview if present
     if (this.previewUser === user) {
-      this.putUserToPreview(null);
+      this.putUserToPreview(this.getNextUser(user));
     }
 
     // Splice users
     var userIndex = this.users.indexOf(user);
     if (userIndex !== -1) {
       this.users.splice(userIndex, 1);
+      delete this.usersByLogin[user.login];
     }
 
     this.onUsersListChanged();
@@ -104,7 +105,13 @@ export class ControlChannelController extends SingleUserChannelController {
   }
 
   onDragUserTo(data: IDraggedData) {
-    /*This not abstract method. Overload default method for doing nothing*/
+
+    if (data.isDropToSearch){
+      if(!!this.usersByLogin[data.user.login]){
+        return;
+      }
+      this.selectedUser = data.user;
+    }
   }
 
   onDragUserFrom(data: IDraggedData) {

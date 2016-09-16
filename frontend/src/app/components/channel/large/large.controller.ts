@@ -17,11 +17,11 @@ export class LargeChannelController extends SingleUserChannelController {
       if (user.login !== data.user.login) {
         return false;
       }
-      if (data.channelToId === 'control') {
-        this.disableUser(user);
-      } else {
+      if (data.channelToId !== 'control') {
         this.removeFromPreview(user);
         this.users.splice(index, 1);
+      } else if (!data.isDropToSearch){
+        this.disableUser(user);
       }
     });
     super.onDragUserFrom(data);
