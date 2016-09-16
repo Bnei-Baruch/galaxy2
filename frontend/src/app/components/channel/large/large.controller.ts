@@ -20,7 +20,7 @@ export class LargeChannelController extends SingleUserChannelController {
       if (data.channelToId !== 'control') {
         this.removeFromPreview(user);
         this.users.splice(index, 1);
-      } else if (!data.isDropToSearch){
+      } else if (!data.isDropToSearch) {
         this.disableUser(user);
       }
     });

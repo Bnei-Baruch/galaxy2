@@ -106,8 +106,8 @@ export class ControlChannelController extends SingleUserChannelController {
 
   onDragUserTo(data: IDraggedData) {
 
-    if (data.isDropToSearch){
-      if(!!this.usersByLogin[data.user.login]){
+    if (data.isDropToSearch) {
+      if (!!this.usersByLogin[data.user.login]) {
         return;
       }
       this.selectedUser = data.user;
