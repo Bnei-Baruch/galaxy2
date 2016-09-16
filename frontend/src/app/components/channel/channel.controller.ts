@@ -27,12 +27,9 @@ export class BaseChannelController {
   $timeout: ng.ITimeoutService;
   $document: any;
   videoRoom: JanusVideoRoomService;
-  toastr: any;
-  config: any;
   cssUserListHeightCalc: number;
   publisherStatusTracker: PublisherStatusTrackerService;
   internetConnectionType: InternetConnectionType;
-  $http: ng.IHttpService;
   $rootScope: ng.IRootScopeService;
 
   // Using $injector manually to allow easier constructor overloads
@@ -41,9 +38,6 @@ export class BaseChannelController {
     this.$document = $injector.get('$document');
     this.$timeout = $injector.get('$timeout');
     this.videoRoom = $injector.get('videoRoom');
-    this.toastr = $injector.get('toastr');
-    this.config = $injector.get('config');
-    this.$http = $injector.get('$http');
     this.$rootScope = $injector.get('$rootScope');
     this.publisherStatusTracker = $injector.get('publisherStatusTracker');
 
@@ -192,16 +186,5 @@ export class BaseChannelController {
       this.usersByLogin[data.user.login] = data.user;
     }
     this.userJoined(data.user.login);
-    this.saveUpdatedUserChannel(data.user.id, data.channelToId);
-  }
-
-  saveUpdatedUserChannel(userId: Number, channelId: string ) {
-    return this.$http.put(this.config.backendUri + '/rest/users/' + userId, {channel: channelId})
-      .then((r: any) => {
-        return r;
-      }, (error: any) => {
-        this.toastr.error('Error move user with id to channel.');
-        this.$log.error(`Error move user with id ${userId} to channel ${channelId}. Exception = ${error}`);
-      });
   }
 }
