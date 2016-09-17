@@ -51,7 +51,7 @@
       <div class="users usersWithHeader">
         <md-list-item
           ng-click="vm.putUserToPreview(user)"
-          ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true} | orderBy : 'title') "
+          ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true, joined: ''} | orderBy : 'title') "
           class="userItem">
           <md-icon
             layout="column"
