@@ -23,6 +23,7 @@
     <ng-include src="'app/components/channel/channel.removeUser.html'"></ng-include>
 
     <md-icon class="material-icons drag"
+      ng-if="vm.name != 'control'"
       ui-draggable="true"
       drag="{user: user, channelFromId: vm.name}">
       reorder

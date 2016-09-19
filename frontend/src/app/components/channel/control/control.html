@@ -12,7 +12,7 @@
       show-audio-toggle="true"
       trigger="vm.trigger()"></slot-widget>
   </div>
-  <div>
+  <div ui-on-drop="vm.onUserDrop($data, true)">
     <md-autocomplete
       md-no-cache="true"
       md-selected-item="vm.selectedUser"
@@ -39,18 +39,19 @@
     </md-autocomplete>
   </div>
 
-  <div class="userList"   style="height: {{vm.cssUserListHeightCalc}}px; min-height: 50px;"  ui-on-drop="vm.onUserDrop($data)">
-
-    <div  class="users maxHeight50">
-      <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="maxHeight50"></ng-include>
+  <div class="userList"   style="height: {{vm.cssUserListHeightCalc}}px; min-height: 50px;">
+    <div class="maxHeight50">
+      <ng-include ng-init="vm = vm"
+          src="'app/components/channel/channel.users.html'"
+          ui-on-drop="vm.onUserDrop($data, true)"></ng-include>
     </div>
 
-    <md-list ng-show="disabledUsers.length"  class="maxHeight50">
+    <md-list class="maxHeight50" ui-on-drop="vm.onUserDrop($data)">
       <md-subheader class="md-no-sticky">Disabled users</md-subheader>
       <div class="users usersWithHeader">
         <md-list-item
           ng-click="vm.putUserToPreview(user)"
-          ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true} | orderBy : 'title') "
+          ng-repeat="user in disabledUsers = (vm.getAllUsers() | filter : {disabled: true, joined: ''} | orderBy : 'title') "
           class="userItem">
           <md-icon
             layout="column"

@@ -11,18 +11,18 @@ export class LargeChannelController extends SingleUserChannelController {
       this.putUserToPreview(nextUser);
     }
   }
-  //when user drug from this channel disable or remove from users
+  // when user drug from this channel disable or remove from users
   onDragUserFrom(data: IDraggedData) {
     this.users.forEach((user: IUser, index: any) => {
       if (user.login !== data.user.login) {
         return false;
       }
-      if (data.channelToId === 'control') {
-        this.disableUser(user);
-      } else {
+      if (data.channelToId !== 'control') {
+        this.removeFromPreview(user);
         this.users.splice(index, 1);
+      } else if (!data.isDropToSearch) {
+        this.disableUser(user);
       }
-      return true;
     });
     super.onDragUserFrom(data);
   }

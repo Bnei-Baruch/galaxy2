@@ -7,6 +7,7 @@ export interface IDraggedData {
   user: IUser;
   channelFromId: string;
   channelToId?: string;
+  isDropToSearch?: boolean;
 }
 
 
@@ -26,24 +27,22 @@ export class BaseChannelController {
   $log: ng.ILogService;
   $timeout: ng.ITimeoutService;
   $document: any;
-  videoRoom: JanusVideoRoomService;
   toastr: any;
   config: any;
+  videoRoom: JanusVideoRoomService;
   cssUserListHeightCalc: number;
   publisherStatusTracker: PublisherStatusTrackerService;
   internetConnectionType: InternetConnectionType;
-  $http: ng.IHttpService;
   $rootScope: ng.IRootScopeService;
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
     this.$log = $injector.get('$log');
     this.$document = $injector.get('$document');
-    this.$timeout = $injector.get('$timeout');
-    this.videoRoom = $injector.get('videoRoom');
     this.toastr = $injector.get('toastr');
     this.config = $injector.get('config');
-    this.$http = $injector.get('$http');
+    this.$timeout = $injector.get('$timeout');
+    this.videoRoom = $injector.get('videoRoom');
     this.$rootScope = $injector.get('$rootScope');
     this.publisherStatusTracker = $injector.get('publisherStatusTracker');
 
@@ -171,7 +170,11 @@ export class BaseChannelController {
     return onlineUsers;
   }
 
-  onUserDrop(data: IDraggedData) {
+  onUserDrop(data: IDraggedData, isDropToSearch: boolean, event: UIEvent) {
+    if (data.channelFromId === this.name) {
+      return;
+    }
+    data.isDropToSearch = isDropToSearch;
     data.channelToId = this.name;
     this.$rootScope.$broadcast('channel.dragged', data);
   }
@@ -189,16 +192,5 @@ export class BaseChannelController {
       this.usersByLogin[data.user.login] = data.user;
     }
     this.userJoined(data.user.login);
-    this.saveUpdatedUserChannel(data.user.id, data.channelToId);
-  }
-
-  saveUpdatedUserChannel(userId: Number, channelId: string ) {
-    return this.$http.put(this.config.backendUri + '/rest/users/' + userId, {channel: channelId})
-      .then((r: any) => {
-        return r;
-      }, (error: any) => {
-        this.toastr.error('Error move user with id to channel.');
-        this.$log.error(`Error move user with id ${userId} to channel ${channelId}. Exception = ${error}`);
-      });
   }
 }

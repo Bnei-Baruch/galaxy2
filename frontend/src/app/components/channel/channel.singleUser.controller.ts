@@ -51,7 +51,6 @@ export class SingleUserChannelController extends BaseChannelController {
       this.programUser = user;
       this.forwardProgramToSDI().then(() => {
         attachMediaStream(this.slotElement.program, this.programUser.stream);
-        
         if (oldProgramUser) {
           this.$log.info('Unsubscribe (program)', this.name, oldProgramUser.login);
           this.videoRoom.unsubscribeFromStream(oldProgramUser.login);
@@ -105,11 +104,14 @@ export class SingleUserChannelController extends BaseChannelController {
   }
 
   disableUser(user: IUser) {
+    this.removeFromPreview(user);
     super.disableUser(user);
+  }
 
-    // Remove user from preview if present
+  // Remove user from preview if present
+  removeFromPreview(user: IUser) {
     if (this.previewUser === user) {
-      this.putUserToPreview(null);
+      this.putUserToPreview(this.getNextUser(user));
     }
   }
 
