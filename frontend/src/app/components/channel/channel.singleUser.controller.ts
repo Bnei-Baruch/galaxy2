@@ -51,7 +51,7 @@ export class SingleUserChannelController extends BaseChannelController {
       this.programUser = user;
       this.forwardProgramToSDI().then(() => {
         attachMediaStream(this.slotElement.program, this.programUser.stream);
-        if (oldProgramUser) {
+        if (oldProgramUser && oldProgramUser !== this.previewUser) {
           this.$log.info('Unsubscribe (program)', this.name, oldProgramUser.login);
           this.videoRoom.unsubscribeFromStream(oldProgramUser.login);
           oldProgramUser.stream = null;
