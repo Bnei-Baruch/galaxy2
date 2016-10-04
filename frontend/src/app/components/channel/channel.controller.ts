@@ -1,5 +1,15 @@
 import { JanusVideoRoomService } from '../janus/janusVideoRoom.service';
+import { PublisherStatusTrackerService, InternetConnectionType } from '../janus/publisherStatusTracker.service';
 import { IUser } from '../auth/auth.service';
+
+
+export interface IDraggedData {
+  user: IUser;
+  channelFromId: string;
+  channelToId?: string;
+  isDropToSearch?: boolean;
+}
+
 
 /** @ngInject */
 export class BaseChannelController {
@@ -17,19 +27,24 @@ export class BaseChannelController {
   $log: ng.ILogService;
   $timeout: ng.ITimeoutService;
   $document: any;
-  videoRoom: JanusVideoRoomService;
   toastr: any;
   config: any;
+  videoRoom: JanusVideoRoomService;
   cssUserListHeightCalc: number;
+  publisherStatusTracker: PublisherStatusTrackerService;
+  internetConnectionType: InternetConnectionType;
+  $rootScope: ng.IRootScopeService;
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
     this.$log = $injector.get('$log');
     this.$document = $injector.get('$document');
-    this.$timeout = $injector.get('$timeout');
-    this.videoRoom = $injector.get('videoRoom');
     this.toastr = $injector.get('toastr');
     this.config = $injector.get('config');
+    this.$timeout = $injector.get('$timeout');
+    this.videoRoom = $injector.get('videoRoom');
+    this.$rootScope = $injector.get('$rootScope');
+    this.publisherStatusTracker = $injector.get('publisherStatusTracker');
 
     // Mapping users by login for convenience
     this.mapUsersByLogin();
@@ -59,6 +74,17 @@ export class BaseChannelController {
     // Set users list height
 
     this.bindHotkey();
+
+      // check internet connection status of users
+      // this.publisherStatusTracker.setAllUsersStatus(this.usersByLogin);
+
+    scope.$on('channel.dragged', function (e: any, data: IDraggedData) {
+      if (e.currentScope.vm.name === data.channelFromId) {
+        e.currentScope.vm.onDragUserFrom(data);
+      } else if (e.currentScope.vm.name === data.channelToId) {
+        e.currentScope.vm.onDragUserTo(data);
+      }
+    });
   }
 
   setUserListHeight(element: ng.IAugmentedJQuery) {
@@ -81,6 +107,7 @@ export class BaseChannelController {
     // TODO: The timestamp should be better taken from Janus point of view
     user.joined = moment();
     user.disabled = false;
+    // user.disabled = this.publisherStatusTracker.connectionStatusByLogin(login) === InternetConnectionType.danger;
   }
 
   userLeft(login: string) {
@@ -88,6 +115,7 @@ export class BaseChannelController {
     var user = this.usersByLogin[login];
     user.joined = null;
     user.stream = null;
+    // user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
   }
 
   trigger() {
@@ -140,5 +168,29 @@ export class BaseChannelController {
     });
 
     return onlineUsers;
+  }
+
+  onUserDrop(data: IDraggedData, isDropToSearch: boolean, event: UIEvent) {
+    if (data.channelFromId === this.name) {
+      return;
+    }
+    data.isDropToSearch = isDropToSearch;
+    data.channelToId = this.name;
+    this.$rootScope.$broadcast('channel.dragged', data);
+  }
+
+  onDragUserFrom(data: IDraggedData) {
+    if (data.channelToId !== 'control') {
+      delete this.usersByLogin[data.user.login];
+    }
+  }
+
+  onDragUserTo(data: IDraggedData) {
+    if (!this.usersByLogin[data.user.login]) {
+      data.user.channel = this.name;
+      this.users.push(data.user);
+      this.usersByLogin[data.user.login] = data.user;
+    }
+    this.userJoined(data.user.login);
   }
 }

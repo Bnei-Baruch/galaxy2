@@ -1,10 +1,10 @@
 import { IUser } from '../../auth/auth.service';
 import { PubSubService } from '../../pubSub/pubSub.service';
 import { SingleUserChannelController } from '../channel.singleUser.controller';
+import { IDraggedData } from '../channel.controller';
 
 /** @ngInject */
 export class ControlChannelController extends SingleUserChannelController {
-  $rootScope: ng.IScope;
   pubSub: PubSubService;
 
   usersBreakdown: { [channel: string]: IUser[]; };
@@ -15,13 +15,12 @@ export class ControlChannelController extends SingleUserChannelController {
 
   constructor($injector: any) {
     super($injector);
-    this.$rootScope = $injector.get('$rootScope');
     this.pubSub = $injector.get('pubSub');
     this.users = [];
   }
 
   pickUser(user: IUser): void {
-    if (user !== undefined && this.users.indexOf(user) === -1) {
+    if (user !== undefined && !this.usersByLogin[user.login]) {
       this.users.unshift(user);
 
       if (user.joined) {
@@ -64,13 +63,14 @@ export class ControlChannelController extends SingleUserChannelController {
 
     // Remove user from preview if present
     if (this.previewUser === user) {
-      this.putUserToPreview(null);
+      this.putUserToPreview(this.getNextUser(user));
     }
 
     // Splice users
     var userIndex = this.users.indexOf(user);
     if (userIndex !== -1) {
       this.users.splice(userIndex, 1);
+      delete this.usersByLogin[user.login];
     }
 
     this.onUsersListChanged();
@@ -104,6 +104,20 @@ export class ControlChannelController extends SingleUserChannelController {
     return allUsers;
   }
 
+  onDragUserTo(data: IDraggedData) {
+
+    if (data.isDropToSearch) {
+      if (!!this.usersByLogin[data.user.login]) {
+        return;
+      }
+      this.selectedUser = data.user;
+    }
+  }
+
+  onDragUserFrom(data: IDraggedData) {
+    /*This not abstract method. Overload default method for doing nothing*/
+  }
+
   private muteRemoteUser(user: IUser): void {
     if (user.audioEnabled) {
       this.toggleAudio(user);
@@ -114,5 +128,4 @@ export class ControlChannelController extends SingleUserChannelController {
     this.mapUsersByLogin();
     this.videoRoom.updateChannelUsers(this.name, this.getLoginsList());
   }
-
 }

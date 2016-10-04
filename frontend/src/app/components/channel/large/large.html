@@ -8,5 +8,5 @@
 	    trigger="vm.trigger()"></slot-widget>
    </div>
 
-  <ng-include ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="userList"  style="height: {{vm.cssUserListHeightCalc}}px"></ng-include>
+  <ng-include  ui-on-drop="vm.onUserDrop($data)" ng-init="vm = vm" src="'app/components/channel/channel.users.html'"  class="userList"  style="height: {{vm.cssUserListHeightCalc}}px"></ng-include>
 </section>

@@ -51,15 +51,13 @@ export class SingleUserChannelController extends BaseChannelController {
       this.programUser = user;
       this.forwardProgramToSDI().then(() => {
         attachMediaStream(this.slotElement.program, this.programUser.stream);
-
-        if (oldProgramUser) {
+        if (oldProgramUser && oldProgramUser !== this.previewUser) {
           this.$log.info('Unsubscribe (program)', this.name, oldProgramUser.login);
           this.videoRoom.unsubscribeFromStream(oldProgramUser.login);
           oldProgramUser.stream = null;
         }
       }, () => {
-        this.toastr.error(`Error putting ${user.login} to program,
-        rolling back to ${oldProgramUser.login}`);
+        this.toastr.error(`Error putting ${user.login} to program, rolling back to ${oldProgramUser.login}`);
         this.$log.info('Rolling back program user', this.name, oldProgramUser.login);
         this.programUser = oldProgramUser;
       });
@@ -106,11 +104,14 @@ export class SingleUserChannelController extends BaseChannelController {
   }
 
   disableUser(user: IUser) {
+    this.removeFromPreview(user);
     super.disableUser(user);
+  }
 
-    // Remove user from preview if present
+  // Remove user from preview if present
+  removeFromPreview(user: IUser) {
     if (this.previewUser === user) {
-      this.putUserToPreview(null);
+      this.putUserToPreview(this.getNextUser(user));
     }
   }
 
@@ -122,14 +123,13 @@ export class SingleUserChannelController extends BaseChannelController {
     if (!this.previewUser.stream || this.previewUser.disabled) {
       return false;
     }
-
     return true;
   }
 
   // TODO: Handle HTTP errors and rollback to old state in case of an error
   forwardProgramToSDI() {
     // Forward program to SDI and change video title
-    var sdiPorts = this.config.janus.sdiPorts[this.name];
+    var sdiPorts = this.config.janus.videoRoom.sdiPorts[this.name];
 
     var audioPorts;
     if (sdiPorts.audio) {
@@ -158,4 +158,11 @@ export class SingleUserChannelController extends BaseChannelController {
     return onlineUsers[(userIndex + 1) % onlineUsers.length];
   }
 
+  fixTitles() {
+    if (this.programUser) {
+    return this.videoRoom.changeRemoteFeedTitle(
+      this.programUser.title,
+      this.config.janus.videoRoom.sdiPorts[this.name].video.program);
+    }
+  }
 }

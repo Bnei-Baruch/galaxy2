@@ -1,6 +1,6 @@
 import { IUser } from '../../auth/auth.service';
 import { JanusStreamingService } from '../../janus/janusStreaming.service';
-import { BaseChannelController } from '../channel.controller';
+import {BaseChannelController, IDraggedData} from '../channel.controller';
 
 declare var attachMediaStream: any;
 
@@ -28,7 +28,7 @@ export class SmallChannelController extends BaseChannelController {
   onLink(scope: ng.IScope, element: ng.IAugmentedJQuery) {
     super.onLink(scope, element);
 
-    var streamIds = this.config.janus.sdiPorts[this.name].streamIds;
+    var streamIds = this.config.janus.videoRoom.sdiPorts[this.name].streamIds;
     this.attachStreamingHandle(this.slotElement.program, streamIds.program);
     this.attachStreamingHandle(this.slotElement.preview, streamIds.preview);
 
@@ -41,7 +41,9 @@ export class SmallChannelController extends BaseChannelController {
 
   userJoined(login: string) {
     super.userJoined(login);
-    this.addUserToComposites(login);
+    if (!this.usersByLogin[login].disabled) {
+      this.addUserToComposites(login);
+    }
   }
 
   userLeft(login: string) {
@@ -79,6 +81,62 @@ export class SmallChannelController extends BaseChannelController {
     return true;
   }
 
+  fixTitles() {
+    var composite = this.composites[this.compositeIndex.program];
+    if (composite) {
+      var portsConfig = this.config.janus.sdiPorts[this.name];
+      var videoPorts = portsConfig.video[this.getSlotName(true)];
+      composite.forEach((user: IUser, index: number) => {
+        this.videoRoom.changeRemoteFeedTitle(user.title, videoPorts[index]);
+      });
+    }
+  }
+
+  /**
+   * Removes a user from the composites array.
+   * Rules:
+   *  - One or no composites present, just remove user from the first one.
+   *  - Two or more composites present, find a replacement for the user from the last composite.
+   *
+   * @param login User login
+   * @returns     Nothing
+   */
+  removeUserFromComposites(login: string): void {
+    if (this.onlineUsers.indexOf(login) !== -1) {
+      var userIndex = this.onlineUsers.indexOf(login);
+      var lastLogin = this.onlineUsers.pop();
+
+      if (login !== lastLogin) {
+        this.onlineUsers[userIndex] = lastLogin;
+      }
+
+      // save current preview composite
+      var oldPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
+
+      this.constructComposites();
+
+      var newPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
+      if (!this.areCompositesEqual(oldPrevComposite, newPrevComposite)) {
+        this.putCompositeToSlot(this.compositeIndex.preview, false, true);
+      }
+    }
+  }
+// when user drug from this channel disable or remove from users
+  onDragUserFrom(data: IDraggedData) {
+    this.users.forEach((user: IUser) => {
+      if (user.login !== data.user.login) {
+        return false;
+      }
+      if (data.channelToId !== 'control') {
+        this.removeUserFromComposites(user.login);
+      } else if (!data.isDropToSearch) {
+        this.disableUser(user);
+      }
+      return true;
+    });
+    super.onDragUserFrom(data);
+  }
+
   // TODO: Handle HTTP errors and rollback to old state in case of an error
   private putCompositeToSlot(index: number, program: boolean, force: boolean = false): ng.IPromise<any> {
     var deffered = this.$q.defer();
@@ -106,7 +164,7 @@ export class SmallChannelController extends BaseChannelController {
 
     var logins: string[] = Array.apply(null, Array(this.compositeSize));
 
-    var portsConfig = this.config.janus.sdiPorts[this.name];
+    var portsConfig = this.config.janus.videoRoom.sdiPorts[this.name];
     var videoPorts = portsConfig.video[slotName];
 
     var oldCompositeIndex = this.compositeIndex[slotName];
@@ -153,36 +211,6 @@ export class SmallChannelController extends BaseChannelController {
       // Forward first composite to preview once it's complete
       if (this.compositeIndex.preview === null && this.onlineUsers.length >= this.compositeSize) {
         this.putCompositeToPreview(0);
-      }
-    }
-  }
-
-  /**
-   * Removes a user from the composites array.
-   * Rules:
-   *  - One or no composites present, just remove user from the first one.
-   *  - Two or more composites present, find a replacement for the user from the last composite.
-   *
-   * @param login User login
-   * @returns     Nothing
-   */
-  private removeUserFromComposites(login: string): void {
-    if (this.onlineUsers.indexOf(login) !== -1) {
-      var userIndex = this.onlineUsers.indexOf(login);
-      var lastLogin = this.onlineUsers.pop();
-
-      if (login !== lastLogin) {
-        this.onlineUsers[userIndex] = lastLogin;
-      }
-
-      // save current preview composite
-      var oldPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
-
-      this.constructComposites();
-
-      var newPrevComposite = angular.copy(this.composites[this.compositeIndex.preview]);
-      if (!this.areCompositesEqual(oldPrevComposite, newPrevComposite)) {
-        this.putCompositeToSlot(this.compositeIndex.preview, false, true);
       }
     }
   }
@@ -234,7 +262,7 @@ export class SmallChannelController extends BaseChannelController {
     }
 
     return first.every((user: IUser, i: number) => {
-      return user.login === second[i].login;
+      return angular.isDefined(second[i]) && user.login === second[i].login;
     });
   }
 }

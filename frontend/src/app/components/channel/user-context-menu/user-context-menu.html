@@ -2,14 +2,31 @@
   <!-- TODO: Rename vm to channel -->
 
   <md-list ng-cloak>
+    <md-divider></md-divider>
+    <md-subheader class="md-no-sticky">User</md-subheader>
+
     <md-list-item ng-click="vm.disableUser(user); $event.stopPropagation()">
       <md-icon class="material-icons">visibility_off</md-icon>
       <p>Disable {{user.title}} temporarily</p>
     </md-list-item>
-    <md-menu-divider></md-menu-divider>
+
+    <md-list-item ng-click="contextMenu.reloadUser(user); $event.stopPropagation()">
+      <md-icon class="material-icons">cached</md-icon>
+      <p>Reload {{user.title}}</p>
+    </md-list-item>
+
+    <md-divider></md-divider>
+    <md-subheader class="md-no-sticky">Channel</md-subheader>
+
+    <md-list-item ng-click="vm.fixTitles(); $event.stopPropagation()">
+      <md-icon class="material-icons">label_outline</md-icon>
+      <p>Fix channel titles</p>
+    </md-list-item>
+
     <md-list-item ng-click="contextMenu.reloadChannelUsers(vm.name); $event.stopPropagation()">
       <md-icon class="material-icons">cached</md-icon>
       <p>Reload channel users</p>
     </md-list-item>
+
   </md-list>
 </md-card>

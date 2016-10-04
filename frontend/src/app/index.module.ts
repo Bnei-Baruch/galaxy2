@@ -5,11 +5,15 @@ import { routerConfig } from './index.route';
 import { runBlock } from './index.run';
 import { galaxyNavbar } from '../app/components/navbar/navbar.directive';
 import { JanusService } from '../app/components/janus/janus.service';
+import { PublisherStatusTrackerService } from '../app/components/janus/publisherStatusTracker.service';
 import { JanusVideoRoomService } from '../app/components/janus/janusVideoRoom.service';
 import { JanusStreamingService } from '../app/components/janus/janusStreaming.service';
+import { JanusTextRoomService } from '../app/components/janus/janusTextRoom.service';
 import { ShidurController } from './shidur/shidur.controller';
 import { ShidurService } from './shidur/shidur.service';
 import { UserController } from './user/user.controller';
+import { ChatService } from '../app/components/chat/chat.service';
+import { ChatDialogController } from '../app/components/chat/chat.dialog.controller';
 import { FakeUserController } from './user/fake.controller';
 import { AdminController } from './admin/admin.controller';
 import { FakeSDIController } from './e2e/sdi.controller';
@@ -21,6 +25,7 @@ import { slotWidget } from '../app/components/channel/slot/slot.directive';
 import { LargeChannelWidget } from '../app/components/channel/large/large.directive';
 import { SmallChannelWidget } from '../app/components/channel/small/small.directive';
 import { ControlChannelWidget } from '../app/components/channel/control/control.directive';
+
 
 module frontend {
   'use strict';
@@ -34,6 +39,7 @@ module frontend {
     'ngAria',
     'ui.router',
     'ngMaterial',
+    'ang-drag-drop',
     'toastr',
     // Important: use version 0.3.6 of ngContextMenu because of
     // https://github.com/Wildhoney/ngContextMenu/issues/24
@@ -50,12 +56,16 @@ module frontend {
     .run(runBlock)
     .service('janus', JanusService)
     .service('videoRoom', JanusVideoRoomService)
+    .service('publisherStatusTracker', PublisherStatusTrackerService)
     .service('streaming', JanusStreamingService)
+    .service('textRoom', JanusTextRoomService)
     .service('shidur', ShidurService)
     .service('authService', AuthService)
     .service('pubSub', PubSubService)
+    .service('chat', ChatService)
     .controller('ShidurController', ShidurController)
     .controller('UserController', UserController)
+    .controller('ChatDialogController', ChatDialogController)
     .controller('FakeUserController', FakeUserController)
     .controller('AdminController', AdminController)
     .controller('FakeSDIController', FakeSDIController)
