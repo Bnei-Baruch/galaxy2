@@ -23,7 +23,7 @@ function listFiles() {
       path.join(conf.paths.src, '/assets/scripts/config.js'),
       path.join(conf.paths.src, '/assets/scripts/testing.js'),
       path.join(conf.paths.tmp, '/serve/app/index.module.js'),
-//      path.join(conf.paths.tmp, '/serve/app/index.config.js'),
+      // path.join(conf.paths.tmp, '/serve/app/index.config.js'),
     ])
     .concat(pathSrcHtml);
 }
