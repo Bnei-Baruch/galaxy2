@@ -191,12 +191,12 @@ export class BaseChannelController {
 
   onDragUserFrom(data: IDraggedData) {
     if (data.channelToId !== 'control') {
-      delete this.usersByLogin[data.user.login];
       var userToRemove = this.users.find((user: IUser) => {
         return user.login === data.user.login;
       });
       this.users.splice(this.users.indexOf(userToRemove), 1);
       this.mapUsersByLogin();
+      this.videoRoom.userLeftChannel(this.name, data.user.login);
     }
   }
 
@@ -205,6 +205,7 @@ export class BaseChannelController {
       data.user.channel = this.name;
       this.users.push(data.user);
       this.mapUsersByLogin();
+      this.videoRoom.updateChannelUsers(this.name, this.users);
     }
   }
 }
