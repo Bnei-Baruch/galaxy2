@@ -104,18 +104,27 @@ export class BaseChannelController {
     this.$log.info('User joined', this.name, login);
     var user = this.usersByLogin[login];
 
-    // TODO: The timestamp should be better taken from Janus point of view
-    user.joined = moment();
-    user.disabled = false;
-    // user.disabled = this.publisherStatusTracker.connectionStatusByLogin(login) === InternetConnectionType.danger;
+    if (user) {
+      // TODO: The timestamp should be better taken from Janus point of view
+      user.joined = moment();
+      user.disabled = false;
+      // user.disabled = this.publisherStatusTracker.connectionStatusByLogin(login) === InternetConnectionType.danger;
+    } else {
+      this.$log.info('userJoined: Could not find user by login', login, this.usersByLogin);
+    }
   }
 
   userLeft(login: string) {
     this.$log.info('User left', this.name, login);
     var user = this.usersByLogin[login];
-    user.joined = null;
-    user.stream = null;
-    // user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
+
+    if (user) {
+      user.joined = null;
+      user.stream = null;
+      // user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
+    } else {
+      this.$log.info('userLeft: Could not find user by login', login, this.usersByLogin);
+    }
   }
 
   trigger() {
@@ -133,6 +142,7 @@ export class BaseChannelController {
     }
 
     // Mapping users by login for convenience
+    this.usersByLogin = {};
     this.users.forEach((user: IUser) => {
       this.usersByLogin[user.login] = user;
     });
@@ -182,6 +192,11 @@ export class BaseChannelController {
   onDragUserFrom(data: IDraggedData) {
     if (data.channelToId !== 'control') {
       delete this.usersByLogin[data.user.login];
+      var userToRemove = this.users.find((user: IUser) => {
+        return user.login === data.user.login;
+      });
+      this.users.splice(this.users.indexOf(userToRemove), 1);
+      this.mapUsersByLogin();
     }
   }
 
@@ -189,8 +204,7 @@ export class BaseChannelController {
     if (!this.usersByLogin[data.user.login]) {
       data.user.channel = this.name;
       this.users.push(data.user);
-      this.usersByLogin[data.user.login] = data.user;
+      this.mapUsersByLogin();
     }
-    this.userJoined(data.user.login);
   }
 }
