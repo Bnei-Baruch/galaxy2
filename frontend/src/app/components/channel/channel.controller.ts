@@ -191,12 +191,19 @@ export class BaseChannelController {
 
   onDragUserFrom(data: IDraggedData) {
     if (data.channelToId !== 'control') {
-      var userToRemove = this.users.find((user: IUser) => {
-        return user.login === data.user.login;
-      });
-      this.users.splice(this.users.indexOf(userToRemove), 1);
-      this.mapUsersByLogin();
-      this.videoRoom.userLeftChannel(this.name, data.user.login);
+
+      for (var idx = 0; idx < this.users.length; ++idx) {
+        if (this.users[idx].login === data.user.login) {
+          break;
+        }
+      }
+      if (idx < this.users.length) {
+        this.users.splice(idx, 1);
+        this.mapUsersByLogin();
+        this.videoRoom.userLeftChannel(this.name, data.user.login);
+      } else {
+        this.$log.info('onDragUserFrom: Could not find user by login', data.user.login, this.users);
+      }
     }
   }
 
@@ -205,7 +212,7 @@ export class BaseChannelController {
       data.user.channel = this.name;
       this.users.push(data.user);
       this.mapUsersByLogin();
-      this.videoRoom.updateChannelUsers(this.name, this.users);
+      this.videoRoom.updateChannelUsers(this.name, this.getLoginsList());
     }
   }
 }
