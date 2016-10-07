@@ -104,18 +104,27 @@ export class BaseChannelController {
     this.$log.info('User joined', this.name, login);
     var user = this.usersByLogin[login];
 
-    // TODO: The timestamp should be better taken from Janus point of view
-    user.joined = moment();
-    user.disabled = false;
-    // user.disabled = this.publisherStatusTracker.connectionStatusByLogin(login) === InternetConnectionType.danger;
+    if (user) {
+      // TODO: The timestamp should be better taken from Janus point of view
+      user.joined = moment();
+      user.disabled = false;
+      // user.disabled = this.publisherStatusTracker.connectionStatusByLogin(login) === InternetConnectionType.danger;
+    } else {
+      this.$log.error('userJoined: Could not find user by login', login, this.usersByLogin);
+    }
   }
 
   userLeft(login: string) {
     this.$log.info('User left', this.name, login);
     var user = this.usersByLogin[login];
-    user.joined = null;
-    user.stream = null;
-    // user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
+
+    if (user) {
+      user.joined = null;
+      user.stream = null;
+      // user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
+    } else {
+      this.$log.error('userLeft: Could not find user by login', login, this.usersByLogin);
+    }
   }
 
   trigger() {
@@ -133,6 +142,7 @@ export class BaseChannelController {
     }
 
     // Mapping users by login for convenience
+    this.usersByLogin = {};
     this.users.forEach((user: IUser) => {
       this.usersByLogin[user.login] = user;
     });
@@ -181,7 +191,19 @@ export class BaseChannelController {
 
   onDragUserFrom(data: IDraggedData) {
     if (data.channelToId !== 'control') {
-      delete this.usersByLogin[data.user.login];
+
+      for (var idx = 0; idx < this.users.length; ++idx) {
+        if (this.users[idx].login === data.user.login) {
+          break;
+        }
+      }
+      if (idx < this.users.length) {
+        this.users.splice(idx, 1);
+        this.mapUsersByLogin();
+        this.videoRoom.userLeftChannel(this.name, data.user.login);
+      } else {
+        this.$log.info('onDragUserFrom: Could not find user by login', data.user.login, this.users);
+      }
     }
   }
 
@@ -189,8 +211,8 @@ export class BaseChannelController {
     if (!this.usersByLogin[data.user.login]) {
       data.user.channel = this.name;
       this.users.push(data.user);
-      this.usersByLogin[data.user.login] = data.user;
+      this.mapUsersByLogin();
+      this.videoRoom.updateChannelUsers(this.name, this.getLoginsList());
     }
-    this.userJoined(data.user.login);
   }
 }

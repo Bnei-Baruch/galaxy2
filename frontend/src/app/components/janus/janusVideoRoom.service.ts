@@ -138,6 +138,16 @@ export class JanusVideoRoomService {
     });
   }
 
+  userLeftChannel(name: string, login: string) {
+    if (login in this.userChannels) {
+      var channels = this.userChannels[login];
+      var idx = channels.indexOf(name);
+      if (idx !== -1) {
+        channels.splice(idx, 1);
+      }
+    }
+  }
+
   /**
    * Subscribe for a remote user stream.
    *
