@@ -1,4 +1,8 @@
 {
+  "backendUri": "https://rt-dev.kbb1.com:5001/backend",
+  "environment": "development",
+  "rollbarToken": "rollbar-access-token-comes-here",
+  "codeVersion": "git-sha1-deployed-should-be-here"
   "janus": {
     "serverUri": "https://galaxy-dev.kbb1.com:8889/janus",
     "iceServers": [
@@ -7,6 +11,9 @@
     ],
     "reconnectTimeout": 10,
     "titleApiUrl": "https://not.existing.v4g.kbb1.com:8080/title.php?title=%title%&port=%port%",
+    "textRoom": {
+      "roomId": 9999
+    }
     "videoRoom": {
       "secret": "adminpwd",
       "roomId": 46105,
@@ -77,12 +84,5 @@
         }
       }
     },
-    "textRoom": {
-      "roomId": 9999
-    }
   },
-  "backendUri": "https://rt-dev.kbb1.com:5001/backend",
-  "environment": "development",
-  "rollbarToken": "rollbar-access-token-comes-here",
-  "codeVersion": "git-sha1-deployed-should-be-here"
 }
