@@ -34,7 +34,8 @@ function runTests (singleRun, done) {
     singleRun: singleRun,
     autoWatch: !singleRun,
     reporters: reporters,
-    preprocessors: preprocessors
+    preprocessors: preprocessors,
+    logLevel: 'INFO'
   };
 
   var server = new karma.Server(localConfig, function(failCount) {

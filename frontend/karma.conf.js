@@ -18,12 +18,12 @@ function listFiles() {
 
   return wiredep(wiredepOptions).js
     .concat([
-      path.join(conf.paths.src, '/assets/scripts/adapter.js'),
-      path.join(conf.paths.src, '/assets/scripts/janus.nojquery.js'),
-      path.join(conf.paths.src, '/assets/scripts/config.js'),
-      path.join(conf.paths.src, '/assets/scripts/testing.js'),
-      path.join(conf.paths.tmp, '/serve/app/index.module.js'),
+      // path.join(conf.paths.src, '/assets/scripts/adapter.js'),
+      // path.join(conf.paths.src, '/assets/scripts/janus.nojquery.js'),
+      // path.join(conf.paths.src, '/assets/scripts/config.js'),
+      // path.join(conf.paths.src, '/assets/scripts/testing.js'),
       // path.join(conf.paths.tmp, '/serve/app/index.config.js'),
+      path.join(conf.paths.tmp, '/serve/app/index.module.js')
     ])
     .concat(pathSrcHtml);
 }
@@ -60,7 +60,14 @@ module.exports = function(config) {
       dir : 'coverage/'
     },
 
-    reporters: ['progress']
+    reporters: ['progress'],
+
+    // as suggested here: https://github.com/karma-runner/karma/issues/598
+    captureTimeout: 60000,
+    // to avoid DISCONNECTED messages
+    browserDisconnectTimeout : 10000, // default 2000
+    browserDisconnectTolerance : 1, // default 0
+    browserNoActivityTimeout : 60000 //default 10000
   };
 
   // This is the default preprocessors configuration for a usage with Karma cli

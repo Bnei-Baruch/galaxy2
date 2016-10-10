@@ -189,6 +189,7 @@ Janus.init = function(options) {
 					Janus.sessions[s].destroy();
 				}
 			}
+      Janus.log("hmmm..");
 		}
 		function addJsList(srcArray) {
 			if (!srcArray || !Array.isArray(srcArray) || srcArray.length == 0) {

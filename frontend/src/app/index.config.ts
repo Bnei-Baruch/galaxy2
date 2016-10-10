@@ -24,6 +24,8 @@ export function config(
     apiUrl: config.backendUri + '/rest'
   });
 
+  console.log('This is run!!!!!!');
+
   RollbarProvider.init({
     accessToken: config.rollbarToken,
     captureUncaught: true,
@@ -47,7 +49,13 @@ export function config(
     $delegate.error = function() {
       var data = Array.prototype.slice.call(arguments);
       fn.apply($delegate, data);
-      Rollbar.error.apply(Rollbar, data);
+      console.log('!!!');
+      console.log(data);
+      console.log(Rollbar);
+      console.log(Rollbar.error);
+      if (Rollbar && Rollbar.error) {
+        Rollbar.error.apply(Rollbar, data);
+      }
     };
 
     return $delegate;
