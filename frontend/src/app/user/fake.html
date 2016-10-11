@@ -3,6 +3,8 @@
     <video data-login="{{ fakeUser }}" style="height: 180px;" autoplay muted></video>
     <md-card-content>
       {{ fakeUser }}
+      <md-button ng-click="fake.reload(fakeUser)">Reload</md-button>
+      <md-button ng-click="fake.unpublish(fakeUser)">Unpublish</md-button>
     </md-card-content>
   </md-card>
 </div>

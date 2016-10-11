@@ -346,6 +346,12 @@ export class JanusVideoRoomService {
     return deferred.promise;
   }
 
+
+  unpublishLocalFeed(): void {
+    this.localHandle.send({ 'message': { 'request': 'unpublish' }});
+  }
+
+
   private stopAndStartSdiForwarding(portsForwardInfo: IPortsForwardInfo,
       user: IUser,
       forwardIp: string,
@@ -576,6 +582,7 @@ export class JanusVideoRoomService {
           this.deletePublisher(this.publisherIdToLogin(message.leaving));
         } else if (message.unpublished) {
           var login: string = this.publisherIdToLogin(message.unpublished);
+          this.$log.info('Publisher left', login);
           // this.publisherStatusTracker.disconnect(login);
           this.deletePublisher(login);
         }
@@ -673,7 +680,6 @@ export class JanusVideoRoomService {
       }
     });
   }
-
 
   /* Remote Handle Methods */
 
