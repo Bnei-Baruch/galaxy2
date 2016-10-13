@@ -214,5 +214,6 @@ export class BaseChannelController {
       this.mapUsersByLogin();
       this.videoRoom.updateChannelUsers(this.name, this.getLoginsList());
     }
+    this.userJoined(data.user.login);
   }
 }
