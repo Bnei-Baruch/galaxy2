@@ -191,8 +191,8 @@ export class BaseChannelController {
 
   onDragUserFrom(data: IDraggedData) {
     if (data.channelToId !== 'control') {
-
-      for (var idx = 0; idx < this.users.length; ++idx) {
+      var idx = 0;
+      for (; idx < this.users.length; ++idx) {
         if (this.users[idx].login === data.user.login) {
           break;
         }
@@ -202,7 +202,7 @@ export class BaseChannelController {
         this.mapUsersByLogin();
         this.videoRoom.userLeftChannel(this.name, data.user.login);
       } else {
-        this.$log.info('onDragUserFrom: Could not find user by login', data.user.login, this.users);
+        this.$log.error('onDragUserFrom: Could not find user by login', data.user.login, this.users);
       }
     }
   }
