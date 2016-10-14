@@ -120,7 +120,9 @@ export class BaseChannelController {
 
     if (user) {
       user.joined = null;
+      delete user.joined;
       user.stream = null;
+      delete user.stream;
       // user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
     } else {
       this.$log.error('userLeft: Could not find user by login', login, this.usersByLogin);
@@ -215,5 +217,20 @@ export class BaseChannelController {
       this.videoRoom.updateChannelUsers(this.name, this.getLoginsList());
     }
     this.userJoined(data.user.login);
+  }
+  areJoinedOrEnabled(user: IUser) {
+    if (!user || user.disabled) {
+      return false;
+    }
+    return !!user.joined;
+  }
+  areNotJoinedOrEnabled(user: IUser) {
+    if (!user) {
+      return true;
+    }
+    if (user.disabled) {
+      return false;
+    }
+    return !user.joined;
   }
 }
