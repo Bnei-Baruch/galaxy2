@@ -121,20 +121,26 @@ export class SmallChannelController extends BaseChannelController {
       }
     }
   }
-// when user drug from this channel disable or remove from users
+
+  // when user drug from this channel disable or remove from users
   onDragUserFrom(data: IDraggedData) {
     this.users.forEach((user: IUser) => {
       if (user.login !== data.user.login) {
         return false;
       }
       if (data.channelToId !== 'control') {
-        this.removeUserFromComposites(user.login);
+        this.userLeft(user.login);
       } else if (!data.isDropToSearch) {
         this.disableUser(user);
       }
       return true;
     });
     super.onDragUserFrom(data);
+  }
+
+  onDragUserTo(data: IDraggedData) {
+    super.onDragUserTo(data);
+    this.userJoined(data.user.login);
   }
 
   // TODO: Handle HTTP errors and rollback to old state in case of an error

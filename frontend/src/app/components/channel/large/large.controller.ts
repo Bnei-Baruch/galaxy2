@@ -1,6 +1,6 @@
 import { SingleUserChannelController } from '../channel.singleUser.controller';
-import {IDraggedData} from '../channel.controller';
-import {IUser} from '../../auth/auth.service';
+import { IDraggedData } from '../channel.controller';
+import { IUser } from '../../auth/auth.service';
 
 /** @ngInject */
 export class LargeChannelController extends SingleUserChannelController {
@@ -19,7 +19,6 @@ export class LargeChannelController extends SingleUserChannelController {
       }
       if (data.channelToId !== 'control') {
         this.removeFromPreview(user);
-        this.users.splice(index, 1);
       } else if (!data.isDropToSearch) {
         this.disableUser(user);
       }
