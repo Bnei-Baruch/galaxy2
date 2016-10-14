@@ -217,7 +217,6 @@ export class BaseChannelController {
     this.userJoined(data.user.login);
   }
   areJoinedOrEnabled(user: IUser) {
-    console.log('davgur' + user.login);
     if (!user || user.disabled) {
       return false;
     }

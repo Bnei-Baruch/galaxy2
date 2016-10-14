@@ -49,9 +49,8 @@ export class SingleUserChannelController extends BaseChannelController {
     if (user === null) {
       this.$log.info('Program user is null', this.name);
       this.slotElement.program.src = null;
-      if ((this.slotElement.program as any).srcObject) {
-        (this.slotElement.program as any).srcObject = null;
-      }
+      // Detach media stream from program.
+      attachMediaStream(this.slotElement.program, null);
       this.programUser = null;
     } else {
       this.$log.info('Putting user to program', this.name, user.login);
@@ -88,10 +87,8 @@ export class SingleUserChannelController extends BaseChannelController {
         this.$log.info('Unsubscribe (preview)', this.name, this.previewUser.login);
         this.videoRoom.unsubscribeFromStream(this.previewUser.login);
       }
-      this.slotElement.preview.src = null;
-      if ((this.slotElement.preview as any).srcObject) {
-        (this.slotElement.preview as any).srcObject = null;
-      }
+      // Detach media stream from preview.
+      attachMediaStream(this.slotElement.preview, null);
       this.previewUser = null;
     } else {
       this.$log.info('Putting user to preview', this.name, user.login);
