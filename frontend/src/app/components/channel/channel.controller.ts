@@ -119,8 +119,8 @@ export class BaseChannelController {
     var user = this.usersByLogin[login];
 
     if (user) {
-      user.joined = null;
-      user.stream = null;
+      delete user.joined;
+      delete user.stream;
       // user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
     } else {
       this.$log.error('userLeft: Could not find user by login', login, this.usersByLogin);

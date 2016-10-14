@@ -19,9 +19,10 @@ export class SingleUserChannelController extends BaseChannelController {
   }
 
   userLeft(login: string) {
-    super.userLeft(login);
-
     var user = this.usersByLogin[login];
+    var nextUser = this.getNextUser(user);
+
+    super.userLeft(login);
 
     if (this.programUser === user) {
       this.putUserToProgram(null);
@@ -29,8 +30,11 @@ export class SingleUserChannelController extends BaseChannelController {
     }
 
     if (this.previewUser === user) {
-      var previewUser = this.getNextUser(user);
-      this.putUserToPreview(previewUser);
+      if (nextUser !== user) {
+        this.putUserToPreview(nextUser);
+      } else {
+        this.putUserToPreview(null);
+      }
     }
   }
 
@@ -118,7 +122,7 @@ export class SingleUserChannelController extends BaseChannelController {
   removeFromPreview(user: IUser) {
     if (this.previewUser === user) {
       var nextUser = this.getNextUser(user);
-      // If next use is myself, remove from preview.
+      // If next user is myself, remove from preview.
       if (nextUser === user) {
         nextUser = null;
       }
@@ -162,7 +166,7 @@ export class SingleUserChannelController extends BaseChannelController {
     var onlineUsers = this.getOnlineUsers();
     var userIndex = onlineUsers.indexOf(user);
 
-    if (userIndex === -1) {
+    if (!onlineUsers.length) {
       return null;
     }
 
