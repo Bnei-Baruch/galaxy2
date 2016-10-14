@@ -119,7 +119,9 @@ export class BaseChannelController {
     var user = this.usersByLogin[login];
 
     if (user) {
+      user.joined = null;
       delete user.joined;
+      user.stream = null;
       delete user.stream;
       // user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
     } else {
