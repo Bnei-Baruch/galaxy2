@@ -110,7 +110,13 @@ export class BaseChannelController {
       user.disabled = false;
       // user.disabled = this.publisherStatusTracker.connectionStatusByLogin(login) === InternetConnectionType.danger;
     } else {
-      this.$log.error('userJoined: Could not find user by login', login, this.usersByLogin);
+      this.$log.error('userJoined: Could not find user by login',
+                      { login: login,
+                        channel: this.name,
+                        users: this.users,
+                        usersByLogin: Object.keys(this.usersByLogin),
+                        stack: new Error().stack
+                      });
     }
   }
 
@@ -125,7 +131,13 @@ export class BaseChannelController {
       delete user.stream;
       // user.connectionStatus = this.publisherStatusTracker.connectionStatusByLogin(login);
     } else {
-      this.$log.error('userLeft: Could not find user by login', login, this.usersByLogin);
+      this.$log.error('userLeft: Could not find user by login',
+                      { login: login,
+                        channel: this.name,
+                        users: this.users,
+                        usersByLogin: Object.keys(this.usersByLogin),
+                        stack: new Error().stack
+                      });
     }
   }
 
