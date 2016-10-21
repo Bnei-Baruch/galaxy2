@@ -65,7 +65,7 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   putCompositeToPreview(index: number): ng.IPromise<any> {
-    return this.putCompositeToSlot(index, false);
+    return this.putCompositeToSlot(index, false, true);
   }
 
   disableUser(user: IUser) {
@@ -237,11 +237,10 @@ export class SmallChannelController extends BaseChannelController {
     });
 
     // Completing the last composite if needed
-    var firstCompositeIndex = 0;
-    var firstComposite = this.composites[0];
-    var lastComposite = this.composites[this.composites.length - 1];
-
     if (this.composites.length > 1) {
+      var firstCompositeIndex = 0;
+      var firstComposite = this.composites[0];
+      var lastComposite = this.composites[this.composites.length - 1];
 
       for (var userIndex = lastComposite.length; userIndex < this.compositeSize; userIndex++) {
         // Clone to avoid global user object override
