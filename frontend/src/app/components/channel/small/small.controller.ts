@@ -65,7 +65,7 @@ export class SmallChannelController extends BaseChannelController {
   }
 
   putCompositeToPreview(index: number): ng.IPromise<any> {
-    return this.putCompositeToSlot(index, false);
+    return this.putCompositeToSlot(index, false, true);
   }
 
   disableUser(user: IUser) {
