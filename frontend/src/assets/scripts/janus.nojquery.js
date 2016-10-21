@@ -153,12 +153,21 @@ Janus.init = function(options) {
 					if(XHR.status !== 200) {
 						// Got an error?
 						if(XHR.status === 0)
-							XHR.status = "error";
-						params.error(XHR, XHR.status, "");
+              try {
+                XHR.status = "error";
+              } catch (e) {
+                // Might not be able to set read only 'stats' property.
+              }
+						params.error(XHR, XHR.status || "error", "");
 						return;
 					}
 					// Got payload
-					params.success(JSON.parse(XHR.responseText));
+          try {
+            params.success(JSON.parse(XHR.responseText));
+          } catch(e) {
+            params.error(XHR, XHR.status, "Could not parse response, error: '" + e +
+                                          "', text: '" + XHR.responseText + "'");
+          }
 				};
 			}
 			try {
@@ -167,8 +176,12 @@ Janus.init = function(options) {
 					if(XHR.status !== 200) {
 						// Got an error?
 						if(XHR.status === 0)
-							XHR.status = "error";
-						params.error(XHR, XHR.status, "");
+              try {
+                XHR.status = "error";
+              } catch (e) {
+                // Might not be able to set read only 'stats' property.
+              }
+						params.error(XHR, XHR.status || "error", "");
 						return;
 					}
 					// Got payload
