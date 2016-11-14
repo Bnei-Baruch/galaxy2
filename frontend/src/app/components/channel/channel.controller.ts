@@ -24,6 +24,7 @@ export class BaseChannelController {
     preview: null
   };
 
+  $q: ng.IQService;
   $log: ng.ILogService;
   $timeout: ng.ITimeoutService;
   $document: any;
@@ -37,6 +38,7 @@ export class BaseChannelController {
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
+    this.$q = $injector.get('$q');
     this.$log = $injector.get('$log');
     this.$document = $injector.get('$document');
     this.toastr = $injector.get('toastr');
