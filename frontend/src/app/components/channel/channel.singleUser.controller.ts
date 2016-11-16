@@ -39,9 +39,12 @@ export class SingleUserChannelController extends BaseChannelController {
   }
 
   // TODO: Handle HTTP errors and rollback to old user in case of an error
-  putUserToProgram(user: IUser) {
+  putUserToProgram(user: IUser): ng.IPromise<{}> {
+    var deferred = this.$q.defer();
+
     if (this.programUser === user) {
-      return;
+      deferred.resolve();
+      return deferred.promise;
     }
 
     var oldProgramUser = this.programUser;
@@ -52,6 +55,7 @@ export class SingleUserChannelController extends BaseChannelController {
       // Detach media stream from program.
       attachMediaStream(this.slotElement.program, null);
       this.programUser = null;
+      deferred.resolve();
     } else {
       this.$log.info('Putting user to program', this.name, user.login);
       this.programUser = user;
@@ -62,19 +66,25 @@ export class SingleUserChannelController extends BaseChannelController {
           this.videoRoom.unsubscribeFromStream(oldProgramUser.login);
           oldProgramUser.stream = null;
         }
+        deferred.resolve();
       }, () => {
         this.toastr.error(`Error putting ${user.login} to program, rolling back to ${oldProgramUser.login}`);
         this.$log.info('Rolling back program user', this.name, oldProgramUser.login);
         this.programUser = oldProgramUser;
+        deferred.reject();
       });
 
     }
+    return deferred.promise;
   }
 
   // TODO: Handle HTTP errors and rollback to old user in case of an error
-  putUserToPreview(user: IUser) {
+  putUserToPreview(user: IUser): ng.IPromise<{}> {
+    var deferred = this.$q.defer();
+
     if (this.previewUser === user) {
-      return;
+      deferred.resolve();
+      return deferred.promise;
     }
 
     var oldPreviewUser = this.previewUser;
@@ -90,6 +100,7 @@ export class SingleUserChannelController extends BaseChannelController {
       // Detach media stream from preview.
       attachMediaStream(this.slotElement.preview, null);
       this.previewUser = null;
+      deferred.resolve();
     } else {
       this.$log.info('Putting user to preview', this.name, user.login);
       this.previewUser = user;
@@ -101,13 +112,16 @@ export class SingleUserChannelController extends BaseChannelController {
           this.videoRoom.unsubscribeFromStream(oldPreviewUser.login);
           oldPreviewUser.stream = null;
         }
+        deferred.resolve();
       }, () => {
         this.$log.info('Error putting user to preview', this.name, user.login);
         this.$log.info('Rolling back to old preview user', oldPreviewUser);
         this.previewUser = oldPreviewUser;
         this.toastr.error(`Error putting ${user.login} to preview`);
+        deferred.reject();
       });
     }
+    return deferred.promise;
   }
 
   disableUser(user: IUser) {

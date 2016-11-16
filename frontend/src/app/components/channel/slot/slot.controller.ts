@@ -9,8 +9,8 @@ export class SlotController {
     var sourceMedia = <HTMLMediaElement>element.find('video').get(0);
 
     var cloneSourceVideo = (scope: ng.IScope, dialogEl: ng.IAugmentedJQuery) => {
-    var targetMedia = <HTMLMediaElement>dialogEl.find('video').get(0);
-    reattachMediaStream(targetMedia, sourceMedia);
+      var targetMedia = <HTMLMediaElement>dialogEl.find('video').get(0);
+      reattachMediaStream(targetMedia, sourceMedia);
     };
 
     element.bind('contextmenu', (e: any) => {

@@ -31,23 +31,25 @@ export class ControlChannelController extends SingleUserChannelController {
     }
   }
 
-  putUserToPreview(user: IUser) {
+  putUserToPreview(user: IUser): ng.IPromise<{}> {
     // Mute user if not on program or preview
     if (this.previewUser && this.programUser !== this.previewUser) {
-      this.muteRemoteUser(this.previewUser);
+      this.toggleAudio(this.previewUser, false);
     }
-
-    super.putUserToPreview(user);
+    return super.putUserToPreview(user);
   }
 
   trigger(): void {
     if (this.isReadyToSwitch()) {
-
       if (this.programUser) {
-        this.muteRemoteUser(this.programUser);
+        this.toggleAudio(this.programUser, false);
       }
-
-      this.putUserToProgram(this.previewUser);
+      // if (this.previewUser) {
+      //   this.toggleAudio(this.previewUser, false);
+      // }
+      this.putUserToProgram(this.previewUser).then(() => {
+        this.toggleAudio(this.programUser, true);
+      });
     }
   }
 
@@ -58,7 +60,7 @@ export class ControlChannelController extends SingleUserChannelController {
     }
 
     if (user.joined && user.audioEnabled) {
-      this.muteRemoteUser(user);
+      this.toggleAudio(user, false);
     }
 
     // Remove user from preview if present
@@ -76,14 +78,18 @@ export class ControlChannelController extends SingleUserChannelController {
     this.onUsersListChanged();
   }
 
-  toggleAudio(user: IUser) {
-    this.$log.debug('Toggle audio', this.name, user.login);
+  toggleAudio(user: IUser, enabled: boolean) {
+    if (enabled === undefined) {
+      enabled = !user.audioEnabled;
+    }
+    user.audioEnabled = enabled;
+    this.$log.debug('Toggle audio:', this.name, user.login, user.audioEnabled);
 
     this.pubSub.client.publish('/users/' + user.login, {
       message: 'toggleAudio',
       enabled: user.audioEnabled
     }).then(() => {
-      user.audioEnabled = !user.audioEnabled;
+      this.$log.debug('Audio toggled:', user.login, user.audioEnabled);
     }, (error: any) => {
       this.$log.error('Error sending toggle audio command for', user.login, error);
       this.toastr.error('Unable to toggle audio, error response recorded');
@@ -116,12 +122,6 @@ export class ControlChannelController extends SingleUserChannelController {
 
   onDragUserFrom(data: IDraggedData) {
     /*This not abstract method. Overload default method for doing nothing*/
-  }
-
-  private muteRemoteUser(user: IUser): void {
-    if (user.audioEnabled) {
-      this.toggleAudio(user);
-    }
   }
 
   private onUsersListChanged(): void {

@@ -2,13 +2,11 @@
   <div data-id="channelVideoBlock">
     <slot-widget kind="program"
       user="vm.programUser"
-      toggle-audio="vm.toggleAudio(vm.programUser)"
       show-audio-toggle="true"></slot-widget>
 
     <slot-widget kind="preview"
       user="vm.previewUser"
       is-ready="vm.isReadyToSwitch()"
-      toggle-audio="vm.toggleAudio(vm.previewUser)"
       show-audio-toggle="true"
       trigger="vm.trigger()"></slot-widget>
   </div>

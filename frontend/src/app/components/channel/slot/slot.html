@@ -27,8 +27,7 @@
         ng-if="showAudioToggle && user"
         class="material-icons"
         ng-style="user.audioEnabled ? {color: 'red'} : {color: 'white'}"
-        style="position: absolute; left: 12px;"
-        ng-click="toggleAudio(); $event.stopPropagation()">volume_up</md-icon>
+        style="position: absolute; left: 12px;">volume_up</md-icon>
 
       <md-icon
         ng-if="kind === 'preview' && !isReady()"
