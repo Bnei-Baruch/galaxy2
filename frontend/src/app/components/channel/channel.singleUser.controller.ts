@@ -39,7 +39,7 @@ export class SingleUserChannelController extends BaseChannelController {
   }
 
   // TODO: Handle HTTP errors and rollback to old user in case of an error
-  putUserToProgram(user: IUser) {
+  putUserToProgram(user: IUser): ng.IPromise<{}> {
     var deferred = this.$q.defer();
 
     if (this.programUser === user) {
@@ -79,7 +79,7 @@ export class SingleUserChannelController extends BaseChannelController {
   }
 
   // TODO: Handle HTTP errors and rollback to old user in case of an error
-  putUserToPreview(user: IUser) {
+  putUserToPreview(user: IUser): ng.IPromise<{}> {
     var deferred = this.$q.defer();
 
     if (this.previewUser === user) {

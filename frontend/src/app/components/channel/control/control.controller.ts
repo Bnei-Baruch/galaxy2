@@ -31,12 +31,12 @@ export class ControlChannelController extends SingleUserChannelController {
     }
   }
 
-  putUserToPreview(user: IUser) {
+  putUserToPreview(user: IUser): ng.IPromise<{}> {
     // Mute user if not on program or preview
     if (this.previewUser && this.programUser !== this.previewUser) {
       this.toggleAudio(this.previewUser, false);
     }
-    super.putUserToPreview(user);
+    return super.putUserToPreview(user);
   }
 
   trigger(): void {
