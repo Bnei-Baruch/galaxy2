@@ -157,16 +157,17 @@ export class BaseChannelController {
     }
     user.audioEnabled = enabled;
     this.$log.debug('Toggle audio:', this.name, user.login, user.audioEnabled);
+    this.$log.debug('IGNORING HERE!!!');
 
-    this.pubSub.client.publish('/users/' + user.login, {
-      message: 'toggleAudio',
-      enabled: user.audioEnabled
-    }).then(() => {
-      this.$log.debug('Audio toggled:', user.login, user.audioEnabled);
-    }, (error: any) => {
-      this.$log.error('Error sending toggle audio command for', user.login, error);
-      this.toastr.error('Unable to toggle audio, error response recorded');
-    });
+    // this.pubSub.client.publish('/users/' + user.login, {
+    //   message: 'toggleAudio',
+    //   enabled: user.audioEnabled
+    // }).then(() => {
+    //   this.$log.debug('Audio toggled:', user.login, user.audioEnabled);
+    // }, (error: any) => {
+    //   this.$log.error('Error sending toggle audio command for', user.login, error);
+    //   this.toastr.error('Unable to toggle audio, error response recorded');
+    // });
 
     return false;
   }

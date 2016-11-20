@@ -5,6 +5,7 @@
 import { AuthService, IUser  } from '../auth/auth.service';
 import { JanusService } from './janus.service';
 import { PublisherStatusTrackerService } from './publisherStatusTracker.service';
+import { PubSubService } from '../pubSub/pubSub.service';
 
 declare var escape: any;
 
@@ -22,9 +23,11 @@ interface IRemoteHandle {
 }
 
 interface IFeedForwardInfo {
+  login: string;
   publisherId: string;
   videoStreamId: string;
   audioStreamId: string;
+  otherAudioStreamExist: boolean;
 }
 
 interface IPortsForwardInfo {
@@ -64,6 +67,7 @@ export class JanusVideoRoomService {
       private authService: AuthService,
       private janus: JanusService,
       private publisherStatusTracker: PublisherStatusTrackerService,
+      private pubSub: PubSubService,
       private toastr: any,
       private config: any) {
 
@@ -344,7 +348,24 @@ export class JanusVideoRoomService {
       this.stopStreamForwarding(forwardInfo, forwardInfo.videoStreamId).then(() => {
         if (forwardInfo.audioStreamId) {
           this.stopStreamForwarding(forwardInfo, forwardInfo.audioStreamId).then(() => {
-            deferred.resolve();
+            if (forwardInfo.otherAudioStreamExist !== undefined &&
+                !forwardInfo.otherAudioStreamExist) {
+              // Stop local audio for that user.
+              this.pubSub.client.publish('/users/' + forwardInfo.login, {
+                message: 'toggleAudio',
+                enabled: false
+              }).then(() => {
+                this.$log.debug('Turning audio off:', forwardInfo.login);
+                deferred.resolve();
+              }, (error: any) => {
+                this.$log.error('Error sending toggle audio command for', forwardInfo.login, error);
+                this.toastr.error('Unable to toggle audio, error response recorded');
+                deferred.reject();
+              });
+            } else {
+              this.$log.debug('Not disabling audio as open in other place.');
+              deferred.resolve();
+            }
           }, () => {
             this.$log.error('VideoRoom - error stopping audio stream.');
             deferred.reject();
@@ -387,6 +408,7 @@ export class JanusVideoRoomService {
     if (audioForwardInfo) {
       if (prevForwardInfo) {
         prevForwardInfo.audioStreamId = audioForwardInfo.audioStreamId;
+        prevForwardInfo.otherAudioStreamExist = audioForwardInfo.otherAudioStreamExist;
       } else {
         prevForwardInfo = audioForwardInfo;
       }
@@ -754,15 +776,23 @@ export class JanusVideoRoomService {
       message: request,
       success: (data: any) => {
         var portsForwardInfo: IPortsForwardInfo = <IPortsForwardInfo>{};
+        var audioStreamsCount = {};
 
         data.rtp_forwarders.forEach((rtpForwarder: any) => {
 
           rtpForwarder.rtp_forwarder.forEach((forwarder: any) => {
 
+            if (!(rtpForwarder.display in audioStreamsCount)) {
+              audioStreamsCount[rtpForwarder.display] = 0;
+            }
+            audioStreamsCount[rtpForwarder.display]++;
+
             portsForwardInfo[forwarder.port] = {
+              login: rtpForwarder.display,
               publisherId: rtpForwarder.publisher_id,
               videoStreamId: forwarder.video_stream_id,
-              audioStreamId: forwarder.audio_stream_id
+              audioStreamId: forwarder.audio_stream_id,
+              otherAudioStreamExist: audioStreamsCount[rtpForwarder.display] > 1
             };
           });
         });
@@ -804,11 +834,28 @@ export class JanusVideoRoomService {
           this.$log.debug(JSON.stringify(data));
 
           var forwardInfo = <IFeedForwardInfo> {
+            // We don't have display at this poing :(
+            // login: data.display,
             publisherId: data.publisher_id,
             videoStreamId: data.rtp_stream.video_stream_id,
             audioStreamId: data.rtp_stream.audio_stream_id
           };
-          deferred.resolve(forwardInfo);
+          if (forwardInfo.audioStreamId) {
+            // Start local audio for that user.
+            this.pubSub.client.publish('/users/' + login, {
+              message: 'toggleAudio',
+              enabled: true
+            }).then(() => {
+              this.$log.debug('Turn on audio', login);
+              deferred.resolve(forwardInfo);
+            }, (error: any) => {
+              this.$log.error('Error sending toggle audio command for', forwardInfo.login, error);
+              this.toastr.error('Unable to toggle audio, error response recorded');
+              deferred.reject();
+            });
+          } else {
+            deferred.resolve(forwardInfo);
+          }
         } else {
           this.$log.error('Error rtp_forward success data', data);
           deferred.reject();

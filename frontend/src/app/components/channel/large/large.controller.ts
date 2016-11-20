@@ -8,13 +8,14 @@ export class LargeChannelController extends SingleUserChannelController {
   trigger() {
     console.log('Large trigger', this.name, this.config.janus.videoRoom.sdiPorts[this.name]);
     if (this.isReadyToSwitch()) {
-      var ports = this.config.janus.videoRoom.sdiPorts[this.name];
-      if (ports && ports.audio && this.programUser) {
-        this.toggleAudio(this.programUser, false);
-      }
-      this.putUserToProgram(this.previewUser);
+      var prevProgramUser = this.programUser;
       this.putUserToProgram(this.previewUser).then(() => {
+        var ports = this.config.janus.videoRoom.sdiPorts[this.name];
         if (ports && ports.audio) {
+          // Reference equality.
+          if (prevProgramUser && prevProgramUser !== this.programUser) {
+            this.toggleAudio(prevProgramUser, false);
+          }
           this.toggleAudio(this.programUser, true);
         }
       });
