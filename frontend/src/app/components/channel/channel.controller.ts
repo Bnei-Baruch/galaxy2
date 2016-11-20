@@ -1,5 +1,6 @@
 import { JanusVideoRoomService } from '../janus/janusVideoRoom.service';
 import { PublisherStatusTrackerService, InternetConnectionType } from '../janus/publisherStatusTracker.service';
+import { PubSubService } from '../pubSub/pubSub.service';
 import { IUser } from '../auth/auth.service';
 
 
@@ -13,6 +14,8 @@ export interface IDraggedData {
 
 /** @ngInject */
 export class BaseChannelController {
+  pubSub: PubSubService;
+
   name: string;
   hotkey: string;
   users: IUser[];
@@ -38,6 +41,7 @@ export class BaseChannelController {
 
   // Using $injector manually to allow easier constructor overloads
   constructor($injector: any) {
+    this.pubSub = $injector.get('pubSub');
     this.$q = $injector.get('$q');
     this.$log = $injector.get('$log');
     this.$document = $injector.get('$document');
@@ -145,6 +149,26 @@ export class BaseChannelController {
 
   trigger() {
     this.$log.error('trigger() not implemented!', this.name);
+  }
+
+  toggleAudio(user: IUser, enabled: boolean) {
+    if (enabled === undefined) {
+      enabled = !user.audioEnabled;
+    }
+    user.audioEnabled = enabled;
+    this.$log.debug('Toggle audio:', this.name, user.login, user.audioEnabled);
+
+    this.pubSub.client.publish('/users/' + user.login, {
+      message: 'toggleAudio',
+      enabled: user.audioEnabled
+    }).then(() => {
+      this.$log.debug('Audio toggled:', user.login, user.audioEnabled);
+    }, (error: any) => {
+      this.$log.error('Error sending toggle audio command for', user.login, error);
+      this.toastr.error('Unable to toggle audio, error response recorded');
+    });
+
+    return false;
   }
 
   disableUser(user: IUser) {

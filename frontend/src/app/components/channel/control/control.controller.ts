@@ -1,12 +1,9 @@
 import { IUser } from '../../auth/auth.service';
-import { PubSubService } from '../../pubSub/pubSub.service';
 import { SingleUserChannelController } from '../channel.singleUser.controller';
 import { IDraggedData } from '../channel.controller';
 
 /** @ngInject */
 export class ControlChannelController extends SingleUserChannelController {
-  pubSub: PubSubService;
-
   usersBreakdown: { [channel: string]: IUser[]; };
   allowRemoveUsers: boolean = true;
 
@@ -15,7 +12,6 @@ export class ControlChannelController extends SingleUserChannelController {
 
   constructor($injector: any) {
     super($injector);
-    this.pubSub = $injector.get('pubSub');
     this.users = [];
   }
 
@@ -33,9 +29,9 @@ export class ControlChannelController extends SingleUserChannelController {
 
   putUserToPreview(user: IUser): ng.IPromise<{}> {
     // Mute user if not on program or preview
-    if (this.previewUser && this.programUser !== this.previewUser) {
-      this.toggleAudio(this.previewUser, false);
-    }
+    // if (this.previewUser && this.programUser !== this.previewUser) {
+    //   this.toggleAudio(this.previewUser, false);
+    // }
     return super.putUserToPreview(user);
   }
 
@@ -44,9 +40,6 @@ export class ControlChannelController extends SingleUserChannelController {
       if (this.programUser) {
         this.toggleAudio(this.programUser, false);
       }
-      // if (this.previewUser) {
-      //   this.toggleAudio(this.previewUser, false);
-      // }
       this.putUserToProgram(this.previewUser).then(() => {
         this.toggleAudio(this.programUser, true);
       });
@@ -76,26 +69,6 @@ export class ControlChannelController extends SingleUserChannelController {
     }
 
     this.onUsersListChanged();
-  }
-
-  toggleAudio(user: IUser, enabled: boolean) {
-    if (enabled === undefined) {
-      enabled = !user.audioEnabled;
-    }
-    user.audioEnabled = enabled;
-    this.$log.debug('Toggle audio:', this.name, user.login, user.audioEnabled);
-
-    this.pubSub.client.publish('/users/' + user.login, {
-      message: 'toggleAudio',
-      enabled: user.audioEnabled
-    }).then(() => {
-      this.$log.debug('Audio toggled:', user.login, user.audioEnabled);
-    }, (error: any) => {
-      this.$log.error('Error sending toggle audio command for', user.login, error);
-      this.toastr.error('Unable to toggle audio, error response recorded');
-    });
-
-    return false;
   }
 
   getAllUsers() {
