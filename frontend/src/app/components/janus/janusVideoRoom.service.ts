@@ -57,7 +57,6 @@ export class JanusVideoRoomService {
 
   localUserLogin: string;
   localStream: MediaStream;
-  localStreamAudioEnabledCount: number;
 
   constructor($window: ng.IWindowService,
       private $q: ng.IQService,
@@ -312,29 +311,11 @@ export class JanusVideoRoomService {
   }
 
   toggleLocalAudio(enabled: boolean) {
-    // Continue here....
-    // Use get forwarders to understand if need to toggle audio or not.
-    // Use get forwarders to understand who is shown in which column!!!!!
-    // Remove code from here!
-    this.getForwarders().then((portsForwardInfo: IPortsForwardInfo) => {
-      console.log(portsForwardInfo);
-      var audioTracks = this.localStream.getAudioTracks();
-      if (enabled) {
-        this.localStreamAudioEnabledCount++;
-      } else {
-        this.localStreamAudioEnabledCount--;
-      }
-      if (this.localStreamAudioEnabledCount <= 0) {
-        enabled = false;
-        this.localStreamAudioEnabledCount = 0;
-      } else {
-        enabled = true;
-      }
-      console.log('Audio toggle count', enabled, this.localStreamAudioEnabledCount);
-      audioTracks.forEach((audioTrack: MediaStreamTrack) => {
-        this.$log.info('VideoRoom - toggle audio track', audioTrack.label, audioTrack.enabled, enabled);
-        audioTrack.enabled = enabled;
-      });
+    console.log('Audio toggle count', enabled);
+    var audioTracks = this.localStream.getAudioTracks();
+    audioTracks.forEach((audioTrack: MediaStreamTrack) => {
+      this.$log.info('VideoRoom - toggle audio track', audioTrack.label, audioTrack.enabled, enabled);
+      audioTrack.enabled = enabled;
     });
   }
 
@@ -600,7 +581,6 @@ export class JanusVideoRoomService {
         onlocalstream: (stream: MediaStream) => {
           this.$log.info('VideoRoom - handle onlocalstream', stream);
           this.localStream = stream;
-          this.localStreamAudioEnabledCount = 0;
 
           // Disable local audio tracks
           this.toggleLocalAudio(false);
