@@ -20,10 +20,12 @@
       "sdiPorts": {
         "large1": {
           "forwardIp": "51.254.244.44",
+          "audioForwardIp": "127.0.0.1",
           "video": {
-            "program": 46105,
-            "streamId": 46105
-          }
+            "program": 10001,
+            "streamId": 11
+          },
+          "audio": 50006
         },
         "large2": {
           "forwardIp": "51.254.244.44",
