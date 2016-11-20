@@ -180,7 +180,8 @@ export class SmallChannelController extends BaseChannelController {
 
     // TODO: move to base controller
     this.$log.info('Putting composite to slot', slotName, logins);
-    this.videoRoom.forwardRemoteFeeds(this.composite, portsConfig.forwardIp, videoPorts, undefined, program).then(() => {
+    this.videoRoom.forwardRemoteFeeds(this.composite, portsConfig.forwardIp, portsConfig.audioForwardIp,
+                                      videoPorts, undefined, program).then(() => {
       deffered.resolve();
     }, () => {
       // Reverting composite selection

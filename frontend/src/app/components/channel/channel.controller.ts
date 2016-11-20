@@ -156,6 +156,7 @@ export class BaseChannelController {
       enabled = !user.audioEnabled;
     }
     user.audioEnabled = enabled;
+    // TODO: Clean this code as audio toggle happens on SDI switch now.
     this.$log.debug('Toggle audio:', this.name, user.login, user.audioEnabled);
     this.$log.debug('IGNORING HERE!!!');
 

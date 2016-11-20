@@ -261,7 +261,8 @@ export class JanusVideoRoomService {
    *
    * @returns List of promises for every video port provided
    */
-  forwardRemoteFeeds(users: IUser[], forwardIp: string, videoPorts: number[], audioPorts?: number[], changeTitle?: boolean): ng.IPromise<any> {
+  forwardRemoteFeeds(users: IUser[], forwardIp: string, audioForwardIp: string,
+                     videoPorts: number[], audioPorts?: number[], changeTitle?: boolean): ng.IPromise<any> {
     var deferred = this.$q.defer();
 
     var previousCompleted = this.forwardingCompleted;
@@ -274,7 +275,8 @@ export class JanusVideoRoomService {
 
         var forwardPromises = users.map((user: IUser, index: number) => {
           var audioPort = (audioPorts || [])[index];
-          return this.stopAndStartSdiForwarding(portsForwardInfo, user, forwardIp, videoPorts[index], audioPort, changeTitle);
+          return this.stopAndStartSdiForwarding(portsForwardInfo, user, forwardIp, audioForwardIp,
+                                                videoPorts[index], audioPort, changeTitle);
         });
 
         (<any> this.$q).allSettled(forwardPromises).then(() => {
@@ -396,6 +398,7 @@ export class JanusVideoRoomService {
   private stopAndStartSdiForwarding(portsForwardInfo: IPortsForwardInfo,
       user: IUser,
       forwardIp: string,
+      audioForwardIp: string,
       videoPort: number,
       audioPort: number,
       changeTitle: boolean): ng.IPromise<any> {
@@ -420,18 +423,39 @@ export class JanusVideoRoomService {
     this.stopSdiForwarding(prevForwardInfo).then(() => {
       if (user.login) {
         if (user.login in this.publishers) {
-          this.startSdiForwarding(user.login, forwardIp, videoPort, audioPort).then((forwardInfo: IFeedForwardInfo) => {
-            // Forwarding succeeded, changing titles
-            if (changeTitle) {
-              this.changeRemoteFeedTitle(user.title, videoPort);
-            }
-
-            deferred.resolve();
-          }, () => {
-            var error = 'VideoRoom - error starting SDI forward.';
-            this.$log.error(error);
-            deferred.reject(error);
-          });
+          if (audioForwardIp && audioForwardIp !== forwardIp) {
+            // Forward vido only.
+            this.startSdiForwarding(user.login, forwardIp, videoPort, undefined).then((forwardInfo: IFeedForwardInfo) => {
+              // Forward audio only to different ip.
+              this.startSdiForwarding(user.login, audioForwardIp, undefined, audioPort).then((forwardInfo: IFeedForwardInfo) => {
+                // Forwarding succeeded, changing titles
+                if (changeTitle) {
+                  this.changeRemoteFeedTitle(user.title, videoPort);
+                }
+                deferred.resolve();
+              }, () => {
+                var error = 'VideoRoom - error starting SDI forward.';
+                this.$log.error(error);
+                deferred.reject(error);
+              });
+            }, () => {
+              var error = 'VideoRoom - error starting SDI forward.';
+              this.$log.error(error);
+              deferred.reject(error);
+            });
+          } else {
+            this.startSdiForwarding(user.login, forwardIp, videoPort, audioPort).then((forwardInfo: IFeedForwardInfo) => {
+              // Forwarding succeeded, changing titles
+              if (changeTitle) {
+                this.changeRemoteFeedTitle(user.title, videoPort);
+              }
+              deferred.resolve();
+            }, () => {
+              var error = 'VideoRoom - error starting SDI forward.';
+              this.$log.error(error);
+              deferred.reject(error);
+            });
+          }
         } else {
           this.$log.error('Could not find publisher with login', user.login);
           var error = `Could not find publisher with login ${user.login}`;
@@ -816,9 +840,11 @@ export class JanusVideoRoomService {
       publisher_id: this.publishers[login].id,
       room: this.config.janus.videoRoom.roomId,
       secret: this.config.janus.videoRoom.secret,
-      host: forwardIp,
-      video_port: videoPort
+      host: forwardIp
     };
+    if (videoPort) {
+      forward.video_port = videoPort;
+    }
     if (audioPort) {
       forward.audio_port = audioPort;
     }

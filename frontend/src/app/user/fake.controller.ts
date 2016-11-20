@@ -2,6 +2,7 @@ import { AuthService } from '../components/auth/auth.service';
 import { JanusService } from '../components/janus/janus.service';
 import { JanusVideoRoomService } from '../components/janus/janusVideoRoom.service';
 import { PublisherStatusTrackerService } from '../components/janus/publisherStatusTracker.service';
+import { PubSubService } from '../components/pubSub/pubSub.service';
 
 declare var attachMediaStream: any;
 
@@ -16,6 +17,7 @@ export class FakeUserController {
   $log: ng.ILogService;
   $http: ng.IHttpService;
   authService: AuthService;
+  pubSub: PubSubService;
   toastr: any;
   config: any;
   $injector: any;
@@ -29,6 +31,7 @@ export class FakeUserController {
                $log: ng.ILogService,
                $http: ng.IHttpService,
                authService: AuthService,
+               pubSub: PubSubService,
                toastr: any,
                config: any,
                $injector: any) {
@@ -39,6 +42,7 @@ export class FakeUserController {
     this.$log = $log;
     this.$http = $http;
     this.authService = authService;
+    this.pubSub = pubSub;
     this.toastr = toastr;
     this.config = config;
     this.$injector = $injector;
@@ -64,7 +68,7 @@ export class FakeUserController {
     var publisherStatus = new PublisherStatusTrackerService(this.$injector);
     this.videoRooms[login] = new JanusVideoRoomService(
         this.$window, this.$q, this.$log, this.$timeout, this.$http, this.authService,
-        janus, publisherStatus, this.toastr, this.config);
+        janus, publisherStatus, this.pubSub, this.toastr, this.config);
 
     this.videoRooms[login].registerLocalUser(login, (stream: MediaStream) => {
       this.$log.debug('Attaching media stream for the fake user', login);
