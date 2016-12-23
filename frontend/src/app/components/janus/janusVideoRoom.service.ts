@@ -310,14 +310,15 @@ export class JanusVideoRoomService {
     });
   }
 
-  toggleLocalAudio(enabled: boolean) {
-    console.log('Audio toggle count', enabled);
-    var audioTracks = this.localStream.getAudioTracks();
-    audioTracks.forEach((audioTrack: MediaStreamTrack) => {
-      this.$log.info('VideoRoom - toggle audio track', audioTrack.label, audioTrack.enabled, enabled);
-      audioTrack.enabled = enabled;
-    });
-  }
+  // Don't ever toggle audio as false, we want to control audio only from SDI.
+  // toggleLocalAudio(enabled: boolean) {
+  //   console.log('Audio toggle count', enabled);
+  //   var audioTracks = this.localStream.getAudioTracks();
+  //   audioTracks.forEach((audioTrack: MediaStreamTrack) => {
+  //     this.$log.info('VideoRoom - toggle audio track', audioTrack.label, audioTrack.enabled, enabled);
+  //     audioTrack.enabled = enabled;
+  //   });
+  // }
 
   stopSdiForwarding(forwardInfo: IFeedForwardInfo): ng.IPromise<any> {
     var deferred = this.$q.defer();
@@ -582,8 +583,9 @@ export class JanusVideoRoomService {
           this.$log.info('VideoRoom - handle onlocalstream', stream);
           this.localStream = stream;
 
+          // Don't toggle audio false, we want to control it only form SDI.
           // Disable local audio tracks
-          this.toggleLocalAudio(false);
+          // this.toggleLocalAudio(false);
 
           streamReadyPromise.resolve(stream);
         },
