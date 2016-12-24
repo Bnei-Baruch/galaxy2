@@ -31,7 +31,8 @@ export class UserController {
   onMessage(message: any) {
     switch (message.message) {
       case 'toggleAudio':
-        this.videoRoom.toggleLocalAudio(message.enabled);
+        // Don't toggle audio, we want to keep it always true and control from SDI.
+        // this.videoRoom.toggleLocalAudio(message.enabled);
         break;
       case 'reload':
         this.reload();
