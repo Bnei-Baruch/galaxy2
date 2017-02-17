@@ -2,7 +2,7 @@ import { IUser } from '../../auth/auth.service';
 import { JanusStreamingService } from '../../janus/janusStreaming.service';
 import {BaseChannelController, IDraggedData} from '../channel.controller';
 
-declare var attachMediaStream: any;
+declare var Janus: any;
 
 /** @ngInject */
 export class SmallChannelController extends BaseChannelController {
@@ -258,7 +258,7 @@ export class SmallChannelController extends BaseChannelController {
     this.streaming
       .attachStreamingHandle(streamId)
       .then((stream: MediaStream) => {
-        attachMediaStream(slotElement, stream);
+        Janus.attachMediaStream(slotElement, stream);
       });
   }
 

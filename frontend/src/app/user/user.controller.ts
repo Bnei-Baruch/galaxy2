@@ -3,7 +3,7 @@ import { PubSubService } from '../components/pubSub/pubSub.service';
 import { JanusVideoRoomService } from '../components/janus/janusVideoRoom.service';
 import { ChatService } from '../components/chat/chat.service';
 
-declare var attachMediaStream: any;
+declare var Janus: any;
 
 export class UserController {
 
@@ -24,7 +24,7 @@ export class UserController {
 
     var mediaElement = <HTMLMediaElement>document.querySelector('#localVideo');
     this.videoRoom.registerLocalUser(authService.user.login, (stream: MediaStream) => {
-      attachMediaStream(mediaElement, stream);
+      Janus.attachMediaStream(mediaElement, stream);
     });
   }
 

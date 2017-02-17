@@ -1,7 +1,7 @@
 import { BaseChannelController } from './channel.controller';
 import { IUser } from '../auth/auth.service';
 
-declare var attachMediaStream: any;
+declare var Janus: any;
 
 /** @ngInject */
 export class SingleUserChannelController extends BaseChannelController {
@@ -53,14 +53,14 @@ export class SingleUserChannelController extends BaseChannelController {
       this.$log.info('Program user is null', this.name);
       this.slotElement.program.src = null;
       // Detach media stream from program.
-      attachMediaStream(this.slotElement.program, null);
+      Janus.attachMediaStream(this.slotElement.program, null);
       this.programUser = null;
       deferred.resolve();
     } else {
       this.$log.info('Putting user to program', this.name, user.login);
       this.programUser = user;
       this.forwardProgramToSDI().then(() => {
-        attachMediaStream(this.slotElement.program, this.programUser.stream);
+        Janus.attachMediaStream(this.slotElement.program, this.programUser.stream);
         if (oldProgramUser && oldProgramUser !== this.previewUser) {
           this.$log.info('Unsubscribe (program)', this.name, oldProgramUser.login);
           this.videoRoom.unsubscribeFromStream(oldProgramUser.login);
@@ -98,7 +98,7 @@ export class SingleUserChannelController extends BaseChannelController {
         this.videoRoom.unsubscribeFromStream(this.previewUser.login);
       }
       // Detach media stream from preview.
-      attachMediaStream(this.slotElement.preview, null);
+      Janus.attachMediaStream(this.slotElement.preview, null);
       this.previewUser = null;
       deferred.resolve();
     } else {
@@ -106,7 +106,7 @@ export class SingleUserChannelController extends BaseChannelController {
       this.previewUser = user;
       this.videoRoom.subscribeForStream(user.login).then((stream: MediaStream) => {
         user.stream = stream;
-        attachMediaStream(this.slotElement.preview, stream);
+        Janus.attachMediaStream(this.slotElement.preview, stream);
         if (oldPreviewUser && oldPreviewUser !== this.programUser) {
           this.$log.info('Unsubscribe (preview)', this.name, oldPreviewUser.login);
           this.videoRoom.unsubscribeFromStream(oldPreviewUser.login);
