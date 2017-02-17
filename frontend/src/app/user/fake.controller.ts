@@ -4,7 +4,7 @@ import { JanusVideoRoomService } from '../components/janus/janusVideoRoom.servic
 import { PublisherStatusTrackerService } from '../components/janus/publisherStatusTracker.service';
 import { PubSubService } from '../components/pubSub/pubSub.service';
 
-declare var attachMediaStream: any;
+declare var Janus: any;
 
 /* @ngInject */
 export class FakeUserController {
@@ -72,7 +72,7 @@ export class FakeUserController {
 
     this.videoRooms[login].registerLocalUser(login, (stream: MediaStream) => {
       this.$log.debug('Attaching media stream for the fake user', login);
-      attachMediaStream(mediaElement, stream);
+      Janus.attachMediaStream(mediaElement, stream);
       this.streams[login] = stream;
     });
   }

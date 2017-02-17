@@ -62,7 +62,7 @@ var janusStream;
             },
             onremotestream: function(stream) {
                 console.debug("Got a remote stream!", stream);
-                attachMediaStream($(mediaElementSelector).get(0), stream);
+                janus.attachMediaStream($(mediaElementSelector).get(0), stream);
                 janusStream = stream;
             },
             oncleanup: function() {

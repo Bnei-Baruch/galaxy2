@@ -52,7 +52,6 @@
     "ng-annotate-loader": "0.0.10",
     "phantomjs": "~1.9.18",
     "readline-sync": "^1.4.1",
-    "runsync": "^0.1.8",
     "tsd": "~0.6.5",
     "tslint-loader": "~1.0.2",
     "typescript": "~1.6.2",
