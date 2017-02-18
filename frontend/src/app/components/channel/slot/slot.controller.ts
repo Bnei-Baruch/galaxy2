@@ -1,4 +1,5 @@
-declare var reattachMediaStream: any;
+declare var Janus: any;
+
 /** @ngInject */
 export class SlotController {
 
@@ -10,7 +11,7 @@ export class SlotController {
 
     var cloneSourceVideo = (scope: ng.IScope, dialogEl: ng.IAugmentedJQuery) => {
       var targetMedia = <HTMLMediaElement>dialogEl.find('video').get(0);
-      reattachMediaStream(targetMedia, sourceMedia);
+      Janus.reattachMediaStream(targetMedia, sourceMedia);
     };
 
     element.bind('contextmenu', (e: any) => {
