@@ -392,8 +392,10 @@ export class JanusVideoRoomService {
     var audioForwardInfo = portsForwardInfo[audioPort];
     var enableAudioForwarding = !!this.config.janus.enableAudioForwarding;
     if (!enableAudioForwarding) {
-      audioForwardIp = null;
+      audioForwardIp = '';
       audioPort = null;
+      prevForwardInfo.audioStreamId = '';
+      prevForwardInfo.otherAudioStreamExist = false;
     } else if (audioForwardInfo) {
       if (prevForwardInfo) {
         prevForwardInfo.audioStreamId = audioForwardInfo.audioStreamId;
