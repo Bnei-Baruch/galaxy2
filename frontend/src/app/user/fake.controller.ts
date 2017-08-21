@@ -70,6 +70,8 @@ export class FakeUserController {
         this.$window, this.$q, this.$log, this.$timeout, this.$http, this.authService,
         janus, publisherStatus, this.pubSub, this.toastr, this.config);
 
+    // TODO: Add drop box as in user.html to select input video device
+    this.videoRooms[login].setDevice(''/*should be here video device id*/);
     this.videoRooms[login].registerLocalUser(login, (stream: MediaStream) => {
       this.$log.debug('Attaching media stream for the fake user', login);
       Janus.attachMediaStream(mediaElement, stream);

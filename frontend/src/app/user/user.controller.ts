@@ -4,8 +4,16 @@ import { JanusVideoRoomService } from '../components/janus/janusVideoRoom.servic
 import { ChatService } from '../components/chat/chat.service';
 
 declare var Janus: any;
+interface IMediaDeviceInfo {
+  deviceId: string;
+  kind: string;
+  label: string;
+};
 
 export class UserController {
+
+  selectedCamera: string;
+  cameras: IMediaDeviceInfo[];
 
   /* @ngInject */
   constructor (pubSub: PubSubService,
@@ -13,7 +21,6 @@ export class UserController {
                private authService: AuthService,
                private chat: ChatService,
                private toastr: any) {
-
     pubSub.client.subscribe('/users/' + authService.user.login, (message: any) => {
       this.onMessage(message);
     });
@@ -23,9 +30,30 @@ export class UserController {
     });
 
     var mediaElement = <HTMLMediaElement>document.querySelector('#localVideo');
-    this.videoRoom.registerLocalUser(authService.user.login, (stream: MediaStream) => {
-      Janus.attachMediaStream(mediaElement, stream);
+
+    Janus.listDevices((devices: IMediaDeviceInfo[]) => {
+      this.cameras = devices.filter((d: IMediaDeviceInfo) => d.kind === 'videoinput');
+      if (localStorage.getItem('selectedCamera') &&
+          this.cameras.find((d: IMediaDeviceInfo) => d.deviceId === localStorage.getItem('selectedCamera'))) {
+        this.selectedCamera = localStorage.getItem('selectedCamera');
+      } else if (this.cameras.length) {
+        this.selectedCamera = this.cameras[0].deviceId;
+      }
+
+      if (this.selectedCamera) {
+        this.videoRoom.setDevice(this.selectedCamera);
+        this.videoRoom.registerLocalUser(authService.user.login, (stream: MediaStream) => {
+          Janus.attachMediaStream(mediaElement, stream);
+        });
+      }
     });
+  }
+
+  cameraSelected() {
+    localStorage.setItem('selectedCamera', this.selectedCamera);
+    // Disconnect and connect again.
+    this.toastr.info('Reloading with different video input device!');
+    window.location.reload();
   }
 
   onMessage(message: any) {

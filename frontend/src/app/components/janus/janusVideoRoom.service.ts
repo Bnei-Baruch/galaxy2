@@ -58,6 +58,9 @@ export class JanusVideoRoomService {
   localUserLogin: string;
   localStream: MediaStream;
 
+  devicePromiseDeferred: any;
+  cameraDeviceId: string;
+
   constructor($window: ng.IWindowService,
       private $q: ng.IQService,
       private $log: ng.ILogService,
@@ -69,7 +72,8 @@ export class JanusVideoRoomService {
       private pubSub: PubSubService,
       private toastr: any,
       private config: any) {
-
+    // Wait for user to choose video input device.
+    this.devicePromiseDeferred = this.$q.defer();
     this.localHandleAttached = this.attachLocalHandle();
 
     // Create already resolved state by default
@@ -91,6 +95,15 @@ export class JanusVideoRoomService {
       };
 
     });
+  }
+
+  setDevice(deviceId: string) {
+    this.cameraDeviceId = deviceId;
+    this.devicePromiseDeferred.resolve();
+  }
+
+  setNoDevice() {
+    this.devicePromiseDeferred.resolve();
   }
 
   /**
@@ -695,48 +708,56 @@ export class JanusVideoRoomService {
   private publishLocalFeed(): void {
     this.$log.info('VideoRoom - publish local feed, creating offer.');
 
-    // noinspection TypeScriptValidateJSTypes
-    this.localHandle.createOffer({
-      media: {
-        // Publishers are sendonly
-        audioRecv: false,
-        videoRecv: false,
-        audioSend: true,
-        videoSend: true,
-        video: 'stdres-16:9'
-      },
-      success: (jsep: any) => {
-        this.$log.info('VideoRoom - published local feed, configuring.');
-        this.$log.debug(jsep);
-        this.localHandle.send({
-          'message': {'request': 'configure', 'audio': true, 'video': true},
-          'jsep': jsep,
-          error: (response: any) => this.$log.error('Error configuring local feed', response)
-        });
-      },
-      error: (response: any) => {
-        if (response === 'No capture device found') {
-          this.toastr.error('We can\'t see you, please connect your camera.');
-        } else if (response.name === 'PermissionDeniedError' || response.name === 'PermissionDismissedError') {
-          var msg = `Error: ${response.message} <br />
-            Please allow media permissions.
-            <a href="https://support.google.com/chrome/answer/2693767?hl=en">
-              For more details.
-            </a>`;
-          this.toastr.error(msg);
-        } else if (response.name === 'MediaDeviceNotSupported') {
-          this.$log.error(response.name, response);
-          this.toastr.error(`Your browser doesn't support video device. </br>
-            Please use
-            <a href="//www.google.com/chrome/browser/desktop/">
-              Chrome
-            </a>.`);
-        } else if (response !== undefined) {
-          // Don't do nothing if was resolved before
-          this.$log.error('Error creating SDP offer', response);
-          this.toastr.error(`Bummers, can't share video: ${response.message}`);
+    // Wait for client to decide on video input device or set that there is no video input device.
+    this.devicePromiseDeferred.promise.then(() => {
+      // noinspection TypeScriptValidateJSTypes
+      const videoConstraint = this.cameraDeviceId ? {
+        width: 640,
+        height: 360,
+        deviceId: { exact: this.cameraDeviceId },
+      } : false;
+      this.localHandle.createOffer({
+        media: {
+          // Publishers are sendonly
+          audioRecv: false,
+          videoRecv: false,
+          audioSend: true,
+          videoSend: true,
+          video: videoConstraint,
+        },
+        success: (jsep: any) => {
+          this.$log.info('VideoRoom - published local feed, configuring.');
+          this.$log.debug(jsep);
+          this.localHandle.send({
+            'message': {'request': 'configure', 'audio': true, 'video': true},
+            'jsep': jsep,
+            error: (response: any) => this.$log.error('Error configuring local feed', response)
+          });
+        },
+        error: (response: any) => {
+          if (response === 'No capture device found') {
+            this.toastr.error('We can\'t see you, please connect your camera.');
+          } else if (response.name === 'PermissionDeniedError' || response.name === 'PermissionDismissedError') {
+            var msg = `Error: ${response.message} <br />
+              Please allow media permissions.
+              <a href="https://support.google.com/chrome/answer/2693767?hl=en">
+                For more details.
+              </a>`;
+            this.toastr.error(msg);
+          } else if (response.name === 'MediaDeviceNotSupported') {
+            this.$log.error(response.name, response);
+            this.toastr.error(`Your browser doesn't support video device. </br>
+              Please use
+              <a href="//www.google.com/chrome/browser/desktop/">
+                Chrome
+              </a>.`);
+          } else if (response !== undefined) {
+            // Don't do nothing if was resolved before
+            this.$log.error('Error creating SDP offer', response);
+            this.toastr.error(`Bummers, can't share video: ${response.message}`);
+          }
         }
-      }
+      });
     });
   }
 

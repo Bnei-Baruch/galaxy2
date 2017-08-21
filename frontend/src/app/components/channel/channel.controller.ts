@@ -55,6 +55,9 @@ export class BaseChannelController {
     // Mapping users by login for convenience
     this.mapUsersByLogin();
 
+    // No video input/camera for shidur page.
+    this.videoRoom.setNoDevice();
+
     this.videoRoom.registerChannel({
       name: this.name,
       users: this.getLoginsList(),

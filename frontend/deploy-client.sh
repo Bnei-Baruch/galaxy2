@@ -7,8 +7,8 @@ echo "-----> Deploying galaxy2 frontend" && (
 
   cd frontend &&
 
-  echo "tsd install" &&
-  rm -rf .tmp/typings/ && tsd install &&
+  echo "typings install" &&
+  rm -rf typings/ && typings install &&
 
   echo "npm install" &&
   npm install &&

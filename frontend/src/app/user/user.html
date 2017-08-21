@@ -3,6 +3,9 @@
     <video id="localVideo" autoplay muted></video>
   </div>
   <div flex="10">
+    <md-select ng-model="user.selectedCamera" placeholder="Select a camera" md-on-close="user.cameraSelected()">
+      <md-option ng-value="camera.deviceId" ng-repeat="camera in user.cameras">{{camera.label}}</md-option>
+    </md-select>
     <md-button href="http://kabbalahgroup.info/internet/en#events/29162" target="_blank">Start player</md-button>
     <md-button ng-click="user.chat.start()">Chat with Shidur</md-button>
   </div>
