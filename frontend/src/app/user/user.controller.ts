@@ -32,14 +32,25 @@ export class UserController {
     var mediaElement = <HTMLMediaElement>document.querySelector('#localVideo');
 
     Janus.listDevices((devices: IMediaDeviceInfo[]) => {
-      this.cameras = devices.filter((d: IMediaDeviceInfo) => d.kind === 'videoinput');
-      if (localStorage.getItem('selectedCamera') &&
-          this.cameras.find((d: IMediaDeviceInfo) => d.deviceId === localStorage.getItem('selectedCamera'))) {
-        this.selectedCamera = localStorage.getItem('selectedCamera');
-      } else if (this.cameras.length) {
+      console.log('Janus.listDevices:', devices);
+
+      var lsCamera = localStorage.getItem('selectedCamera');
+      console.log('localStorage.selectedCamera:', lsCamera);
+
+      this.cameras = devices.filter((d: IMediaDeviceInfo) => d.kind === 'videoinput') || [];
+
+      if (lsCamera && this.cameras.find((d: IMediaDeviceInfo) => d.deviceId === lsCamera)) {
+        console.log('Using device from localStorage:', lsCamera);
+        this.selectedCamera = lsCamera;
+      } else if (this.cameras.length > 0) {
+        console.log('No device set in localStorage or not found:', lsCamera);
+        console.log('Using default:', this.cameras[0].deviceId);
         this.selectedCamera = this.cameras[0].deviceId;
+      } else {
+        console.error('No videoinput device found !!!');
       }
 
+      console.log('Final selectedCamera:', this.selectedCamera);
       if (this.selectedCamera) {
         this.videoRoom.setDevice(this.selectedCamera);
         this.videoRoom.registerLocalUser(authService.user.login, (stream: MediaStream) => {
