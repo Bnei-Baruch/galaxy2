@@ -82,18 +82,18 @@ export class AuthService {
   onLogin(user: IUser) {
     this.user = user;
 
-    this.Rollbar.Rollbar.configure({
-      payload: {
-        person: {
-          id: user.id,
-          username: user.login,
-          email: user.email
-        }
-      }
-    });
+    // this.Rollbar.Rollbar.configure({
+    //   payload: {
+    //     person: {
+    //       id: user.id,
+    //       username: user.login,
+    //       email: user.email
+    //     }
+    //   }
+    // });
   }
 
   onLogout() {
-    this.Rollbar.Rollbar.configure({payload: {person: null}});
+    // this.Rollbar.Rollbar.configure({payload: {person: null}});
   }
 }

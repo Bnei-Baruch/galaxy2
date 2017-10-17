@@ -24,32 +24,32 @@ export function config(
     apiUrl: config.backendUri + '/rest'
   });
 
-  RollbarProvider.init({
-    accessToken: config.rollbarToken,
-    captureUncaught: true,
-    payload: {
-      environment: config.environment || 'development',
-      client: {
-        javascript: {
-          source_map_enabled: true,
-          code_version: config.codeVersion || 'unknown_version',
-          guess_uncaught_frames: true
-        }
-      }
-    }
-  });
-
-  // Log errors to Rollbar
-  $provide.decorator('$log', ($delegate: any) => {
-    var fn = $delegate.error;
-
-    // arguments object cannot be used in arrow function
-    $delegate.error = function() {
-      var data = Array.prototype.slice.call(arguments);
-      fn.apply($delegate, data);
-      Rollbar.error.apply(Rollbar, data);
-    };
-
-    return $delegate;
-  });
+  // RollbarProvider.init({
+  //   accessToken: config.rollbarToken,
+  //   captureUncaught: true,
+  //   payload: {
+  //     environment: config.environment || 'development',
+  //     client: {
+  //       javascript: {
+  //         source_map_enabled: true,
+  //         code_version: config.codeVersion || 'unknown_version',
+  //         guess_uncaught_frames: true
+  //       }
+  //     }
+  //   }
+  // });
+  //
+  // // Log errors to Rollbar
+  // $provide.decorator('$log', ($delegate: any) => {
+  //   var fn = $delegate.error;
+  //
+  //   // arguments object cannot be used in arrow function
+  //   $delegate.error = function() {
+  //     var data = Array.prototype.slice.call(arguments);
+  //     fn.apply($delegate, data);
+  //     Rollbar.error.apply(Rollbar, data);
+  //   };
+  //
+  //   return $delegate;
+  // });
 }
