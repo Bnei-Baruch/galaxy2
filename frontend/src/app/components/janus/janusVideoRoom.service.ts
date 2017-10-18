@@ -98,6 +98,7 @@ export class JanusVideoRoomService {
   }
 
   setDevice(deviceId: string) {
+    this.$log.info('VideoRoom - setDevice', deviceId);
     this.cameraDeviceId = deviceId;
     this.devicePromiseDeferred.resolve();
   }
@@ -407,8 +408,10 @@ export class JanusVideoRoomService {
     if (!enableAudioForwarding) {
       audioForwardIp = '';
       audioPort = null;
-      prevForwardInfo.audioStreamId = '';
-      prevForwardInfo.otherAudioStreamExist = false;
+      if (prevForwardInfo) {
+        prevForwardInfo.audioStreamId = '';
+        prevForwardInfo.otherAudioStreamExist = false;
+      }
     } else if (audioForwardInfo) {
       if (prevForwardInfo) {
         prevForwardInfo.audioStreamId = audioForwardInfo.audioStreamId;
@@ -483,6 +486,11 @@ export class JanusVideoRoomService {
     // example twice and we need to override the old publisher with new.
     publishers.forEach((p: any) => {
       this.$log.info('VideoRoom - updating publisher', p);
+
+      if (!p.display) {
+        this.$log.info('VideoRoom - publisher display is falsey. skipping...');
+        return;
+      }
 
       // TODO: When we have joined timestamp check the timestamp
       // together with the login. Timestamp better be central.
