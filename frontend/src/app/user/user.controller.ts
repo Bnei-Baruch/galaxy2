@@ -29,7 +29,10 @@ export class UserController {
       this.onAdminMessage(message);
     });
 
-    var mediaElement = <HTMLMediaElement>document.querySelector('#localVideo');
+    this.videoRoom.registerLocalUser(authService.user.login, (stream: MediaStream) => {
+      var mediaElement = <HTMLMediaElement>document.querySelector('#localVideo');
+      Janus.attachMediaStream(mediaElement, stream);
+    });
 
     Janus.listDevices((devices: IMediaDeviceInfo[]) => {
       console.log('Janus.listDevices:', devices);
@@ -51,12 +54,7 @@ export class UserController {
       }
 
       console.log('Final selectedCamera:', this.selectedCamera);
-      if (this.selectedCamera) {
-        this.videoRoom.setDevice(this.selectedCamera);
-        this.videoRoom.registerLocalUser(authService.user.login, (stream: MediaStream) => {
-          Janus.attachMediaStream(mediaElement, stream);
-        });
-      }
+      this.videoRoom.setDevice(this.selectedCamera);
     });
   }
 
